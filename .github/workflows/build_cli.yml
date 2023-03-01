@@ -26,3 +26,9 @@ jobs:
         run: |
           cd cli
           node_modules/.bin/pkg package.json
+      - name: Upload artifacts
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v3
+        with:
+          name: halo-cli-binaries
+          path: cli/dist/*
