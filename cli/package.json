@@ -1,0 +1,24 @@
+{
+  "name": "@arx-research/halo-cli",
+  "version": "1.0.0",
+  "description": "Halo CLI",
+  "main": "cli.js",
+  "bin": "cli.js",
+  "pkg": {
+    "outputPath": "dist",
+    "assets": [
+      "node_modules/@pokusew/pcsclite/build/Release/pcsclite.node"
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nfc-pcsc": "^0.8.1"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.0"
+  }
+}
