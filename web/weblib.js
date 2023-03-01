@@ -1,6 +1,6 @@
 const {
     execHaloCmdWeb,
-} = require("../fronts/common");
+} = require("../drivers/common");
 const {
     HaloTagError,
     HaloLogicError,

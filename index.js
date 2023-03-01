@@ -1,9 +1,9 @@
-const {initNFCManagerHalo} = require("./fronts/nfc_manager");
-const {execHaloCmdPCSC} = require("./fronts/pcsc");
+const {initNFCManagerHalo} = require("./drivers/nfc_manager");
+const {execHaloCmdPCSC} = require("./drivers/pcsc");
 const {
     execHaloCmdWeb,
     execHaloCmd
-} = require("./fronts/common");
+} = require("./drivers/common");
 const {
     HaloTagError,
     HaloLogicError,
@@ -13,6 +13,10 @@ const {
     NFCOperationError
 } = require("./halo/exceptions");
 
+/**
+ * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
+ * except the lib's index.js. The library's structure is subject to change in the next versions.
+ */
 module.exports = {
     // for desktop usage
     execHaloCmdPCSC,
