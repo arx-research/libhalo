@@ -56,7 +56,7 @@ async function execHaloCmdWeb(command, options) {
     options = options ? Object.assign({}, options) : {};
     options.method = options.method || detectMethod();
     options.noDebounce = options.noDebounce || false;
-    options.compatibleCallMode = options.compatibleCallMode || false;
+    options.compatibleCallMode = options.compatibleCallMode || true;
 
     command = command ? Object.assign({}, command) : {};
 

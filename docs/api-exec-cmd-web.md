@@ -51,12 +51,11 @@ options.compatibleCallMode: true/false
 
 Use the compatible protocol which is compatible with earlier batches of Halo tags.
 
-* (default) `false` - use more recent protocol compatible with tags `v=01.C5` onwards;
-* `true` - use the compatible protocol compatible with all tags (use only if needed);
+* (default) `true` - use the compatible protocol compatible with all tags (use only if needed);
+* `false` - use more recent protocol compatible with tags `v=01.C5` onwards only;
 
-**Note:** Set to `true` if your tags are generating URLs without `v` (version) query string parameter
-or the `v` parameter is lower than `01.C5` (by lexicographical comparison).
-Don't use if all your tags have `v=01.C5` or higher.
+**Note:** Optionally, set this to `false` if all your tags are generating URLs with the `v` (version)
+query string parameter, and this parameter is higher or equal `01.C5` (by lexicographical comparison).
 
 #### options.statusCallback
 ```

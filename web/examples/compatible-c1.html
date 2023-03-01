@@ -51,7 +51,7 @@
 
             try {
                 // --- request NFC command execution ---
-                res = await execHaloCmdWeb(command, {compatibleCallMode: true});
+                res = await execHaloCmdWeb(command);
                 // the command has succeeded, display the result to the user
                 document.getElementById('statusText').innerText = JSON.stringify(res, null, 4);
             } catch (e) {
