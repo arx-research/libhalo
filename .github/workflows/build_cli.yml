@@ -25,4 +25,4 @@ jobs:
       - name: Package HaLo CLI tool
         run: |
           cd cli
-          pkg package.json
+          node_modules/.bin/pkg package.json
