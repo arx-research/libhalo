@@ -19,3 +19,9 @@ jobs:
         run: |
           cd web
           webpack
+      - name: Upload artifacts
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v3
+        with:
+          name: libhalo-js
+          path: web/dist/libhalo*
