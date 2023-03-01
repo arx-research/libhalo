@@ -1,6 +1,6 @@
 {
   "name": "@arx-research/halo-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Halo CLI",
   "main": "cli.js",
   "bin": "cli.js",
