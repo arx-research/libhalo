@@ -2,6 +2,9 @@ module.exports = {
     entry: {
         app: './weblib.js',
     },
-    mode: 'development',
+    output: {
+        filename: 'libhalo.js'
+    },
+    mode: 'production',
     target: 'web',
 };
