@@ -24,14 +24,7 @@
         <div class="form-check">
             <input class="form-check-input" type="checkbox" id="legacySignCommand">
             <label class="form-check-label" for="legacySignCommand">
-                Version C1 compatibility (<code>command.legacySignCommand</code>)
-            </label>
-        </div>
-
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="compatibleCallMode" checked>
-            <label class="form-check-label" for="compatibleCallMode">
-                Version C3 compatibility (<code>options.compatibleCallMode</code>)
+                Version C3 compatibility (<code>command.legacySignCommand</code>)
             </label>
         </div>
     </div>
@@ -71,7 +64,6 @@
             document.getElementById('statusText').style.color = 'green';
 
             let legacySignCommand = document.getElementById('legacySignCommand').checked;
-            let compatibleCallMode = document.getElementById('compatibleCallMode').checked;
 
             let digest = document.getElementById('digest').value;
             let keyNo = document.getElementById('keyNo').value;
@@ -79,7 +71,6 @@
             // all options are optional, you can use them to increase user's experience
             let options = {
                 method: method,
-                compatibleCallMode: compatibleCallMode,
                 statusCallback: (cause) => {
                     if (cause === "init") {
                         // explicitly ask the user to tap the tag

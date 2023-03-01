@@ -13,8 +13,8 @@ Sign an arbitrary message using ECDSA/Keccak algorithm or sign a raw digest usin
 **Note:** You can specify either `message` or `digest`, not both.
 
 **Note:** Set `legacySignCommand` to `true` if your tags are generating URLs
-without `v` (version) query string parameter or the `v` parameter is lower than `01.C3` (by lexicographical comparison).
-Don't use if all your tags have `v=01.C3` or higher.
+without `v` (version) query string parameter or the `v` parameter is lower than `01.C4` (by lexicographical comparison).
+Don't use if all your tags have `v=01.C4` or higher.
 
 ### Return value
 * `input.keyNo` - number of the requested key slot;
