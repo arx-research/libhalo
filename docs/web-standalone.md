@@ -49,8 +49,8 @@ async function btnPressed() {
 
 Please review the following demonstrative applications:
 
-* [Simple digest signing demo (version >=C3)](/web/examples/simple.html)
-* [Simple digest signing demo (earlier versions)](/web/examples/compatible-c1.html)
+* [Simple digest signing demo (version >=C4)](/web/examples/simple.html)
+* [Simple digest signing demo (earlier versions)](/web/examples/compatible.html)
 * [More advanced message signing demo (all versions)](/web/examples/demo.html)
 
 ## Advanced usage
