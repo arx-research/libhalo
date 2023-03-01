@@ -19,7 +19,7 @@ Implement basic code:
 ```javascript
 const nfc = new NFC();
 
-// list of Halo commands that will be executed
+// list of HaLo commands that will be executed
 // once the tag is detected by the reader
 let commands = [
     {
@@ -39,7 +39,7 @@ nfc.on('reader', reader => {
 
     reader.on('card', card => {
         (async () => {
-            // the card was detected, we can execute some Halo commands
+            // the card was detected, we can execute some HaLo commands
             // please note you can call execHaloCmdPCSC() multiple times
             // in order to execute multiple operations in a single tap
 
@@ -74,4 +74,4 @@ Please review the [documentation on the execHaloCmdPCSC function](/docs/api-exec
 the exact specification of the `execHaloCmdPCSC()` function.
 
 Please review the [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) to find
-out what commands are available with the Halo tags.
+out what commands are available with the HaLo tags.

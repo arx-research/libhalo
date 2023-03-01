@@ -2,11 +2,11 @@
 
 ## Pre-built CLI binary
 
-Please check "libhalo" GitHub release page for the standalone binary build of the Halo CLI binary.
+Please check "libhalo" GitHub release page for the standalone binary build of the HaLo CLI binary.
 
-## Using Halo CLI
+## Using HaLo CLI
 
-The Halo CLI will automatically detect the PC/SC card reader and the Halo Tag tapped to it.
+The HaLo CLI will automatically detect the PC/SC card reader and the HaLo Tag tapped to it.
 Please connect the reader, install appropriate device drivers and tap the tag onto the reader
 before executing the commands below.
 
@@ -28,13 +28,13 @@ before executing the commands below.
 ./halo-cli sign_raw -k 1 -d bf1b32988255a2371596d00d1a1c58fd37c1f105243bc8d84509ef9214687ba5
 ```
 
-Please review [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) to find out
+Please review [documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md) to find out
 more details about the available commands. Please note that the CLI commands are invoked slightly differently,
 please review the CLI help for the details about command invocation.
 
 ## Building from source
 
-If you wish to build the Halo CLI from source, you can perform the following steps:
+If you wish to build the HaLo CLI from source, you can perform the following steps:
 
 1. Clone the repository:
    ```

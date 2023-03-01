@@ -17,7 +17,7 @@ async function execHaloCmdWeb(command, options)
 ### Input parameter: `command`
 
 An object specifying the command name that you want to invoke, together with the additional command's arguments.
-Please check [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) for more details.
+Please check [documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md) for more details.
 
 ### Input parameter: `options`
 
@@ -49,7 +49,7 @@ Don't automatically debounce calls to `execHaloCmdWeb` when it's concurrently ca
 options.compatibleCallMode: true/false
 ```
 
-Use the compatible protocol which is compatible with earlier batches of Halo tags.
+Use the compatible protocol which is compatible with earlier batches of HaLo tags.
 
 * (default) `true` - use the compatible protocol compatible with all tags (use only if needed);
 * `false` - use more recent protocol compatible with tags `v=01.C5` onwards only;
@@ -99,7 +99,7 @@ debugCallback: (cause) => console.log(cause)
 
 The function will return a Promise that will resolve to an object.
 Object keys and values will depend on the command that was requested.
-Please check [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) for more details.
+Please check [documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md) for more details.
 
 ### Exceptions
 

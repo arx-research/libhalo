@@ -27,7 +27,7 @@ async function execHaloCmd(command, options)
 ### Input parameter: `command`
 
 An object specifying the command name that you want to invoke, together with the additional command's arguments.
-Please check [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) for more details.
+Please check [documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md) for more details.
 
 ### Input parameter: `options`
 
@@ -37,7 +37,7 @@ An object returned from `initNFCManagerHalo` async call.
 
 The function will return a Promise that will resolve to an object.
 Object keys and values will depend on the command that was requested.
-Please check [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) for more details.
+Please check [documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md) for more details.
 
 ### Exceptions
 
