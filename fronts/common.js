@@ -40,6 +40,18 @@ async function execHaloCmd(command, options) {
     }
 }
 
+function makeDefault(curValue, defaultValue) {
+    if (typeof curValue === "undefined") {
+        return defaultValue;
+    }
+
+    if (curValue === null) {
+        return defaultValue;
+    }
+
+    return curValue;
+}
+
 /**
  * Execute the NFC command from the web browser.
  * @param command Command specification object.
@@ -54,9 +66,9 @@ async function execHaloCmdWeb(command, options) {
     isCallRunning = true;
 
     options = options ? Object.assign({}, options) : {};
-    options.method = options.method || detectMethod();
-    options.noDebounce = options.noDebounce || false;
-    options.compatibleCallMode = options.compatibleCallMode || true;
+    options.method = makeDefault(options.method, detectMethod());
+    options.noDebounce = makeDefault(options.noDebounce, false);
+    options.compatibleCallMode = makeDefault(options.compatibleCallMode, true);
 
     command = command ? Object.assign({}, command) : {};
 
