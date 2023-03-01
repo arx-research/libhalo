@@ -1,6 +1,6 @@
 # Using LibHaLo as a standalone JavaScript library in a classic HTML application
 
-You can use LibHalo as a single standalone JavaScript file, which could be included
+You can use LibHaLo as a single standalone JavaScript file, which could be included
 in a classic HTML application.
 
 ## Pre-built JavaScript library
@@ -56,7 +56,7 @@ Please review the following demonstrative applications:
 ## Advanced usage
 
 * [Documentation of the execHaloCmdWeb API](/docs/api-exec-cmd-web.md)
-* [Documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md)
+* [Documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md)
 
 ## Building library from source
 

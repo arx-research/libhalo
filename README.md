@@ -4,7 +4,7 @@ Programmatically interact with HaLo tags from the web browser, mobile applicatio
 
 ## Usage
 
-The LibHalo supports the following use-cases:
+The LibHaLo supports the following use-cases:
 
 1. [Using libhalo as a standalone library in a classic HTML web application](/docs/web-standalone.md)
 2. [Using libhalo within a React.js web application](/docs/web-reactjs.md)

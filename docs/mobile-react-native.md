@@ -39,7 +39,7 @@ for both Android and iOS on the same project.
 3. Add the following keys in `ios/<<App name>>/Info.plist`:
     ```
     <key>NFCReaderUsageDescription</key>
-    <string>NFC is used to interact with Halo Tags</string>
+    <string>NFC is used to interact with HaLo Tags</string>
     <key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
     <array>
       <string>481199130E9F01</string>
@@ -105,4 +105,4 @@ Please check GitHub [arx-research/libhalo-example-react-native](https://github.c
 ## Advanced usage
 
 * [Documentation of the initNFCManagerHalo API](/docs/api-init-nfc-manager-halo.md)
-* [Documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md)
+* [Documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md)
