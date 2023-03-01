@@ -1,0 +1,27 @@
+name: Build web library
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Install Node.JS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies (root)
+        run: |
+          npm --include=dev install
+      - name: Run webpack
+        run: |
+          cd web
+          webpack
+      - name: Upload artifacts
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v3
+        with:
+          name: libhalo-js
+          path: web/dist/libhalo*
