@@ -8,7 +8,7 @@ jobs:
     steps:
       - name: Install native dependencies
         run: |
-          apt-get update && apt-get install -y libpcsclite-dev
+          sudo apt-get update && sudo apt-get install -y libpcsclite-dev
       - name: Checkout the repository
         uses: actions/checkout@v3
       - name: Install Node.JS
