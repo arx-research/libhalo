@@ -1,4 +1,4 @@
-name: Build CLI tool
+name: Build halocli tool
 
 on:
   push:
@@ -6,9 +6,13 @@ on:
       - '*'
     tags:
       - 'halocli-v*'
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
   create_release:
+    runs-on: ubuntu-latest
     steps:
       - name: Draft release
         id: create_release

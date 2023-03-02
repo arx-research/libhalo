@@ -1,9 +1,41 @@
-name: Build web library
+name: Build libhalo.js
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'libhalo-v*'
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
-  build:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Draft release
+        id: create_release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: false
+      - name: Store release upload URL
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo ${{ steps.create_release.outputs.upload_url }} > release-upload-url.txt
+      - uses: actions/upload-artifact@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          name: release-upload-url
+          path: release-upload-url.txt
+
+  build_js_lib:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -19,9 +51,33 @@ jobs:
         run: |
           cd web
           webpack
-      - name: Upload artifacts
-        if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v3
+      - name: Download release upload URL
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/download-artifact@v2
         with:
-          name: libhalo-js
-          path: web/dist/libhalo*
+          name: release-upload-url
+      - name: Store release upload URL output
+        id: out_store
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
+      - name: Upload release asset (JS bundle)
+        id: upload-release-asset
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
+          asset_path: ./web/dist/libhalo.js
+          asset_name: libhalo.js
+      - name: Upload release asset (LICENSE file)
+        id: upload-release-asset
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
+          asset_path: ./web/dist/libhalo.js.LICENSE.txt
+          asset_name: libhalo.js.LICENSE.txt
