@@ -63,7 +63,9 @@ jobs:
       - name: Staple notarized application for Mac OS
         if: matrix.os == 'macos-latest'
         run: |
-          xcrun stapler staple -v ./cli/dist/halocli
+          mkdir cli/dist/out
+          cp cli/dist/halocli cli/dist/out/halocli
+          xcrun stapler staple -v ./cli/dist/out
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -74,4 +76,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: halo-cli-${{ matrix.os }}
-          path: cli/dist/*
+          path: cli/dist/out/*
