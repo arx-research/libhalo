@@ -28,7 +28,7 @@ jobs:
       - name: Store release upload URL
         if: startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
-          echo ${{ steps.create_release.outputs.upload_url }} > release-upload-url.txt
+          echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
       - uses: actions/upload-artifact@v2
         if: startsWith(github.ref, 'refs/tags/halocli-v')
         with:
@@ -120,6 +120,12 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
+      - run: |
+          echo Upload URL: ${{ steps.out_store.outputs.release_upload_url }}
+          echo Asset path: ./cli/dist/${{ matrix.bin_name }}
+          echo Asset name: ${{ matrix.bin_name }}
+      - run: |
+          find cli
       - name: Upload release asset
         id: upload-release-asset
         if: startsWith(github.ref, 'refs/tags/halocli-v')
