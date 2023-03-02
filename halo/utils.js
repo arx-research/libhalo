@@ -72,7 +72,10 @@ function parseSig(res) {
         sn = -sn + curveOrder;
     }
 
-    return {r: rn.toString(16), s: sn.toString(16)};
+    return {
+        r: rn.toString(16).padStart(64, '0'),
+        s: sn.toString(16).padStart(64, '0')
+    };
 }
 
 function reformatSignature(digest, signature, publicKey) {
@@ -92,8 +95,8 @@ function reformatSignature(digest, signature, publicKey) {
         throw new HaloLogicError("Failed to get recovery param.");
     }
 
-    let finalSig = '0x' + rn.toString(16).padStart(64, '0')
-        + sn.toString(16).padStart(64, '0')
+    let finalSig = '0x' + fixedSig.r
+        + fixedSig.s
         + Buffer.from([27 + recoveryParam]).toString('hex');
 
     let pkeyAddress = ethers.utils.computeAddress('0x' + publicKey);
