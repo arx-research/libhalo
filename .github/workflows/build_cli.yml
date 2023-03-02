@@ -1,10 +1,15 @@
 name: Build CLI tool
 
-on: [push, pull_request]
+push:
+  branches:
+    - master
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Install native dependencies
         run: |
@@ -22,13 +27,24 @@ jobs:
         run: |
           cd cli
           npm --include=dev install
-      - name: Package HaLo CLI tool
+      - name: Package HaLo CLI tool (Windows)
+        if: matrix.os == 'windows-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg package.json
+          node_modules/.bin/pkg -f node16-win-x64 package.json
+      - name: Package HaLo CLI tool (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd cli
+          node_modules/.bin/pkg -f node16-macos-x64 package.json
+      - name: Package HaLo CLI tool (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd cli
+          node_modules/.bin/pkg -f node16-linux-x64 package.json
       - name: Upload artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v3
         with:
-          name: halo-cli-binaries
+          name: halo-cli-${{ matrix.os }}
           path: cli/dist/*
