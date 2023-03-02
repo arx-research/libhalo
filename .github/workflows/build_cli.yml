@@ -78,7 +78,7 @@ jobs:
         if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         run: |
           cd cli
-          npm --include=dev install
+          npm --include=dev --loglevel verbose install
       - name: Package HaLo CLI tool (Linux)
         if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         run: |
@@ -120,12 +120,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
-      - run: |
-          echo Upload URL: ${{ steps.out_store.outputs.release_upload_url }}
-          echo Asset path: ./cli/dist/${{ matrix.bin_name }}
-          echo Asset name: ${{ matrix.bin_name }}
-      - run: |
-          find cli
       - name: Upload release asset
         id: upload-release-asset
         if: startsWith(github.ref, 'refs/tags/halocli-v')
