@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - fix/ci2
 
 jobs:
   build:
