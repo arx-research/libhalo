@@ -41,27 +41,25 @@ function parseStatic(buffer) {
     return out;
 }
 
-function reformatSignature(digest, signature, publicKey) {
-    signature = Buffer.from(signature, "hex");
-
-    if (signature[0] !== 0x30 || signature[2] !== 0x02) {
-        throw new HaloLogicError("Invalid signature returned by the tag (2).");
+function parseSig(res) {
+    if (res[0] !== 0x30 || res[2] !== 0x02) {
+        throw new HaloLogicError("Unable to parse signature, unexpected header (1).");
     }
 
-    let rLen = signature[3];
+    let rLen = res[3];
 
-    if (signature[rLen+4] !== 0x02) {
-        throw new HaloLogicError("Invalid signature returned by the tag (3).");
+    if (res[rLen + 4] !== 0x02) {
+        throw new HaloLogicError("Unable to parse signature, unexpected header (2).");
     }
 
-    let sLen = signature[rLen+5];
+    let sLen = res[rLen + 5];
 
-    if (signature.length !== rLen+4+2+sLen) {
-        throw new HaloLogicError("Invalid signature returned by the tag (4).");
+    if (res.length !== rLen + 4 + 2 + sLen) {
+        throw new HaloLogicError("Unable to parse signature, unexpected length.");
     }
 
-    let r = signature.slice(4, rLen+4);
-    let s = signature.slice(rLen+4+2, rLen+4+2+sLen);
+    let r = res.slice(4, rLen + 4);
+    let s = res.slice(rLen + 4 + 2, rLen + 4 + 2 + sLen);
     let rn = BigInt('0x' + r.toString('hex'));
     let sn = BigInt('0x' + s.toString('hex'));
 
@@ -74,7 +72,13 @@ function reformatSignature(digest, signature, publicKey) {
         sn = -sn + curveOrder;
     }
 
-    let fixedSig = {r: rn.toString(16), s: sn.toString(16)};
+    return {r: rn.toString(16), s: sn.toString(16)};
+}
+
+function reformatSignature(digest, signature, publicKey) {
+    signature = Buffer.from(signature, "hex");
+    let fixedSig = parseSig(signature);
+
     let recoveryParam = null;
 
     for (let i = 0; i < 2; i++) {
@@ -111,9 +115,18 @@ function reformatSignature(digest, signature, publicKey) {
     };
 }
 
+function mode(arr) {
+    return arr.sort((a, b) =>
+        arr.filter(v => v === a).length
+        - arr.filter(v => v === b).length
+    ).pop();
+}
+
 module.exports = {
     hex2arr,
     arr2hex,
     parseStatic,
-    reformatSignature
+    parseSig,
+    reformatSignature,
+    mode
 };

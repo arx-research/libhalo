@@ -55,5 +55,7 @@ This library supports the following HaLo tag commands:
 * `sign_random` - sign a sequential counter with random pad using ECDSA private key on the NFC tag;
 * `write_latch` - write one-time programmable memory slot on the NFC tag;
 * `cfg_ndef` - configure the parameters returned in the dynamic URL when the NFC tag is scanned;
+* `gen_key` - request generation of the key #3 on the NFC tag;
+* `gen_key_confirm` - confirm the generated public key of key slot #3;
 
 Full article: [Documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md)

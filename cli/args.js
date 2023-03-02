@@ -3,7 +3,7 @@ const {ArgumentParser} = require("argparse");
 const parser = new ArgumentParser({
     description: 'HaLo - Command Line Tool for PC/SC'
 });
-const subparsers = parser.add_subparsers({help: 'command', dest: 'command'});
+const subparsers = parser.add_subparsers({help: 'command', dest: 'name'});
 
 subparsers.add_parser("version", {help: "Get tag version."});
 
@@ -111,10 +111,16 @@ setNDEFCfgParser.add_argument("--flag-legacy-static", {
     required: false
 });
 
+let genKeyParser = subparsers.add_parser("gen_key", {help: "Generate key in slot #3."});
+genKeyParser.add_argument("--entropy", {dest: 'entropy', help: "Additional entropy (32 bytes, hex encoded). Optional."});
+
+let genKeyConfirmParser = subparsers.add_parser("gen_key_confirm", {help: "Confirm public key in slot #3 (only if additional entropy was provided)."});
+genKeyConfirmParser.add_argument("--public-key", {dest: 'publicKey', help: "Key slot #3 public key", required: true});
+
 function parseArgs() {
     let args = parser.parse_args();
 
-    if (!args.command) {
+    if (!args.name) {
         parser.print_help();
         return null;
     }

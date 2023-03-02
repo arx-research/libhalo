@@ -1,8 +1,12 @@
 const Buffer = require('buffer/').Buffer;
 const ethers = require('ethers');
 const {HaloLogicError, HaloTagError} = require("./exceptions");
-const {parseStatic, reformatSignature} = require("./utils");
+const {parseStatic, reformatSignature, mode, parseSig} = require("./utils");
 const {FLAGS} = require("./flags");
+const {sha256} = require("js-sha256");
+const EC = require("elliptic").ec;
+
+const ec = new EC('secp256k1');
 
 function extractPublicKeyWebNFC(keyNo, resp) {
     let publicKey = null;
@@ -164,4 +168,75 @@ async function cmdCfgNDEF(options, args) {
     return {"status": "ok"};
 }
 
-module.exports = {cmdSign, cmdSignRandom, cmdWriteLatch, cmdCfgNDEF};
+async function cmdGenKey(options, args) {
+    if (!args.entropy) {
+        let payload = Buffer.concat([
+            Buffer.from("03", "hex")
+        ]);
+        let resp = await options.exec(payload);
+        let res = Buffer.from(resp.result, "hex");
+
+        return {"status": "ok", "publicKey": res.toString('hex'), "needsConfirm": false};
+    } else {
+        let entropyBuf = Buffer.from(args.entropy, "hex");
+
+        if (entropyBuf.length !== 32) {
+            throw new HaloLogicError("The command.entropy should be exactly 32 bytes, hex encoded.");
+        }
+
+        let payload = Buffer.concat([
+            Buffer.from("03", "hex"),
+            entropyBuf
+        ]);
+
+        let resp;
+
+        try {
+            resp = await options.exec(payload);
+        } catch (e) {
+            if (e instanceof HaloTagError) {
+                if (e.name === "ERROR_CODE_INVALID_LENGTH") {
+                    throw new HaloLogicError("The hardened key generation algorithm is not supported with this tag version.");
+                }
+            }
+
+            throw e;
+        }
+
+        let res = Buffer.from(resp.result, "hex");
+
+        if (res.length === 65) {
+            throw new HaloLogicError("The hardened key generation algorithm is not supported with this tag version.");
+        }
+
+        let msg1 = Buffer.from(sha256(res.slice(0, 32)), 'hex');
+        let msg2 = Buffer.from(sha256(res.slice(32, 64)), 'hex');
+        let sig = res.slice(64);
+        let sig1Length = sig[1];
+        let sig1 = sig.slice(0, 2 + sig1Length);
+        let sig2 = sig.slice(2 + sig1Length);
+
+        let candidates = [];
+
+        for (let i = 0; i < 2; i++) {
+            candidates.push(ec.recoverPubKey(msg1, parseSig(sig1), i).encode('hex'));
+            candidates.push(ec.recoverPubKey(msg2, parseSig(sig2), i).encode('hex'));
+        }
+
+        let bestPk = Buffer.from(mode(candidates), 'hex');
+        return {"status": "ok", "publicKey": bestPk.toString('hex'), "needsConfirm": true};
+    }
+}
+
+async function cmdGenKeyConfirm(options, args) {
+    let payload = Buffer.concat([
+        Buffer.from("09", "hex"),
+        Buffer.from(args.publicKey, "hex")
+    ]);
+
+    await options.exec(payload);
+
+    return {"status": "ok"};
+}
+
+module.exports = {cmdSign, cmdSignRandom, cmdWriteLatch, cmdCfgNDEF, cmdGenKey, cmdGenKeyConfirm};

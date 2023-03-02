@@ -5,7 +5,7 @@ const {
     NFCMethodNotSupported,
     HaloLogicError
 } = require("../halo/exceptions");
-const {cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom} = require("../halo/commands");
+const {cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm} = require("../halo/commands");
 
 let isCallRunning = null;
 
@@ -35,6 +35,10 @@ async function execHaloCmd(command, options) {
             return await cmdWriteLatch(options, command);
         case 'cfg_ndef':
             return await cmdCfgNDEF(options, command);
+        case 'gen_key':
+            return await cmdGenKey(options, command);
+        case 'gen_key_confirm':
+            return await cmdGenKeyConfirm(options, command);
         default:
             throw new HaloLogicError("Unsupported command.name parameter specified.");
     }
