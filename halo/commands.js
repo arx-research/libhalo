@@ -1,7 +1,7 @@
 const Buffer = require('buffer/').Buffer;
 const ethers = require('ethers');
 const {HaloLogicError, HaloTagError} = require("./exceptions");
-const {parseStatic, reformatSignature, mode, parseSig} = require("./utils");
+const {parseStatic, reformatSignature, mode, parseSig, parsePublicKeys} = require("./utils");
 const {FLAGS} = require("./flags");
 const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
@@ -20,6 +20,17 @@ function extractPublicKeyWebNFC(keyNo, resp) {
     }
 
     return publicKey;
+}
+
+async function cmdGetPkeys(options, args) {
+    let payload = Buffer.concat([
+        Buffer.from("02", "hex")
+    ]);
+
+    let resp = await options.exec(payload);
+    let res = Buffer.from(resp.result, "hex");
+
+    return parsePublicKeys(res);
 }
 
 async function cmdSign(options, args) {
@@ -239,4 +250,4 @@ async function cmdGenKeyConfirm(options, args) {
     return {"status": "ok"};
 }
 
-module.exports = {cmdSign, cmdSignRandom, cmdWriteLatch, cmdCfgNDEF, cmdGenKey, cmdGenKeyConfirm};
+module.exports = {cmdSign, cmdSignRandom, cmdWriteLatch, cmdCfgNDEF, cmdGenKey, cmdGenKeyConfirm, cmdGetPkeys};

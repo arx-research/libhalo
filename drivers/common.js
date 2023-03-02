@@ -5,7 +5,7 @@ const {
     NFCMethodNotSupported,
     HaloLogicError
 } = require("../halo/exceptions");
-const {cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm} = require("../halo/commands");
+const {cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm} = require("../halo/commands");
 
 let isCallRunning = null;
 
@@ -27,6 +27,8 @@ async function execHaloCmd(command, options) {
     delete command['name'];
 
     switch (commandName) {
+        case 'get_pkeys':
+            return await cmdGetPkeys(options, command);
         case 'sign':
             return await cmdSign(options, command);
         case 'sign_random':

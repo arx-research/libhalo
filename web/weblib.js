@@ -12,6 +12,7 @@ const {
 const {
     arr2hex, hex2arr
 } = require("../halo/utils");
+const {__runTestSuite} = require("../halo/tests");
 
 module.exports = {
     arr2hex,
@@ -22,7 +23,10 @@ module.exports = {
     NFCPermissionRequestDenied,
     NFCMethodNotSupported,
     NFCAbortedError,
-    NFCOperationError
+    NFCOperationError,
+
+    // internal, do not use
+    __runTestSuite
 };
 
 if (window) {

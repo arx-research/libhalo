@@ -20,6 +20,27 @@ function arr2hex(buffer) {
         .join('');
 }
 
+function parsePublicKeys(buffer) {
+    let out = {};
+    let buf = Buffer.from(buffer);
+    let keyNo = 1;
+
+    while (true) {
+        let keyLength = buf[0];
+
+        if (typeof keyLength === "undefined" || keyLength === 0) {
+            break;
+        }
+
+        let key = buf.slice(1, 1 + keyLength);
+        out[keyNo] = key.toString('hex');
+        buf = buf.slice(1 + keyLength);
+        keyNo++;
+    }
+
+    return out;
+}
+
 function parseStatic(buffer) {
     let offset = 0;
     let keyNo = 1;
@@ -131,5 +152,6 @@ module.exports = {
     parseStatic,
     parseSig,
     reformatSignature,
+    parsePublicKeys,
     mode
 };
