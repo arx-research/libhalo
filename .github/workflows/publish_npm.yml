@@ -30,7 +30,7 @@ jobs:
       - name: Set registry to GitHub
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/libhalo-v')
         run: |
-          "@arx-research:registry=https://npm.pkg.github.com" > .npmrc
+          echo "@arx-research:registry=https://npm.pkg.github.com" > .npmrc
       - name: Publish package to GitHub
         run: npm publish
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/libhalo-v')
