@@ -22,7 +22,17 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
-      - run: npm publish
+      - name: Publish package to npmjs
+        run: npm publish
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/libhalo-v')
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Set registry to GitHub
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/libhalo-v')
+        run: |
+          "@arx-research:registry=https://npm.pkg.github.com" > .npmrc
+      - name: Publish package to GitHub
+        run: npm publish
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/libhalo-v')
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
