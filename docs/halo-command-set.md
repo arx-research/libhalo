@@ -2,12 +2,19 @@
 
 ## Table of contents
 
+* [Feature compatibility](#feature-compatibility)
 * [Command: sign](#command-sign)
 * [Command: sign_random](#command-sign_random)
 * [Command: write_latch](#command-write_latch)
 * [Command: cfg_ndef](#command-cfg_ndef)
 * [Command: gen_key](#command-gen_key)
 * [Command: gen_key_confirm](#command-gen_key_confirm)
+
+## Feature compatibility
+
+Certain HaLo features might not be supported with the earlier versions of tags.
+
+Please check [HaLo Tag Firmware Versions](/docs/firmware-versions.md) for the detailed compatibility table.
 
 ## Command: sign
 
