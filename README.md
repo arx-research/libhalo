@@ -2,6 +2,12 @@
 
 Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
 
+## Installation
+
+```
+npm install --save @arx-research/libhalo
+```
+
 ## Available APIs
 
 The library exposes the following API functions:

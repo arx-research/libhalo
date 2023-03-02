@@ -15,7 +15,7 @@ npm install --save libhalo
 Import the library method:
 
 ```javascript
-import {execHaloCmdWeb} from 'libhalo';
+import {execHaloCmdWeb} from '@arx-research/libhalo';
 ```
 
 Add a state for displaying information to the user:

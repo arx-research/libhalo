@@ -2,7 +2,7 @@
 
 ## Importing the method
 ```javascript
-import {initNFCManagerHalo, execHaloCmd} from 'libhalo';
+import {initNFCManagerHalo, execHaloCmd} from '@arx-research/libhalo';
 ```
 
 ## initNFCManagerHalo - Call specification
