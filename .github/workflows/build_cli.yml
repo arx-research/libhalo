@@ -27,12 +27,6 @@ jobs:
         with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATES_P12 }}
           p12-password: ${{ secrets.MACOS_CERTIFICATES_P12_PASSWORD }}
-      - if: matrix.os == 'macos-latest'
-        name: Import codesign certificates for installer (Mac OS)
-        uses: apple-actions/import-codesign-certs@v1
-        with:
-          p12-file-base64: ${{ secrets.MACOS_CERTIFICATES_INSTALLER_P12 }}
-          p12-password: ${{ secrets.MACOS_CERTIFICATES_INSTALLER_P12_PASSWORD }}
       - name: Checkout the repository
         uses: actions/checkout@v3
       - name: Install Node.JS
