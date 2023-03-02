@@ -17,7 +17,7 @@ jobs:
       - name: Prepare version number
         id: parse_version
         run: |
-          ( echo "version=$GITHUB_REF" | cut -f2 -d- | tr -d '\n' ) >> "$GITHUB_OUTPUT"
+          ( echo "version=" && ( echo "$GITHUB_REF" | cut -f2 -d- | tr -d '\n' ) ) >> "$GITHUB_OUTPUT"
       - name: Draft release
         id: create_release
         if: startsWith(github.ref, 'refs/tags/halocli-v')
