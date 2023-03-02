@@ -55,7 +55,7 @@ Please review the following demonstrative applications:
 
 ## Advanced usage
 
-* [Documentation of the execHaloCmdWeb API](/docs/api-exec-cmd-web.md)
+* [Documentation of the execHaloCmdWeb API](/docs/api-web.md)
 * [Documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md)
 
 ## Building library from source

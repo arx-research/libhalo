@@ -1,5 +1,14 @@
 # HaLo Command Set
 
+## Table of contents
+
+* [Command: sign](#command-sign)
+* [Command: sign_random](#command-sign_random)
+* [Command: write_latch](#command-write_latch)
+* [Command: cfg_ndef](#command-cfg_ndef)
+* [Command: gen_key](#command-gen_key)
+* [Command: gen_key_confirm](#command-gen_key_confirm)
+
 ## Command: sign
 
 Sign an arbitrary message using ECDSA/Keccak algorithm or sign a raw digest using plain ECDSA.

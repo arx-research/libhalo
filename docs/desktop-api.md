@@ -70,7 +70,7 @@ console.log('Tap the tag...');
 
 ## Notes
 
-Please review the [documentation on the execHaloCmdPCSC function](/docs/api-exec-halo-cmd-pcsc.md) to find out
+Please review the [documentation on the execHaloCmdPCSC function](/docs/api-pcsc.md) to find out
 the exact specification of the `execHaloCmdPCSC()` function.
 
 Please review the [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) to find
