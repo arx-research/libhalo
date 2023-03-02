@@ -95,6 +95,10 @@ async function execHaloCmdPCSC(command, reader) {
     let options = makeOptions(reader);
     command = {...command};
 
+    if (command.name === "version") {
+        return version;
+    }
+
     try {
         return await execHaloCmd(command, options);
     } catch (e) {
