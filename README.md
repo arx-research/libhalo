@@ -64,4 +64,6 @@ This library supports the following HaLo tag commands:
 * `gen_key` - request generation of the key #3 on the NFC tag;
 * `gen_key_confirm` - confirm the generated public key of key slot #3;
 
-Full article: [Documentation of the available commands (HaLo Command Set)](https://github.com/arx-research/libhalo/blob/master/docs/halo-command-set.md)
+Full articles:
+* [Documentation of the available commands (HaLo Command Set)](https://github.com/arx-research/libhalo/blob/master/docs/halo-command-set.md)
+* [HaLo Firmware Versions - command compatibility table](https://github.com/arx-research/libhalo/blob/master/docs/firmware-versions.md)
