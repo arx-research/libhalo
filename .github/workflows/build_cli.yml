@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - fix/signing
 
 jobs:
   build:
@@ -20,6 +21,12 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           brew install pcsc-lite
+      - if: matrix.os == 'macos-latest'
+        name: Import codesign certificates (Mac OS)
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.MACOS_CERTIFICATES_P12 }}
+          p12-password: ${{ secrets.MACOS_CERTIFICATES_P12_PASSWORD }}
       - name: Checkout the repository
         uses: actions/checkout@v3
       - name: Install Node.JS
@@ -43,6 +50,18 @@ jobs:
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-macos-x64 package.json
+      - name: Sign application for Mac OS
+        if: matrix.os == 'macos-latest'
+        run: |
+          /usr/bin/codesign --deep --force --options=runtime --sign ${{ secrets.MACOS_IDENTITY }} --timestamp ./cli/dist/halocli
+      - name: Notarize application for Mac OS
+        if: matrix.os == 'macos-latest'
+        run: |
+          xcrun notarytool submit --apple-id=${{ secrets.MACOS_APPLE_ID }} --password=${{ secrets.MACOS_PWD_ALTOOL }} --team-id=${{ secrets.MACOS_TEAM_ID }} --progress --wait ./cli/dist/halocli
+      - name: Staple notarized application for Mac OS
+        if: matrix.os == 'macos-latest'
+        run: |
+          xcrun stapler staple ./cli/dist/halocli
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
