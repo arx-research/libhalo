@@ -58,7 +58,7 @@ Import necessary functions:
 
 ```javascript
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
-import {initNFCManagerHalo} from 'libhalo';
+import {initNFCManagerHalo} from '@arx-research/libhalo';
 ```
 
 Add basic code to process the NFC tags:

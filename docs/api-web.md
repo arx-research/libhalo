@@ -2,7 +2,7 @@
 
 ## Importing the method
 ```
-import {execHaloCmdWeb} from 'libhalo';
+import {execHaloCmdWeb} from '@arx-research/libhalo';
 ```
 
 **Note:** This step is only necessary for module-based applications. You don't need to add this line if you
