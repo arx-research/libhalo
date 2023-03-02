@@ -60,7 +60,7 @@ jobs:
         run: |
           mkdir -p cli/dist/root/usr/local/bin/
           mv cli/dist/halocli cli/dist/root/usr/local/bin/halocli
-          /usr/bin/codesign --deep --force --options=runtime --entitlements ./cli/Entitlements.plist --sign "${{ secrets.MACOS_IDENTITY }}" --timestamp ./cli/dist/usr/local/bin/halocli
+          /usr/bin/codesign --deep --force --options=runtime --entitlements ./cli/Entitlements.plist --sign "${{ secrets.MACOS_IDENTITY }}" --timestamp ./cli/dist/root/usr/local/bin/halocli
           pkgbuild --root ./cli/dist/root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_IDENTITY_INSTALLER }}" ./cli/dist/halocli.pkg
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest'
