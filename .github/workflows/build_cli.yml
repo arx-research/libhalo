@@ -54,18 +54,15 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           /usr/bin/codesign --deep --force --options=runtime --sign "${{ secrets.MACOS_IDENTITY }}" --timestamp ./cli/dist/halocli
+          pkgbuild --root ./cli/dist --identifier "org.arx.halo.halocli" --version "1.0" --install-location "/" --sign "${{ secrets.MACOS_TEAM_ID }}" halocli.pkg
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest'
         run: |
-          cd cli/dist
-          zip halocli.zip halocli
-          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_APPLE_ID }}" "--password=${{ secrets.MACOS_PWD_ALTOOL }}" "--team-id=${{ secrets.MACOS_TEAM_ID }}" --progress --wait ./halocli.zip
+          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_APPLE_ID }}" "--password=${{ secrets.MACOS_PWD_ALTOOL }}" "--team-id=${{ secrets.MACOS_TEAM_ID }}" --progress --wait ./cli/dist/halocli.pkg
       - name: Staple notarized application for Mac OS
         if: matrix.os == 'macos-latest'
         run: |
-          mkdir cli/dist/out
-          cp cli/dist/halocli cli/dist/out/halocli
-          xcrun stapler staple -v ./cli/dist/out
+          xcrun stapler staple -v ./cli/dist/halocli.pkg
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -76,4 +73,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: halo-cli-${{ matrix.os }}
-          path: cli/dist/out/*
+          path: cli/dist/*
