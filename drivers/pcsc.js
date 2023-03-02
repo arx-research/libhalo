@@ -1,7 +1,7 @@
 const {ERROR_CODES} = require("../halo/errors");
 const {readNDEF} = require("./pcsc_ndef");
-const {cmdSign, cmdWriteLatch, cmdCfgNDEF, cmdSignRandom} = require("../halo/commands");
 const {HaloLogicError, HaloTagError} = require("../halo/exceptions");
+const {execHaloCmd} = require("./common");
 
 async function transceive(reader, command, options) {
     options = options || {};
@@ -80,7 +80,7 @@ function makeOptions(reader) {
     }
 }
 
-async function execHaloCmdPCSC(args, reader) {
+async function execHaloCmdPCSC(command, reader) {
     let version = await getVersion(reader);
 
     let [verMajor, verMinor, verSeq, verShortId] = version.split('.');
@@ -93,24 +93,10 @@ async function execHaloCmdPCSC(args, reader) {
 
     await selectCore(reader);
     let options = makeOptions(reader);
+    command = {...command};
 
     try {
-        switch (args.command) {
-            case 'version':
-                return version;
-            case 'sign':
-                return await cmdSign(options, args);
-            case 'sign_raw':
-                return await cmdSign(options, args);
-            case 'sign_random':
-                return await cmdSignRandom(options, args);
-            case 'write_latch':
-                return await cmdWriteLatch(options, args);
-            case 'cfg_ndef':
-                return await cmdCfgNDEF(options, args);
-            default:
-                throw new Error("Unsupported command");
-        }
+        return await execHaloCmd(command, options);
     } catch (e) {
         console.error(e);
         return null;
