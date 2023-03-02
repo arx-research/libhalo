@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-      # TODO remove
-      - fix/signing
 
 jobs:
   build:
@@ -73,7 +71,7 @@ jobs:
           xcrun stapler staple -v ./cli/dist/halocli.pkg
           rm -rf ./cli/dist/root/
       - name: Upload artifacts
-        # if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v3
         with:
           name: halo-cli-${{ matrix.os }}
