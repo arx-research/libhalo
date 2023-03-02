@@ -57,7 +57,9 @@ jobs:
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest'
         run: |
-          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_APPLE_ID }}" "--password=${{ secrets.MACOS_PWD_ALTOOL }}" "--team-id=${{ secrets.MACOS_TEAM_ID }}" --progress --wait ./cli/dist/halocli
+          cd cli/dist
+          zip halocli.zip halocli
+          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_APPLE_ID }}" "--password=${{ secrets.MACOS_PWD_ALTOOL }}" "--team-id=${{ secrets.MACOS_TEAM_ID }}" --progress --wait ./halocli.zip
       - name: Staple notarized application for Mac OS
         if: matrix.os == 'macos-latest'
         run: |
