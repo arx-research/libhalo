@@ -1,8 +1,9 @@
 name: Build CLI tool
 
-push:
-  branches:
-    - master
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -11,9 +12,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Install native dependencies
+      - name: Install native dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update && sudo apt-get install -y libpcsclite-dev
+      - name: Install native dependencies (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install pcsc-lite
       - name: Checkout the repository
         uses: actions/checkout@v3
       - name: Install Node.JS
@@ -31,17 +37,17 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -f node16-win-x64 package.json
+          node_modules/.bin/pkg -t node16-win-x64 package.json
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -f node16-macos-x64 package.json
+          node_modules/.bin/pkg -t node16-macos-x64 package.json
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -f node16-linux-x64 package.json
+          node_modules/.bin/pkg -t node16-linux-x64 package.json
       - name: Upload artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v3
