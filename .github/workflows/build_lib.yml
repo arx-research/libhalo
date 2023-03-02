@@ -37,6 +37,7 @@ jobs:
 
   build_js_lib:
     runs-on: ubuntu-latest
+    needs: create_release
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
