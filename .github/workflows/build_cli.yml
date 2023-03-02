@@ -3,14 +3,16 @@ name: Build CLI tool
 on:
   push:
     branches:
-      - master
-      - feature/ci-publish
+      - '*'
+    tags:
+      - 'halocli-v*'
 
 jobs:
   create_release:
     steps:
       - name: Draft release
         id: create_release
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -20,9 +22,11 @@ jobs:
           draft: true
           prerelease: false
       - name: Store release upload URL
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           echo ${{ steps.create_release.outputs.upload_url }} > release-upload-url.txt
       - uses: actions/upload-artifact@v2
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           name: release-upload-url
           path: release-upload-url.txt
@@ -45,10 +49,10 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y libpcsclite-dev
       - name: Install native dependencies (MacOS)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
           brew install pcsc-lite
-      - if: matrix.os == 'macos-latest'
+      - if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
         name: Import codesign certificates for application (Mac OS)
         uses: apple-actions/import-codesign-certs@v1
         with:
@@ -73,47 +77,44 @@ jobs:
           cd cli
           node_modules/.bin/pkg -t node16-linux-x64 package.json
       - name: Package HaLo CLI tool (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-win-x64 package.json
       - name: Package HaLo CLI tool (MacOS)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-macos-x64 package.json
       - name: Sign application for Mac OS
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p cli/dist/root/usr/local/bin/
           mv cli/dist/halocli cli/dist/root/usr/local/bin/halocli
           /usr/bin/codesign --deep --force --options=runtime --entitlements ./cli/Entitlements.plist --sign "${{ secrets.MACOS_IDENTITY }}" --timestamp ./cli/dist/root/usr/local/bin/halocli
           pkgbuild --root ./cli/dist/root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_IDENTITY_INSTALLER }}" ./cli/dist/halocli.pkg
       - name: Notarize application for Mac OS
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
           xcrun notarytool submit "--apple-id=${{ secrets.MACOS_APPLE_ID }}" "--password=${{ secrets.MACOS_PWD_ALTOOL }}" "--team-id=${{ secrets.MACOS_TEAM_ID }}" --progress --wait ./cli/dist/halocli.pkg
       - name: Staple notarized application for Mac OS
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
           xcrun stapler staple -v ./cli/dist/halocli.pkg
           rm -rf ./cli/dist/root/
-      - name: Upload artifacts
-        if: false
-        uses: actions/upload-artifact@v3
-        with:
-          name: halo-cli-${{ matrix.os }}
-          path: cli/dist/*
       - name: Download release upload URL
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/download-artifact@v2
         with:
           name: release-upload-url
       - name: Store release upload URL output
         id: out_store
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Upload release asset
         id: upload-release-asset
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
