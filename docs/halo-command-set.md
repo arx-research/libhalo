@@ -61,7 +61,7 @@ Response:
 Command:
 ```json
 {
-    "command": "sign_raw",
+    "name": "sign_raw",
     "keyNo": 1,
     "digest": "0102030401020304010203040102030401020304010203040102030401020304"
 }
@@ -130,7 +130,7 @@ of the digest that will be signed.
 Command:
 ```json
 {
-    "command": "sign_random",
+    "name": "sign_random",
     "keyNo": 2
 }
 ```
@@ -166,7 +166,7 @@ An object with `status: "ok"` key if the operation was successful.
 Command:
 ```json
 {
-    "command": "write_latch",
+    "name": "write_latch",
     "latchNo": 1,
     "data": "0102030401020304010203040102030401020304010203040102030401020304"
 }
@@ -213,7 +213,7 @@ An object with `status: "ok"` key if the operation was successful.
 Command:
 ```json
 {
-  "command": "cfg_ndef",
+  "name": "cfg_ndef",
   "flagUseText": false,
   "flagHidePk1": false,
   "flagHidePk2": false,
@@ -235,3 +235,73 @@ Response:
     "status": "ok"
 }
 ```
+
+## Command: gen_key
+
+Request the card to generate the key in #3 slot, which is uninitialized by default. You can optionally provide extra entropy for the key generation process using `command.entropy` key.
+
+**Note:** If you provide additional entropy, this command will return the derived public key. You will need to confirm the public key using `gen_key_confirm` command.
+This step is not necessary if you don't provide additional entropy.
+
+### Arguments
+
+* `entropy` (str) - optional, additional entropy (32 bytes, hex encoded);
+
+### Return value
+
+* `status` (str) - `ok` when the key is generated successfully;
+* `publicKey` (str) - the public key that was generated;
+* `needsConfirm` (bool) - whether you need to call `gen_key_confrm` after running this command;
+
+### Examples
+Command:
+```json
+{
+  "name": "gen_key",
+  "entropy": "3c825af7d2e1b02b6a00c257ebe883260b4aa6302c9878d412046d10141b261d"
+}
+```
+
+Response:
+```json
+{
+  "status": "ok",
+  "publicKey": "04f670a3d30e2b98b2e3691908722e643791be4a58eaf63e02026df7d67ae456cdece3e27671a96a104c50f6184cdc548b13a9fa3cc7a5c96956339256681a426d",
+  "needsConfirm": true
+}
+```
+
+### Errors
+* `ERROR_CODE_KEY_ALREADY_EXISTS` - the key in slot #3 already exists;
+
+## Command: gen_key_confirm
+
+Confirm the generated public key in slot #3. This call is only necessary if you have called `gen_key` with additional entropy.
+
+### Arguments
+
+* `publicKey` (str) - the public key returned from `gen_key` command;
+
+### Return value
+
+* `status` (str) - `ok` when the key generation is confirmed successfully;
+
+### Examples
+Command:
+```json
+{
+    "name": "gen_key_confirm",
+    "publicKey": "04f670a3d30e2b98b2e3691908722e643791be4a58eaf63e02026df7d67ae456cdece3e27671a96a104c50f6184cdc548b13a9fa3cc7a5c96956339256681a426d"
+}
+```
+
+Response:
+```json
+{
+    "status": "ok"
+}
+```
+
+### Errors
+* `ERROR_CODE_KEY_ALREADY_EXISTS` - the key in slot #3 already exists;
+* `ERROR_CODE_CRYPTO_ERROR` - the `command.publicKey` that you have provided doesn't match the public key from the previous step or there was an internal failure with the key generator;

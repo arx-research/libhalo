@@ -173,9 +173,10 @@ async function cmdGenKey(options, args) {
         let payload = Buffer.concat([
             Buffer.from("03", "hex")
         ]);
-        await options.exec(payload);
+        let resp = await options.exec(payload);
+        let res = Buffer.from(resp.result, "hex");
 
-        return {"status": "ok"};
+        return {"status": "ok", "publicKey": res.toString('hex'), "needsConfirm": false};
     } else {
         let entropyBuf = Buffer.from(args.entropy, "hex");
 
@@ -223,7 +224,7 @@ async function cmdGenKey(options, args) {
         }
 
         let bestPk = Buffer.from(mode(candidates), 'hex');
-        return {"status": "ok", "publicKey": bestPk.toString('hex')};
+        return {"status": "ok", "publicKey": bestPk.toString('hex'), "needsConfirm": true};
     }
 }
 
