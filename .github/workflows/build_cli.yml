@@ -14,6 +14,10 @@ jobs:
   create_release:
     runs-on: ubuntu-latest
     steps:
+      - name: Prepare version number
+        id: parse_version
+        run: |
+          echo "version=$GITHUB_REF" | cut -f2 -d- | tr -d '\n' >> "$GITHUB_OUTPUT"
       - name: Draft release
         id: create_release
         if: startsWith(github.ref, 'refs/tags/halocli-v')
@@ -22,9 +26,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: HaLo CLI ${{ steps.parse_version.outputs.version }}
           draft: true
           prerelease: false
+          body: |
+            Standalone command line tool for desktop computers with PC/SC readers (USB/NFC readers).
+            
+            Release contents:
+            * `halocli` - Linux x64 build
+            * `halocli.exe` - Windowx 64 build
+            * `halocli.pkg` - MacOS x64 build
       - name: Store release upload URL
         if: startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
