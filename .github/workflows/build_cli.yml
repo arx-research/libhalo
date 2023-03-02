@@ -69,14 +69,16 @@ jobs:
         with:
           node-version: 16
       - name: Install dependencies (root)
+        if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         run: |
           npm --include=dev install
       - name: Install dependencies (cli)
+        if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         run: |
           cd cli
           npm --include=dev install
       - name: Package HaLo CLI tool (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-linux-x64 package.json
