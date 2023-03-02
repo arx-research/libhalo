@@ -78,4 +78,4 @@ out what commands are available with the HaLo tags.
 
 ## Example project
 
-Please check GitHub [arx-research/libhalo-demo-pcsc](https://github.com/arx-research/libhalo-demo-pcsc) project for the complete project example.
+Please check GitHub [arx-research/libhalo-example-pcsc](https://github.com/arx-research/libhalo-example-pcsc) project for the complete project example.
