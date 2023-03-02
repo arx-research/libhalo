@@ -130,3 +130,4 @@ jobs:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
           asset_path: ./cli/dist/${{ matrix.bin_name }}
           asset_name: ${{ matrix.bin_name }}
+          asset_content_type: application/octet-stream

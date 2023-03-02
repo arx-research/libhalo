@@ -71,6 +71,7 @@ jobs:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
           asset_path: ./web/dist/libhalo.js
           asset_name: libhalo.js
+          asset_content_type: text/javascript
       - name: Upload release asset (LICENSE file)
         id: upload-release-asset-license
         if: startsWith(github.ref, 'refs/tags/libhalo-v')
@@ -81,3 +82,4 @@ jobs:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
           asset_path: ./web/dist/libhalo.js.LICENSE.txt
           asset_name: libhalo.js.LICENSE.txt
+          asset_content_type: text/plain
