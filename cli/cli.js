@@ -3,6 +3,7 @@ const { NFC } = require('nfc-pcsc');
 
 const {parseArgs} = require('./args.js');
 const {execHaloCmdPCSC} = require('../index.js');
+const {runTestSuite} = require("../tests");
 
 const nfc = new NFC();
 let stopPCSCTimeout = null;
@@ -35,8 +36,13 @@ nfc.on('reader', reader => {
             if (res) {
                 clearTimeout(stopPCSCTimeout);
                 isConnected = true;
+                let res;
 
-                let res = await execHaloCmdPCSC(args, reader);
+                if (args.name === "test") {
+                    res = await runTestSuite("pcsc", async (command) => await execHaloCmdPCSC(command, reader));
+                } else {
+                    res = await execHaloCmdPCSC(args, reader);
+                }
 
                 if (res !== null) {
                     console.log(res);
