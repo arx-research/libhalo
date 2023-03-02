@@ -1,4 +1,4 @@
-name: Publish Package to npmjs
+name: Publish libhalo package
 on:
   release:
     types: [published]
