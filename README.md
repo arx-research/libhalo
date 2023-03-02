@@ -18,7 +18,7 @@ Installation of additional software is not required on the user's side.
 **Guides:**
 * [Using libhalo as a standalone library in a classic HTML web application](/docs/web-standalone.md)
 * [Using libhalo within a React.js web application](/docs/web-reactjs.md)
-* [Documentation of the execHaloCmdWeb API](/docs/api-exec-cmd-web.md)
+* [Documentation of the execHaloCmdWeb API](/docs/api-web.md)
 
 ### (React Native) initNFCManagerHalo, execHaloCmd
 ```
@@ -33,7 +33,7 @@ For React Native mobile applications (Android/iOS) based on `react-native-nfc-ma
 
 **Guides:**
 * [Using libhalo within a React Native mobile application for Android/iOS](/docs/mobile-react-native.md)
-* [Documentation of the initNFCManagerHalo, execHaloCmd API](/docs/api-init-nfc-manager-halo.md)
+* [Documentation of the initNFCManagerHalo, execHaloCmd API](/docs/api-react-native.md)
 
 ### (Desktop) execHaloCmdPCSC
 ```
@@ -45,7 +45,7 @@ For desktop applications based on `nfc-pcsc` library: scan the HaLo tag present 
 **Guides:**
 * [Using libhalo as a CLI tool on the desktop computer with PC/SC reader (USB NFC reader)](/docs/desktop-cli.md)
 * [Using libhalo to build your own application for desktop computers with PC/SC reader (USB NFC reader)](/docs/desktop-api.md)
-* [Documentation of the execHaloCmdPCSC API](/docs/api-exec-halo-cmd-pcsc.md)
+* [Documentation of the execHaloCmdPCSC API](/docs/api-pcsc.md)
 
 ## Supported HaLo commands
 

@@ -104,5 +104,5 @@ Please check GitHub [arx-research/libhalo-example-react-native](https://github.c
 
 ## Advanced usage
 
-* [Documentation of the initNFCManagerHalo API](/docs/api-init-nfc-manager-halo.md)
+* [Documentation of the initNFCManagerHalo API](/docs/api-react-native.md)
 * [Documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md)
