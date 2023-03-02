@@ -75,3 +75,7 @@ the exact specification of the `execHaloCmdPCSC()` function.
 
 Please review the [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) to find
 out what commands are available with the HaLo tags.
+
+## Example project
+
+Please check GitHub [arx-research/libhalo-demo-pcsc](https://github.com/arx-research/libhalo-demo-pcsc) project for the complete project example.

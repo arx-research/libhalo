@@ -44,7 +44,7 @@ For desktop applications based on `nfc-pcsc` library: scan the HaLo tag present 
 
 **Guides:**
 * [Using libhalo as a CLI tool on the desktop computer with PC/SC reader (USB NFC reader)](/docs/desktop-cli.md)
-* [Using libhalo to build your own application for desktop computers with PC/SC reader (USB NFC reader)](/docs/desktop-api.md)
+* [Using libhalo to build your own application for desktop computers with PC/SC reader (USB NFC reader)](/docs/desktop-pcsc.md)
 * [Documentation of the execHaloCmdPCSC API](/docs/api-pcsc.md)
 
 ## Supported HaLo commands

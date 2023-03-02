@@ -78,7 +78,3 @@ If you don't want to use the pre-built library file, you can build the library o
    webpack
    ```
 5. Done! The library will be built in `web/dist` directory.
-
-## Example project
-
-Please check GitHub [arx-research/libhalo-demo-pcsc](https://github.com/arx-research/libhalo-demo-pcsc) project for the complete project example.
