@@ -38,17 +38,17 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -f node16-win-x64 package.json
+          node_modules/.bin/pkg -t node16-win-x64 package.json
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -f node16-macos-x64 package.json
+          node_modules/.bin/pkg -t node16-macos-x64 package.json
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -f node16-linux-x64 package.json
+          node_modules/.bin/pkg -t node16-linux-x64 package.json
       - name: Upload artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v3
