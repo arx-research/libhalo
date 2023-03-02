@@ -67,8 +67,8 @@ jobs:
         if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
           brew install pcsc-lite
-      - if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
-        name: Import codesign certificates for application (Mac OS)
+      - name: Import codesign certificates for application (Mac OS)
+        if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         uses: apple-actions/import-codesign-certs@v1
         with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATES_P12 }}
@@ -76,6 +76,11 @@ jobs:
       - name: Checkout the repository
         if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         uses: actions/checkout@v3
+      - name: Load authenticode certificate (Windows)
+        if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
+        shell: bash
+        run: |
+          echo "${{ secrets.WINDOWS_AUTHENTICODE_P12 }}" | base64 -d > authenticode.p12
       - name: Install Node.JS
         if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         uses: actions/setup-node@v3
@@ -91,7 +96,7 @@ jobs:
           cd cli
           npm --include=dev install
       - name: Package HaLo CLI tool (Linux)
-        if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
+        if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-linux-x64 package.json
@@ -105,6 +110,10 @@ jobs:
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-macos-x64 package.json
+      - name: Sign application for Windows
+        if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
+        run: |
+          & "C:/Program Files (x86)/Windows Kits/10/App Certification Kit/signtool.exe" sign /v /fd SHA256 /f authenticode.p12 /t http://timestamp.digicert.com "./cli/dist/halocli.exe"
       - name: Sign application for Mac OS
         if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
