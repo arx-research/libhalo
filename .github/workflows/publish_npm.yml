@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-      - name: Install Node.JS
+      - name: Setup Node.JS
         uses: actions/setup-node@v3
         with:
           node-version: '16.x'
@@ -30,10 +30,11 @@ jobs:
       #  if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/libhalo-v')
       #  env:
       #    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Set registry to GitHub
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/libhalo-v')
-        run: |
-          echo "@arx-research:registry=https://npm.pkg.github.com" > .npmrc
+      - name: Resetup Node.JS with GitHub pkg
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+          registry-url: https://npm.pkg.github.com/
       - name: Publish package to GitHub
         run: npm publish
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/libhalo-v')
