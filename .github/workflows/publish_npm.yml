@@ -2,13 +2,17 @@ name: Publish libhalo package
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
     branches:
       - '*'
     tags:
       - 'libhalo-v*'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
     branches:
-      - '*'
+      - master
 
 jobs:
   build:

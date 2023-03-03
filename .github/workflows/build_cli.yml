@@ -2,13 +2,17 @@ name: Build halocli tool
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
     branches:
       - '*'
     tags:
       - 'halocli-v*'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
     branches:
-      - '*'
+      - master
 
 jobs:
   create_release:
