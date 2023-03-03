@@ -78,7 +78,7 @@ function App() {
         name: "sign",
         message: "0102",
         keyNo: 1,
-      }, options));
+      }));
     } catch (ex) {
       console.warn("Oops!", ex);
     } finally {
