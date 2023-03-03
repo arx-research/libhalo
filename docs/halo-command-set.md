@@ -82,6 +82,7 @@ Response:
 Command:
 ```json
 {
+  "name": "sign",
   "keyNo": 1,
   "typedData": {
     "domain": {
