@@ -31,10 +31,11 @@ There are a few exceptions for the earliest batches of HaLo tags:
 | Command           | Minimal version | Comment                                       |
 |-------------------|-----------------|-----------------------------------------------|
 | `sign`            | 01.C1           | Only with `command.legacySignCommand = true`. |
+| `get_pkeys`       | 01.C1           |                                               |
+| `gen_key`         | 01.C3           | Only without `command.entropy` argument.      |
+| `write_latch`     | 01.C3           |                                               |
 | `sign`            | 01.C4           | All combinations of arguments.                |
 | `sign_random`     | 01.C4           |                                               |
-| `write_latch`     | 01.C3           |                                               |
 | `cfg_ndef`        | 01.C4           |                                               |
-| `gen_key`         | 01.C3           | Only without `command.entropy` argument.      |
 | `gen_key`         | 01.C4           | All combinations of arguments.                |
 | `gen_key_confirm` | 01.C4           |                                               |
