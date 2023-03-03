@@ -25,11 +25,19 @@ async function checkCard(reader) {
 
 nfc.on('reader', reader => {
 
+    if (args.name === "pcsc_detect") {
+        console.log('Detected PC/SC reader:', reader.reader.name);
+    }
+
     reader.autoProcessing = false;
 
     reader.on('card', card => {
         clearTimeout(stopPCSCTimeout);
-        stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout");
+        stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
+
+        if (args.name === "pcsc_detect") {
+            console.log("Tag inserted:", reader.reader.name, '(Type: ' + card.type + ', ATR: ' + card.atr.toString('hex').toUpperCase() + ')');
+        }
 
         (async () => {
             let res = await checkCard(reader);
@@ -39,7 +47,10 @@ nfc.on('reader', reader => {
                 isConnected = true;
                 let res = null;
 
-                if (args.name === "test") {
+                if (args.name === "pcsc_detect") {
+                    console.log("HaLo tag detected:", reader.reader.name);
+                    res = {"status": "ok"};
+                } else if (args.name === "test") {
                     res = await __runTestSuite({"__this_is_unsafe": true},
                         "pcsc", async (command) => await execHaloCmdPCSC(command, reader));
                 } else {
@@ -65,6 +76,8 @@ nfc.on('reader', reader => {
                 } else {
                     stopPCSC("error", args.output);
                 }
+            } else {
+                console.log("Not a HaLo tag:", reader.reader.name);
             }
         })();
     });
@@ -88,7 +101,7 @@ function stopPCSC(code, output) {
         console.error('Command execution failed.');
     } else if (code !== "done") {
         if (output === "color") {
-            console.error('NFC card or compatible PC/SC reader not found.');
+            console.error("NFC card or compatible PC/SC reader not found.");
         } else {
             console.log(JSON.stringify({"_error": "NFC card or compatible PC/SC reader not found."}));
         }
@@ -101,9 +114,9 @@ function stopPCSC(code, output) {
     isClosing = true;
     nfc.close();
 
-    if (code === "error") {
+    if (code !== "done") {
         process.exit(1);
     }
 }
 
-stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout");
+stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
