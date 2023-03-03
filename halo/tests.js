@@ -100,6 +100,50 @@ const tests = [
 
         let pk3 = ec.keyFromPublic(res.publicKey, 'hex');
         assert(pk3.verify(digest, res.signature.der));
+    }],
+    ["testSign1Typed", async function(driver, exec) {
+        let domain = {
+            name: 'Ether Mail',
+            version: '1',
+            chainId: 1,
+            verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC'
+        };
+
+        let types = {
+            Person: [
+                { name: 'name', type: 'string' },
+                { name: 'wallet', type: 'address' }
+            ],
+            Mail: [
+                { name: 'from', type: 'Person' },
+                { name: 'to', type: 'Person' },
+                { name: 'contents', type: 'string' }
+            ]
+        };
+
+        let value = {
+            from: {
+                name: 'Cow',
+                wallet: '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826'
+            },
+            to: {
+                name: 'Bob',
+                wallet: '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB'
+            },
+            contents: 'Hello, Bob!'
+        };
+
+        let res = await exec({
+            "name": "sign",
+            "keyNo": 1,
+            "typedData": {domain, types, value}
+        });
+
+        let pk1 = ec.keyFromPublic(res.publicKey, 'hex');
+        assert(res.input.digest === "be609aee343fb3c4b28e1df9e632fca64fcfaede20f02e86244efddf30957bd2");
+        assert(res.input.primaryType === "Mail");
+        assert(res.input.domainHash === "f2cee375fa42b42143804025fc449deafd50cc031ca257e0b194a650a912090f");
+        assert(pk1.verify(res.input.digest, res.signature.der));
     }]
 ];
 

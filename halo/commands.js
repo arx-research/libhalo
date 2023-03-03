@@ -50,8 +50,16 @@ async function cmdGetPkeys(options, args) {
 }
 
 async function cmdSign(options, args) {
-    if (args.hasOwnProperty("digest") && args.hasOwnProperty("message")) {
-        throw new HaloLogicError("Can't specify both args.digest and args.message.");
+    let checks = [
+        args.hasOwnProperty("digest"),
+        args.hasOwnProperty("message"),
+        args.hasOwnProperty("typedData")
+    ];
+
+    let numDataArgs = checks.filter((x) => !!x).length;
+
+    if (numDataArgs !== 1) {
+        throw new HaloLogicError("One of the following arguments are required: digest, message, typedData.");
     }
 
     let messageBuf = null;
@@ -67,10 +75,13 @@ async function cmdSign(options, args) {
         }
 
         digestBuf = Buffer.from(ethers.utils.hashMessage(messageBuf).slice(2), "hex");
+    } else if (args.hasOwnProperty("typedData")) {
+        let hashStr = ethers.utils._TypedDataEncoder.hash(args.typedData.domain, args.typedData.types, args.typedData.value);
+        digestBuf = Buffer.from(hashStr.slice(2), "hex");
     } else if (args.hasOwnProperty("digest")) {
         digestBuf = Buffer.from(args.digest, "hex");
     } else {
-        throw new HaloLogicError("Either args.digest or args.message is required.");
+        throw new HaloLogicError("Either args.digest, args.message or args.typedData is required.");
     }
 
     let payload;
@@ -126,6 +137,11 @@ async function cmdSign(options, args) {
 
     if (messageBuf !== null) {
         inputObj.message = messageBuf.toString('hex');
+    } else if (args.typedData) {
+        inputObj.typedData = args.typedData;
+
+        inputObj.primaryType = ethers.utils._TypedDataEncoder.getPrimaryType(args.typedData.types);
+        inputObj.domainHash = ethers.utils._TypedDataEncoder.hashDomain(args.typedData.domain).slice(2);
     }
 
     if (publicKey) {
