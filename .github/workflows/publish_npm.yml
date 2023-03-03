@@ -3,6 +3,8 @@ name: Publish libhalo package
 on:
   push:
     paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
       - 'docs/**'
     branches:
       - '*'
@@ -10,6 +12,8 @@ on:
       - 'libhalo-v*'
   pull_request:
     paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
       - 'docs/**'
     branches:
       - master
