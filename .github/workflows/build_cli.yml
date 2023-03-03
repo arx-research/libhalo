@@ -7,7 +7,7 @@ on:
       - 'cli/README.md'
       - 'docs/**'
     branches:
-      - '*'
+      - master
     tags:
       - 'halocli-v*'
   pull_request:
