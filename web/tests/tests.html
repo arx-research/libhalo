@@ -31,16 +31,16 @@
     </div>
 
     <div id="test-main" style="display: none;">
-        <strong>Status text:</strong>
-        <pre id="statusText" style="white-space: pre-wrap; word-break: break-all;">Please click on one of the buttons below.</pre>
-
         <div id="test-continue" style="display: none;">
-            <button class="btn btn-primary" id="btn-continue">
+            <button class="btn btn-primary" style="margin-top: 150px;" id="btn-continue">
                 Trigger scan
             </button>
 
             <hr />
         </div>
+
+        <strong>Status text:</strong>
+        <pre id="statusText" style="white-space: pre-wrap; word-break: break-all;">Please click on one of the buttons below.</pre>
 
         <button class="btn btn-secondary" onclick="btnExecuteNFC('credential');" id="btn-credential">
             Run tests using Credential API
