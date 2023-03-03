@@ -6,10 +6,12 @@ You can use LibHaLo within your React Native mobile application for Android/iOS 
 
 These steps are common for both Android and iOS applications:
 
+**Using NPM:**
 ```
 npm install --save react-native-nfc-manager
 npm install --save libhalo
 ```
+**Using Yarn:**
 ```bash
 yarn add react-native-nfc-manager
 yarn add @arx-research/libhalo

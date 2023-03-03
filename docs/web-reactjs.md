@@ -6,9 +6,11 @@ You can use LibHaLo within your React.js web application.
 
 Install the library:
 
+**Using NPM:**
 ```bash
 npm install --save libhalo
 ```
+**Using Yarn:**
 ```bash
 yarn add @arx-research/libhalo
 ```

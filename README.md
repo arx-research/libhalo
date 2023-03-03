@@ -4,9 +4,11 @@ Programmatically interact with HaLo tags from the web browser, mobile applicatio
 
 ## Installation
 
+**Using NPM:**
 ```
 npm install --save @arx-research/libhalo
 ```
+**Using Yarn:**
 ```
 yarn add @arx-research/libhalo
 ```
