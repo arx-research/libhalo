@@ -41,27 +41,6 @@ function parsePublicKeys(buffer) {
     return out;
 }
 
-function parseStatic(buffer) {
-    let offset = 0;
-    let keyNo = 1;
-    let out = {};
-
-    while (true) {
-        let pkLen = buffer[offset];
-
-        if (!pkLen) {
-            break;
-        }
-
-        ++offset;
-        out["pk" + keyNo] = buffer.slice(offset, offset + pkLen);
-        ++keyNo;
-        offset += pkLen;
-    }
-
-    return out;
-}
-
 function parseSig(res) {
     if (res[0] !== 0x30 || res[2] !== 0x02) {
         throw new HaloLogicError("Unable to parse signature, unexpected header (1).");
@@ -149,7 +128,6 @@ function mode(arr) {
 module.exports = {
     hex2arr,
     arr2hex,
-    parseStatic,
     parseSig,
     reformatSignature,
     parsePublicKeys,

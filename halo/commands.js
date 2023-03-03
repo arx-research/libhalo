@@ -1,12 +1,28 @@
 const Buffer = require('buffer/').Buffer;
 const ethers = require('ethers');
 const {HaloLogicError, HaloTagError} = require("./exceptions");
-const {parseStatic, reformatSignature, mode, parseSig, parsePublicKeys} = require("./utils");
+const {reformatSignature, mode, parseSig, parsePublicKeys} = require("./utils");
 const {FLAGS} = require("./flags");
 const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
+const CMD = require('./cmdcodes').CMD_CODES;
 
 const ec = new EC('secp256k1');
+
+/**
+ * NOTE: Since LibHaLo supports multiple driver backends which differ in their implementation and behavior,
+ * there are few things to consider when implementing a new command or modifying the existing code.
+ *
+ * Web-based drivers (webnfc, credential):
+ * -> the command implementation may only call options.exec() once;
+ *
+ * React Native driver (nfc-manager) and PC/SC driver (pcsc):
+ * -> there are no limitations on the number of calls to options.exec();
+ *
+ * The command could provide a different implementation for a given driver, but that should be
+ * a last-resort solution. Optimally, the command implementation should be independent of the driver used,
+ * if that's possible.
+ */
 
 function extractPublicKeyWebNFC(keyNo, resp) {
     let publicKey = null;
@@ -15,7 +31,7 @@ function extractPublicKeyWebNFC(keyNo, resp) {
     if (resp.extra.hasOwnProperty(pkKey)) {
         publicKey = Buffer.from(resp.extra[pkKey], "hex");
     } else if (resp.extra.hasOwnProperty("static")) {
-        let pkeys = parseStatic(Buffer.from(resp.extra["static"], "hex"));
+        let pkeys = parsePublicKeys(Buffer.from(resp.extra["static"], "hex"));
         publicKey = pkeys[pkKey];
     }
 
@@ -24,7 +40,7 @@ function extractPublicKeyWebNFC(keyNo, resp) {
 
 async function cmdGetPkeys(options, args) {
     let payload = Buffer.concat([
-        Buffer.from("02", "hex")
+        Buffer.from([CMD.SHARED_CMD_GET_PKEYS])
     ]);
 
     let resp = await options.exec(payload);
@@ -63,13 +79,13 @@ async function cmdSign(options, args) {
         // the public key will be available through URL parameters
         // we only need to sign the digest
         payload = Buffer.concat([
-            Buffer.from([0x01, args.keyNo]),
+            Buffer.from([CMD.SHARED_CMD_SIGN, args.keyNo]),
             digestBuf
         ]);
     } else {
         // sign the digest and also fetch the public key
         payload = Buffer.concat([
-            Buffer.from([0x06, args.keyNo]),
+            Buffer.from([CMD.SHARED_CMD_FETCH_SIGN, args.keyNo]),
             digestBuf
         ]);
     }
@@ -130,7 +146,7 @@ async function cmdSign(options, args) {
 
 async function cmdWriteLatch(options, args) {
     let payload = Buffer.concat([
-        Buffer.from([0xD3, args.latchNo]),
+        Buffer.from([CMD.SHARED_CMD_LATCH_DATA, args.latchNo]),
         Buffer.from(args.data, "hex")
     ]);
 
@@ -139,7 +155,7 @@ async function cmdWriteLatch(options, args) {
 }
 
 async function cmdSignRandom(options, args) {
-    let resp = await options.exec(Buffer.from([0x08, args.keyNo]));
+    let resp = await options.exec(Buffer.from([CMD.SHARED_CMD_SIGN_RANDOM, args.keyNo]));
 
     let resBuf = Buffer.from(resp.result, 'hex');
     let digest = resBuf.slice(0, 32);
@@ -169,7 +185,7 @@ async function cmdCfgNDEF(options, args) {
         });
 
     let payload = Buffer.concat([
-        Buffer.from("D8", "hex"),
+        Buffer.from([CMD.SHARED_CMD_SET_NDEF_MODE]),
         flagBuf
     ]);
     await options.exec(payload);
@@ -180,7 +196,7 @@ async function cmdCfgNDEF(options, args) {
 async function cmdGenKey(options, args) {
     if (!args.entropy) {
         let payload = Buffer.concat([
-            Buffer.from("03", "hex")
+            Buffer.from([CMD.SHARED_CMD_GENERATE_3RD_KEY])
         ]);
         let resp = await options.exec(payload);
         let res = Buffer.from(resp.result, "hex");
@@ -194,7 +210,7 @@ async function cmdGenKey(options, args) {
         }
 
         let payload = Buffer.concat([
-            Buffer.from("03", "hex"),
+            Buffer.from([CMD.SHARED_CMD_GENERATE_3RD_KEY]),
             entropyBuf
         ]);
 
@@ -239,7 +255,7 @@ async function cmdGenKey(options, args) {
 
 async function cmdGenKeyConfirm(options, args) {
     let payload = Buffer.concat([
-        Buffer.from("09", "hex"),
+        Buffer.from([CMD.SHARED_CMD_GENERATE_3RD_KEY_CONT]),
         Buffer.from(args.publicKey, "hex")
     ]);
 
