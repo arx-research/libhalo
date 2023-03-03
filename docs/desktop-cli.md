@@ -48,6 +48,9 @@ Batch (Windows):
 
 ## Note
 
+You can specify `--output json` to get the command output in the JSON format. By default,
+the `halocli` will use JavaScript pretty printed format.
+
 Please review [documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md) to find out
 more details about the available commands. Please note that the CLI commands are invoked slightly differently,
 please review the CLI help for the details about command invocation.

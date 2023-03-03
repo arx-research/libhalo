@@ -152,6 +152,8 @@ genKeyConfirmParser.add_argument("--public-key", {dest: 'publicKey', help: "Key 
 
 subparsers.add_parser("get_pkeys", {help: "Get tag's public keys #1, #2 and #3."});
 
+subparsers.add_parser("pcsc_detect", {help: "Detect PC/SC readers and HaLo tags (for debugging)."});
+
 function parseArgs() {
     let args = parser.parse_args();
 
