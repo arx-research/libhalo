@@ -27,7 +27,7 @@ Installation of additional software is not required on the user's side.
 * [Documentation of the execHaloCmdWeb API](https://github.com/arx-research/libhalo/blob/master/docs/api-web.md)
 * [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
 
-### (React Native) initNFCManagerHalo, execHaloCmd
+### (React Native) execHaloCmdRN
 ```
 async function initNFCManagerHalo(nfcManager)
 ```
