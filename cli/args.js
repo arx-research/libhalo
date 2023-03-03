@@ -7,6 +7,17 @@ const subparsers = parser.add_subparsers({help: 'command', dest: 'name'});
 
 subparsers.add_parser("version", {help: "Get tag version."});
 
+if (process.env.__UNSAFE_ENABLE_TESTS === "1") {
+    let testParser = subparsers.add_parser("test", {help: "Run test suite against the tag. Please do not use this command."});
+    testParser.add_argument("--unsafe", {
+        help: "I understand that this command might reconfigure the tag in undesired way and that it might be " +
+            "not possible to rollback certain changes made by this command.",
+        action: "store_true",
+        dest: "thisIsUnsafe",
+        required: true
+    });
+}
+
 subparsers.add_parser("info", {help: "Get information about the tag."});
 
 let signParser = subparsers.add_parser("sign", {help: "Sign message using ECDSA/Keccak algorithm."});

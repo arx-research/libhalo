@@ -1,7 +1,7 @@
 const Buffer = require('buffer/').Buffer;
 const ethers = require('ethers');
 const {HaloLogicError, HaloTagError} = require("./exceptions");
-const {parseStatic, reformatSignature, mode, parseSig} = require("./utils");
+const {parseStatic, reformatSignature, mode, parseSig, parsePublicKeys} = require("./utils");
 const {FLAGS} = require("./flags");
 const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
@@ -20,6 +20,17 @@ function extractPublicKeyWebNFC(keyNo, resp) {
     }
 
     return publicKey;
+}
+
+async function cmdGetPkeys(options, args) {
+    let payload = Buffer.concat([
+        Buffer.from("02", "hex")
+    ]);
+
+    let resp = await options.exec(payload);
+    let res = Buffer.from(resp.result, "hex");
+
+    return parsePublicKeys(res);
 }
 
 async function cmdSign(options, args) {
@@ -71,12 +82,10 @@ async function cmdSign(options, args) {
         if (e instanceof HaloTagError) {
             if (e.name === "ERROR_CODE_UNKNOWN_CMD") {
                 throw new HaloLogicError("The tag doesn't support the new signing command. Please set command.legacySignCommand = true.");
-            } else {
-                throw e;
             }
-        } else {
-            throw e;
         }
+
+        throw e;
     }
 
     let sigBuf = Buffer.from(resp.result, "hex");
@@ -239,4 +248,4 @@ async function cmdGenKeyConfirm(options, args) {
     return {"status": "ok"};
 }
 
-module.exports = {cmdSign, cmdSignRandom, cmdWriteLatch, cmdCfgNDEF, cmdGenKey, cmdGenKeyConfirm};
+module.exports = {cmdSign, cmdSignRandom, cmdWriteLatch, cmdCfgNDEF, cmdGenKey, cmdGenKeyConfirm, cmdGetPkeys};

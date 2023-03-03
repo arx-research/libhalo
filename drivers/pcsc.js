@@ -99,12 +99,7 @@ async function execHaloCmdPCSC(command, reader) {
         return version;
     }
 
-    try {
-        return await execHaloCmd(command, options);
-    } catch (e) {
-        console.error(e);
-        return null;
-    }
+    return await execHaloCmd(command, options);
 }
 
 module.exports = {execHaloCmdPCSC};
