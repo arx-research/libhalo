@@ -82,12 +82,10 @@ async function cmdSign(options, args) {
         if (e instanceof HaloTagError) {
             if (e.name === "ERROR_CODE_UNKNOWN_CMD") {
                 throw new HaloLogicError("The tag doesn't support the new signing command. Please set command.legacySignCommand = true.");
-            } else {
-                throw e;
             }
-        } else {
-            throw e;
         }
+
+        throw e;
     }
 
     let sigBuf = Buffer.from(resp.result, "hex");
