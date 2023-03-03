@@ -3,9 +3,11 @@ const {execWebNFC} = require("./webnfc");
 const {
     NFCAbortedError,
     NFCMethodNotSupported,
-    HaloLogicError
+    HaloLogicError,
+    HaloTagError
 } = require("../halo/exceptions");
 const {cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm} = require("../halo/commands");
+const {ERROR_CODES} = require("../halo/errors");
 
 let isCallRunning = null;
 
@@ -58,6 +60,17 @@ function makeDefault(curValue, defaultValue) {
     return curValue;
 }
 
+function checkErrors(res) {
+    if (res.length === 2 && res[0] === 0xE1) {
+        if (ERROR_CODES.hasOwnProperty(res[1])) {
+            let err = ERROR_CODES[res[1]];
+            throw new HaloTagError(err[0], "Tag responded with error: [" + err[0] + "] " + err[1]);
+        } else {
+            throw new HaloLogicError("Tag responded with unknown error: " + res.toString('hex'));
+        }
+    }
+}
+
 /**
  * Execute the NFC command from the web browser.
  * @param command Command specification object.
@@ -108,4 +121,4 @@ async function execHaloCmdWeb(command, options) {
     }
 }
 
-module.exports = {execHaloCmdWeb, execHaloCmd};
+module.exports = {execHaloCmdWeb, execHaloCmd, checkErrors};

@@ -18,7 +18,7 @@ if (process.env.__UNSAFE_ENABLE_TESTS === "1") {
     });
 }
 
-subparsers.add_parser("info", {help: "Get information about the tag."});
+subparsers.add_parser("read_ndef", {help: "Read dynamic URL on the tag."});
 
 let signParser = subparsers.add_parser("sign", {help: "Sign message using ECDSA/Keccak algorithm."});
 signParser.add_argument("-k", "--key-no", {dest: 'keyNo', help: "Number of the key slot to use.", type: 'int', required: true});

@@ -1,7 +1,15 @@
-const {ERROR_CODES} = require("../halo/errors");
-const {readNDEF} = require("./pcsc_ndef");
-const {HaloLogicError, HaloTagError} = require("../halo/exceptions");
-const {execHaloCmd} = require("./common");
+const {readNDEF} = require("./read_ndef");
+const {HaloLogicError} = require("../halo/exceptions");
+const {execHaloCmd, checkErrors} = require("./common");
+
+async function selectCore(reader) {
+    let res = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
+    let statusCheck = res.slice(-2).compare(Buffer.from([0x91, 0x00])) !== 0;
+
+    if (!statusCheck) {
+        throw new HaloLogicError("Unable to select HaLo core.");
+    }
+}
 
 async function transceive(reader, command, options) {
     options = options || {};
@@ -13,7 +21,7 @@ async function transceive(reader, command, options) {
 
     if (!options.noCheck) {
         if (check1 && check2) {
-            throw Error("Command failed, cmd: " + command.toString('hex') + ", status code: " + res.toString('hex'));
+            throw new HaloLogicError("Command failed, cmd: " + command.toString('hex') + ", response: " + res.toString('hex'));
         }
 
         return res.slice(0, -2);
@@ -22,26 +30,22 @@ async function transceive(reader, command, options) {
     }
 }
 
-async function selectCore(reader) {
-    return await transceive(reader, Buffer.from("00A4040007481199130E9F0100", "hex"));
-}
-
 async function getVersion(reader) {
-    await selectCore(reader);
     let versionRes = await transceive(reader, Buffer.from("00510000010700", "hex"), {noCheck: true});
 
     if (versionRes.slice(-2).compare(Buffer.from([0x90, 0x00])) !== 0) {
         // GET_FV_VERSION command not supported, fallback to NDEF
-        let qs = await readNDEF(reader, {allowCache: true});
+        let wrappedTransceive = async (payload) => await transceive(reader, payload, {noCheck: true});
+        let url = await readNDEF(wrappedTransceive, {allowCache: true});
 
-        if (!qs.v) {
+        if (!url.qs.v) {
             return '01.C1.000001.00000000';
-        } else if (qs.v.toLowerCase() === 'c2') {
+        } else if (url.qs.v.toLowerCase() === 'c2') {
             return '01.C2.000002.00000000';
-        } else if (qs.v.toLowerCase() === 'c3') {
+        } else if (url.qs.v.toLowerCase() === 'c3') {
             return '01.C3.000003.00000000';
         } else {
-            return qs.v;
+            return url.qs.v;
         }
     } else {
         return versionRes.slice(0, -2).toString();
@@ -57,15 +61,7 @@ async function execCoreCommand(reader, command) {
     ]);
 
     let res = await transceive(reader, cmdBuf);
-
-    if (res.length === 2 && res[0] === 0xE1) {
-        if (ERROR_CODES.hasOwnProperty(res[1])) {
-            let err = ERROR_CODES[res[1]];
-            throw new HaloTagError(err[0], "Tag responded with error: [" + err[0] + "] " + err[1]);
-        } else {
-            throw new HaloLogicError("Tag responded with unknown error: " + res.toString('hex'));
-        }
-    }
+    checkErrors(res);
 
     return {
         result: res.toString('hex'),
@@ -91,15 +87,29 @@ async function execHaloCmdPCSC(command, reader) {
         throw new HaloLogicError("This version of CLI doesn't support major release version " + verMajor + ". Please update.");
     }
 
-    await selectCore(reader);
     let options = makeOptions(reader);
     command = {...command};
 
     if (command.name === "version") {
-        return version;
+        // PCSC-specific version retrieval command
+        return {
+            "version": version,
+            "parts": {
+                verMajor,
+                verMinor,
+                verSeq,
+                verShortId
+            }
+        };
+    } else if (command.name === "read_ndef") {
+        // PCSC-specific NDEF reader command
+        let wrappedTransceive = async (payload) => await transceive(reader, payload, {noCheck: true});
+        return await readNDEF(wrappedTransceive, {allowCache: true});
+    } else {
+        // divert to the common command execution flow
+        await selectCore(reader);
+        return await execHaloCmd(command, options);
     }
-
-    return await execHaloCmd(command, options);
 }
 
 module.exports = {execHaloCmdPCSC};

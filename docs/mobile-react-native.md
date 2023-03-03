@@ -58,7 +58,7 @@ Import necessary functions:
 
 ```javascript
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
-import {initNFCManagerHalo} from '@arx-research/libhalo';
+import {execHaloCmdRN} from '@arx-research/libhalo';
 ```
 
 Add basic code to process the NFC tags:
@@ -74,8 +74,7 @@ function App() {
       await NfcManager.requestTechnology(NfcTech.IsoDep);
       const tag = await NfcManager.getTag();
 
-      let options = await initNFCManagerHalo(NfcManager);
-      console.log(await execHaloCmd({
+      console.log(await execHaloCmdRN(NfcManager, {
         name: "sign",
         message: "0102",
         keyNo: 1,
