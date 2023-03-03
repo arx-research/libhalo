@@ -22,7 +22,7 @@ Please check [HaLo Tag Firmware Versions](/docs/firmware-versions.md) for the de
 
 ## Command: sign
 
-Sign an arbitrary message using ERC-191 (version 0x45) algorithm or sign a raw digest using plain ECDSA (secp256k1) algorithm. This command could use tag's private key slot #1 or #3.
+Sign an arbitrary message using ERC-191 (version 0x45) algorithm, typed data (EIP-712), or sign a raw digest using plain ECDSA (secp256k1) algorithm. This command could use tag's private key slot #1 or #3.
 
 ### Arguments
 * `message` (str) - the hex-encoded message to be signed using Ethereum's hashing algorithm;
