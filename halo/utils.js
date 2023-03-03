@@ -21,8 +21,15 @@ function arr2hex(buffer) {
 }
 
 function parsePublicKeys(buffer) {
+    let buf;
+
+    if (typeof buffer === "string") {
+        buf = Buffer.from(buffer, 'hex');
+    } else {
+        buf = Buffer.from(buffer);
+    }
+
     let out = {};
-    let buf = Buffer.from(buffer);
     let keyNo = 1;
 
     while (true) {

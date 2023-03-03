@@ -25,6 +25,7 @@ Installation of additional software is not required on the user's side.
 * [Using libhalo as a standalone library in a classic HTML web application](https://github.com/arx-research/libhalo/blob/master/docs/web-standalone.md)
 * [Using libhalo within a React.js web application](https://github.com/arx-research/libhalo/blob/master/docs/web-reactjs.md)
 * [Documentation of the execHaloCmdWeb API](https://github.com/arx-research/libhalo/blob/master/docs/api-web.md)
+* [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
 
 ### (React Native) initNFCManagerHalo, execHaloCmd
 ```
@@ -40,6 +41,7 @@ For React Native mobile applications (Android/iOS) based on `react-native-nfc-ma
 **Guides:**
 * [Using libhalo within a React Native mobile application for Android/iOS](https://github.com/arx-research/libhalo/blob/master/docs/mobile-react-native.md)
 * [Documentation of the initNFCManagerHalo, execHaloCmd API](https://github.com/arx-research/libhalo/blob/master/docs/api-react-native.md)
+* [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
 
 ### (Desktop) execHaloCmdPCSC
 ```
@@ -52,6 +54,7 @@ For desktop applications based on `nfc-pcsc` library: scan the HaLo tag present 
 * [Using libhalo as a CLI tool on the desktop computer with PC/SC reader (USB NFC reader)](https://github.com/arx-research/libhalo/blob/master/docs/desktop-cli.md)
 * [Using libhalo to build your own application for desktop computers with PC/SC reader (USB NFC reader)](https://github.com/arx-research/libhalo/blob/master/docs/desktop-pcsc.md)
 * [Documentation of the execHaloCmdPCSC API](https://github.com/arx-research/libhalo/blob/master/docs/api-pcsc.md)
+* [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
 
 ## Supported HaLo commands
 
