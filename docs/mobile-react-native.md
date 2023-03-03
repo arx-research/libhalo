@@ -103,5 +103,5 @@ Please check GitHub [arx-research/libhalo-example-react-native](https://github.c
 
 ## Advanced usage
 
-* [Documentation of the initNFCManagerHalo API](/docs/api-react-native.md)
+* [Documentation of the execHaloCmdRN API](/docs/api-react-native.md)
 * [Documentation of the available commands (HaLo Command Set)](/docs/halo-command-set.md)

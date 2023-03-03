@@ -40,7 +40,7 @@ For React Native mobile applications (Android/iOS) based on `react-native-nfc-ma
 
 **Guides:**
 * [Using libhalo within a React Native mobile application for Android/iOS](https://github.com/arx-research/libhalo/blob/master/docs/mobile-react-native.md)
-* [Documentation of the initNFCManagerHalo, execHaloCmd API](https://github.com/arx-research/libhalo/blob/master/docs/api-react-native.md)
+* [Documentation of the execHaloCmdRN API](https://github.com/arx-research/libhalo/blob/master/docs/api-react-native.md)
 * [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
 
 ### (Desktop) execHaloCmdPCSC
