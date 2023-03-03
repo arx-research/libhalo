@@ -1,8 +1,11 @@
 const {ArgumentParser} = require("argparse");
+const {JSONParseAction} = require("./actions");
 
 const parser = new ArgumentParser({
     description: 'HaLo - Command Line Tool for PC/SC'
 });
+parser.add_argument("-o", "--output", {help: "Output format, either: color (default, better for humans), json (better for scripts).", "default": "color"});
+
 const subparsers = parser.add_subparsers({help: 'command', dest: 'name'});
 
 subparsers.add_parser("version", {help: "Get tag version."});
@@ -21,20 +24,36 @@ if (process.env.__UNSAFE_ENABLE_TESTS === "1") {
 subparsers.add_parser("read_ndef", {help: "Read dynamic URL on the tag."});
 
 let signParser = subparsers.add_parser("sign", {help: "Sign message using ECDSA/Keccak algorithm."});
-signParser.add_argument("-k", "--key-no", {dest: 'keyNo', help: "Number of the key slot to use.", type: 'int', required: true});
-signParser.add_argument("-m", "--message", {help: "Text message to be signed.", required: true});
-signParser.add_argument("-f", "--format", {help: "Message format: text, hex.", "default": "hex"});
-signParser.add_argument("--legacy-sign-command", {help: "Use legacy signing command (more compatible).", action: "store_true", dest: "legacySignCommand", "default": false});
-
-let signRawParser = subparsers.add_parser("sign_raw", {help: "Sign raw digest using ECDSA algorithm."});
-signRawParser.add_argument("-k", "--key-no", {dest: 'keyNo', help: "Number of the key slot to use.", type: 'int', required: true});
-signRawParser.add_argument("-d", "--digest", {
-    help: "Message digest to be signed (32 bytes, hex encoded).",
+signParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    help: "Number of the key slot to use.",
+    type: 'int',
     required: true
+});
+signParser.add_argument("-m", "--message", {help: "Text message to be signed."});
+signParser.add_argument("-d", "--digest", {
+    help: "Message digest to be signed (32 bytes, hex encoded)."
+});
+signParser.add_argument("--typed-data", {
+    dest: 'typedData',
+    help: "Typed data to sign according with EIP-712. Should contain the following sub-keys: domain, types, value",
+    action: JSONParseAction
+});
+signParser.add_argument("-f", "--format", {help: "Message format: text, hex.", "default": "hex"});
+signParser.add_argument("--legacy-sign-command", {
+    help: "Use legacy signing command (more compatible).",
+    action: "store_true",
+    dest: "legacySignCommand",
+    "default": false
 });
 
 let signRandomParser = subparsers.add_parser("sign_random", {help: "Sign random digest using key slot #2."});
-signRandomParser.add_argument("-k", "--key-no", {dest: 'keyNo', help: "Number of the key slot to use.", type: 'int', 'default': 2});
+signRandomParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    help: "Number of the key slot to use.",
+    type: 'int',
+    'default': 2
+});
 
 let writeLatchParser = subparsers.add_parser("write_latch", {help: "Write value into the latch slot."});
 writeLatchParser.add_argument("-n", "--latch-no", {
@@ -123,7 +142,10 @@ setNDEFCfgParser.add_argument("--flag-legacy-static", {
 });
 
 let genKeyParser = subparsers.add_parser("gen_key", {help: "Generate key in slot #3."});
-genKeyParser.add_argument("--entropy", {dest: 'entropy', help: "Additional entropy (32 bytes, hex encoded). Optional."});
+genKeyParser.add_argument("--entropy", {
+    dest: 'entropy',
+    help: "Additional entropy (32 bytes, hex encoded). Optional."
+});
 
 let genKeyConfirmParser = subparsers.add_parser("gen_key_confirm", {help: "Confirm public key in slot #3 (only if additional entropy was provided)."});
 genKeyConfirmParser.add_argument("--public-key", {dest: 'publicKey', help: "Key slot #3 public key", required: true});
@@ -135,6 +157,11 @@ function parseArgs() {
 
     if (!args.name) {
         parser.print_help();
+        return null;
+    }
+
+    if (args.output && args.output !== "color" && args.output !== "json") {
+        console.error('Error: Incorrect output parameter specified. Should be on of: color, json.')
         return null;
     }
 
