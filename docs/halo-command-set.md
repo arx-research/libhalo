@@ -24,10 +24,11 @@ Sign an arbitrary message using ERC-191 (version 0x45) algorithm or sign a raw d
 ### Arguments
 * `message` (str) - the hex-encoded message to be signed using Ethereum's hashing algorithm;
 * `digest` (str) - the raw hex-encoded 32 byte digest to be signed using plain ECDSA;
+* `typedData` (object) - EIP-712 typed data to be signed, should contain sub-keys: `domain`, `types`, `value`;
 * `keyNo` (int) - number of the key slot to use;
 * `legacySignCommand` (bool) - optional; whether to use legacy command for signing, see the note below;
 
-**Note:** You can specify either `message` or `digest`, not both.
+**Note:** You should specify exactly one of the following keys: `message`, `digest` or `typedData`.
 
 **Note:** Set `legacySignCommand` to `true` if your tags are generating dynamic URLs
 without `v` (version) query string parameter or the `v` parameter is lower than `01.C4` (by lexicographical comparison).
@@ -43,7 +44,7 @@ Don't use `legacySignCommand` if all your tags have `v=01.C4` or higher.
 * `publicKey` - the public key corresponding to the requested key slot (65 bytes, hex encoded, uncompressed);
 
 ### Examples
-#### Message signing
+#### Message signing (ERC-191)
 Command:
 ```json
 {
@@ -71,6 +72,126 @@ Response:
     "ether": "0x93137bc7bfeaa86e26c6a9bbd6fb8acdf73ed5fd232cc2be1a0714f583f04d2e7f5d7c2461daf8649587c3c510fce05a74146cbe79341427065d0d878d154a1b1b"
   },
   "publicKey": "046ca7458b4c8c4f9a196094bda5f01ac1e588f6604bc2f7a58ba4d1fa3c3cb9102720bdb43f73972ea3dfc1c6ab8a6cb7d14114765eb76ff0fb2df34a5f7cab56"
+}
+```
+
+#### Typed data signing (EIP-712)
+Command:
+```json
+{
+  "keyNo": 1,
+  "typedData": {
+    "domain": {
+      "name": "Ether Mail",
+      "version": "1",
+      "chainId": 1,
+      "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+    },
+    "types": {
+      "Person": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "Mail": [
+        {
+          "name": "from",
+          "type": "Person"
+        },
+        {
+          "name": "to",
+          "type": "Person"
+        },
+        {
+          "name": "contents",
+          "type": "string"
+        }
+      ]
+    },
+    "value": {
+      "from": {
+        "name": "Cow",
+        "wallet": "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+      },
+      "to": {
+        "name": "Bob",
+        "wallet": "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+      },
+      "contents": "Hello, Bob!"
+    }
+  }
+}
+```
+
+Response:
+```json
+{
+  "input": {
+    "keyNo": 1,
+    "digest": "be609aee343fb3c4b28e1df9e632fca64fcfaede20f02e86244efddf30957bd2",
+    "typedData": {
+      "domain": {
+        "name": "Ether Mail",
+        "version": "1",
+        "chainId": 1,
+        "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+      },
+      "types": {
+        "Person": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "wallet",
+            "type": "address"
+          }
+        ],
+        "Mail": [
+          {
+            "name": "from",
+            "type": "Person"
+          },
+          {
+            "name": "to",
+            "type": "Person"
+          },
+          {
+            "name": "contents",
+            "type": "string"
+          }
+        ]
+      },
+      "value": {
+        "from": {
+          "name": "Cow",
+          "wallet": "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+        },
+        "to": {
+          "name": "Bob",
+          "wallet": "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+        },
+        "contents": "Hello, Bob!"
+      }
+    },
+    "primaryType": "Mail",
+    "domainHash": "f2cee375fa42b42143804025fc449deafd50cc031ca257e0b194a650a912090f"
+  },
+  "signature": {
+    "raw": {
+      "r": "e08869b150de98d3dbbe53628851bf0fa8107442695edb802f521fdc845e6fd4",
+      "s": "62f5045d28941b187cda1960365d24dc0e3b648fc6211dc60c0040daafa8a9bd",
+      "v": 27
+    },
+    "der": "3046022100e08869b150de98d3dbbe53628851bf0fa8107442695edb802f521fdc845e6fd40221009d0afba2d76be4e78325e69fc9a2db22ac737856e9278275b3d21db2208d9784",
+    "ether": "0xe08869b150de98d3dbbe53628851bf0fa8107442695edb802f521fdc845e6fd462f5045d28941b187cda1960365d24dc0e3b648fc6211dc60c0040daafa8a9bd1b"
+  },
+  "publicKey": "042c061312771f471910ef8a3a437ac89f6ff81b2aeb0e3f5dcc2dd15d0d9d1fd7b48dba2ec753f0f70ea9b9a85df8a16e664546c9f7bad2be38e08eec63b916c7"
 }
 ```
 
