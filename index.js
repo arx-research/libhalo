@@ -1,8 +1,7 @@
-const {initNFCManagerHalo} = require("./drivers/nfc_manager");
+const {execHaloCmdRN} = require("./drivers/nfc_manager");
 const {execHaloCmdPCSC} = require("./drivers/pcsc");
 const {
-    execHaloCmdWeb,
-    execHaloCmd
+    execHaloCmdWeb
 } = require("./drivers/common");
 const {
     HaloTagError,
@@ -26,8 +25,7 @@ module.exports = {
     execHaloCmdWeb,
 
     // for usage with react-native-nfc-manager
-    initNFCManagerHalo,
-    execHaloCmd,
+    execHaloCmdRN,
 
     // exported utils
     haloParsePublicKeys: parsePublicKeys,
