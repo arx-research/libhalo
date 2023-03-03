@@ -51,9 +51,9 @@ async function cmdGetPkeys(options, args) {
 
 async function cmdSign(options, args) {
     let checks = [
-        args.hasOwnProperty("digest"),
-        args.hasOwnProperty("message"),
-        args.hasOwnProperty("typedData")
+        args.hasOwnProperty("digest") && typeof args.digest !== "undefined",
+        args.hasOwnProperty("message") && typeof args.message !== "undefined",
+        args.hasOwnProperty("typedData") && typeof args.typedData !== "undefined"
     ];
 
     let numDataArgs = checks.filter((x) => !!x).length;
@@ -65,7 +65,7 @@ async function cmdSign(options, args) {
     let messageBuf = null;
     let digestBuf = null;
 
-    if (args.hasOwnProperty("message")) {
+    if (args.hasOwnProperty("message") && typeof args.message !== "undefined") {
         if (args.format === "text") {
             messageBuf = Buffer.from(args.message);
         } else if (!args.format || args.format === "hex") {
@@ -75,10 +75,10 @@ async function cmdSign(options, args) {
         }
 
         digestBuf = Buffer.from(ethers.utils.hashMessage(messageBuf).slice(2), "hex");
-    } else if (args.hasOwnProperty("typedData")) {
+    } else if (args.hasOwnProperty("typedData") && typeof args.typedData !== "undefined") {
         let hashStr = ethers.utils._TypedDataEncoder.hash(args.typedData.domain, args.typedData.types, args.typedData.value);
         digestBuf = Buffer.from(hashStr.slice(2), "hex");
-    } else if (args.hasOwnProperty("digest")) {
+    } else if (args.hasOwnProperty("digest") && typeof args.digest !== "undefined") {
         digestBuf = Buffer.from(args.digest, "hex");
     } else {
         throw new HaloLogicError("Either args.digest, args.message or args.typedData is required.");

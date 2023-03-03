@@ -4,6 +4,7 @@ const { NFC } = require('nfc-pcsc');
 const {parseArgs} = require('./args.js');
 const {execHaloCmdPCSC} = require('../index.js');
 const {__runTestSuite} = require("../halo/tests");
+const util = require("util");
 
 const nfc = new NFC();
 let stopPCSCTimeout = null;
@@ -45,15 +46,24 @@ nfc.on('reader', reader => {
                     try {
                         res = await execHaloCmdPCSC(args, reader);
                     } catch (e) {
-                        console.error(e);
+                        if (args.output === "color") {
+                            console.error(e);
+                        } else {
+                            console.log(JSON.stringify({"_exception": {"message": String(e), "stack": e.stack}}));
+                        }
                     }
                 }
 
                 if (res !== null) {
-                    console.log(res);
-                    stopPCSC("done");
+                    if (args.output === "color") {
+                        console.log(util.inspect(res, {depth: Infinity, colors: true}));
+                    } else {
+                        console.log(JSON.stringify(res));
+                    }
+
+                    stopPCSC("done", args.output);
                 } else {
-                    stopPCSC("error");
+                    stopPCSC("error", args.output);
                 }
             }
         })();
@@ -71,13 +81,17 @@ nfc.on('error', err => {
     }
 });
 
-function stopPCSC(code) {
+function stopPCSC(code, output) {
     clearTimeout(stopPCSCTimeout);
 
-    if (code === "error") {
+    if (code === "error" && output === "color") {
         console.error('Command execution failed.');
     } else if (code !== "done") {
-        console.error('NFC card or compatible PC/SC reader not found.');
+        if (output === "color") {
+            console.error('NFC card or compatible PC/SC reader not found.');
+        } else {
+            console.log(JSON.stringify({"_error": "NFC card or compatible PC/SC reader not found."}));
+        }
     }
 
     for (let rdrName in nfc.readers) {
