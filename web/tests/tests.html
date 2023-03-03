@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LibHaLo Demo</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <script type="text/javascript">
+        // ensure the library is always fully reloaded
+        document.write('<script src="../dist/libhalo.js?_v=' + (Math.random() + '') + '"></scr' + 'ipt>');
+    </script>
+</head>
+<body>
+<div class="container mt-3 mb-5">
+    <h1>LibHaLo Test Suite</h1>
+
+    <script type="text/javascript">
+        function hideWarning() {
+            document.getElementById('test-main').style.display = 'block';
+            document.getElementById('test-warning').style.display = 'none';
+        }
+    </script>
+
+    <div class="alert alert-danger" id="test-warning">
+        <strong>CAUTION!</strong> This webpage is only suited for internal testing with brand new HaLo tags.
+        Running the test suite might cause your tag to be reconfigured in an undesired way.
+        <br /><br />
+        <button class="btn btn-danger" onclick="hideWarning();">I understand this could brick my tag</button>
+    </div>
+
+    <div id="test-main" style="display: none;">
+        <strong>Status text:</strong>
+        <pre id="statusText" style="white-space: pre-wrap; word-break: break-all;">Please click on one of the buttons below.</pre>
+
+        <div id="test-continue" style="display: none;">
+            <button class="btn btn-primary" id="btn-continue">
+                Trigger scan
+            </button>
+
+            <hr />
+        </div>
+
+        <button class="btn btn-secondary" onclick="btnExecuteNFC('credential');" id="btn-credential">
+            Run tests using Credential API
+        </button>
+        <button class="btn btn-secondary" onclick="btnExecuteNFC('webnfc');" id="btn-webnfc">
+            Run tests using WebNFC
+        </button>
+    </div>
+
+    <script type="text/javascript">
+        let originalConsoleLog = console.log;
+
+        function consoleLogPatched() {
+            originalConsoleLog(...arguments);
+            let msg = [...arguments].map((x) => String(x)).join('  ');
+            document.getElementById('statusText').innerText += '\n' + msg;
+
+            if (arguments[0] instanceof Error) {
+                document.getElementById('statusText').innerText += '\n' + arguments[0].stack;
+            }
+        }
+
+        window.console = {
+            "log": consoleLogPatched,
+            "error": consoleLogPatched,
+            "debug": consoleLogPatched
+        };
+
+        async function btnExecuteNFC(method) {
+            document.getElementById('statusText').innerText = '';
+
+            let options = {
+                method: method,
+                statusCallback: (cause) => {
+                    if (cause === "init") {
+                        // explicitly ask the user to tap the tag
+                        document.getElementById('statusText').innerText += '\n[!] tap tag';
+                    } else if (cause === "retry") {
+                        // this callback is invoked when there is a communication error
+                        // the executeNFCCommand() call will be still running and the frontend
+                        // should ask the user to just try to tap the tag again
+                        document.getElementById('statusText').innerText += '\nscan failed (' + cause + ').';
+                    } else if (cause === "scanned") {
+                        // everything is done on the NFC part, but we need a tiny bit of time to compute the result on the client-side
+                        // the frontend should instruct the user that he can take the tag away already
+                        document.getElementById('statusText').innerText += '\nscanned';
+                    }
+                }
+            };
+
+            let exec = async function (command) {
+                if (navigator.platform.includes("iPhone")) {
+                    await new Promise(function (resolve, reject) {
+                        document.getElementById('test-continue').style.display = 'block';
+                        document.getElementById('statusText').innerText += '\n[!] click on Trigger scan button';
+                        document.getElementById('btn-continue').onclick = function () {
+                            resolve();
+                        }
+                    });
+                }
+
+                return await execHaloCmdWeb(command, options);
+            };
+
+            let res = await __runTestSuite({"__this_is_unsafe": true}, method, exec);
+            document.getElementById('test-continue').style.display = 'none';
+            document.getElementById('statusText').innerText += '\n' + JSON.stringify(res, null, 4);
+        }
+    </script>
+</div>
+</body>
+</html>

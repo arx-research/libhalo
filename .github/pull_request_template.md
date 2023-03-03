@@ -1,22 +1,31 @@
 ## Description
+<!-- Thanks for contributing to LibHaLo! Please provide a short description of your PR. -->
 
 
 ## Checklist
 
-<!-- You can erase any parts of this template not applicable to your Pull Request. -->
+<!-- Please check the applicable checkboxes. Please do not edit the contents of the checklist. -->
 
 ### Changes to the drivers
 
 <!-- If drivers/ subdirectory was modified. -->
-* [ ] The affected drivers were manually tested
+* [ ] (PR Author) The affected drivers were manually tested
 
 ### Changes to CLI
 
-<!-- If cli/ directory was modified. -->
-* [ ] The affected CLI features were manually tested 
-* [ ] The affected CLI features are working with the standalone binary (at least one platform)
+<!-- If cli/ directory or pcsc driver was modified. -->
+* [ ] (PR Author) The change was manually tested with the CLI
+* [ ] (PR Author) The affected CLI features are working with the standalone binary (at least one platform)
+* [ ] (Checked by maintainer) The CLI test procedure was run by the project's maintainer
 
 ### Changes to web library
 
-<!-- If web/ subdirectory was modified. -->
-* [ ] The change in the web library was manually tested in the standalone mode
+<!-- If web/ subdirectory or credential/webnfc driver was modified. -->
+* [ ] (PR Author) The change was manually tested with the web library in either standalone mode or with React.js
+* [ ] (Checked by maintainer) The web test suite was run by the project's maintainer
+
+### Changes to nfc-manager driver
+
+<!-- If nfc-manager driver was modified. -->
+* [ ] (PR Author) The change was manually tested in React Native app
+* [ ] (Checked by maintainer) The test suite was run through the test React Native project

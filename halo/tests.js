@@ -18,28 +18,37 @@ class SkipTest extends Error {
 
 const tests = [
     ["testLegacySign1", async function(driver, exec) {
-        let resPkeys = await exec({
-            "name": "get_pkeys"
-        });
+        if (driver !== 'webnfc') {
+            let resPkeys = await exec({
+                "name": "get_pkeys"
+            });
 
-        let pk1 = ec.keyFromPublic(resPkeys[1], 'hex');
-        let digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
+            let pk1 = ec.keyFromPublic(resPkeys[1], 'hex');
+            let digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
 
-        let res = await exec({
-            "name": "sign",
-            "keyNo": 1,
-            "digest": digest,
-            "legacySignCommand": true
-        });
+            let res = await exec({
+                "name": "sign",
+                "keyNo": 1,
+                "digest": digest,
+                "legacySignCommand": true
+            });
 
-        assert(pk1.verify(digest, res.signature.der));
+            assert(pk1.verify(digest, res.signature.der));
+        } else {
+            let digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
+
+            let res = await exec({
+                "name": "sign",
+                "keyNo": 1,
+                "digest": digest,
+                "legacySignCommand": true
+            });
+
+            let pk1 = ec.keyFromPublic(res.publicKey, 'hex');
+            assert(pk1.verify(digest, res.signature.der));
+        }
     }],
     ["testSign1", async function(driver, exec) {
-        let resPkeys = await exec({
-            "name": "get_pkeys"
-        });
-
-        let pk1 = ec.keyFromPublic(resPkeys[1], 'hex');
         let digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
 
         let res = await exec({
@@ -48,6 +57,7 @@ const tests = [
             "digest": digest
         });
 
+        let pk1 = ec.keyFromPublic(res.publicKey, 'hex');
         assert(pk1.verify(digest, res.signature.der));
     }],
     ["testKeyGen3", async function(driver, exec) {
@@ -62,7 +72,11 @@ const tests = [
             if (e instanceof HaloTagError) {
                 if (e.name === "ERROR_CODE_KEY_ALREADY_EXISTS") {
                     throw new SkipTest("Unable to test key generation - key already exists.");
+                } else {
+                    throw e;
                 }
+            } else {
+                throw e;
             }
         }
 
