@@ -7,6 +7,9 @@ Programmatically interact with HaLo tags from the web browser, mobile applicatio
 ```
 npm install --save @arx-research/libhalo
 ```
+```
+yarn add @arx-research/libhalo
+```
 
 ## Available APIs
 
