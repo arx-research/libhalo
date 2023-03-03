@@ -42,8 +42,8 @@ jobs:
             
             Release contents:
             * `halocli` - Linux x64 build
-            * `halocli.exe` - Windowx 64 build
-            * `halocli.pkg` - MacOS x64 build
+            * `halocli.exe` - Windows 64 build
+            * `halocli.pkg` - MacOS x64 build (signed)
       - name: Store release upload URL
         if: startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
