@@ -29,11 +29,7 @@ Installation of additional software is not required on the user's side.
 
 ### (React Native) execHaloCmdRN
 ```
-async function initNFCManagerHalo(nfcManager)
-```
-
-```
-async function execHaloCmd(command, options)
+async function execHaloCmdRN(nfcManager, command, options)
 ```
 
 For React Native mobile applications (Android/iOS) based on `react-native-nfc-manager` library: scan the HaLo tag presented to the smartphone, execute the HaLo command and return the result.
