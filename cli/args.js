@@ -128,6 +128,8 @@ genKeyParser.add_argument("--entropy", {dest: 'entropy', help: "Additional entro
 let genKeyConfirmParser = subparsers.add_parser("gen_key_confirm", {help: "Confirm public key in slot #3 (only if additional entropy was provided)."});
 genKeyConfirmParser.add_argument("--public-key", {dest: 'publicKey', help: "Key slot #3 public key", required: true});
 
+subparsers.add_parser("get_pkeys", {help: "Get tag's public keys #1, #2 and #3."});
+
 function parseArgs() {
     let args = parser.parse_args();
 

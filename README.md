@@ -63,6 +63,7 @@ This library supports the following HaLo tag commands:
 * `cfg_ndef` - configure the parameters returned in the dynamic URL when the NFC tag is scanned;
 * `gen_key` - request generation of the key #3 on the NFC tag;
 * `gen_key_confirm` - confirm the generated public key of key slot #3;
+* `get_pkeys` - get tag's public keys #1, #2 and #3;
 
 Full articles:
 * [Documentation of the available commands (HaLo Command Set)](https://github.com/arx-research/libhalo/blob/master/docs/halo-command-set.md)

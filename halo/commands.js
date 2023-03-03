@@ -30,7 +30,7 @@ async function cmdGetPkeys(options, args) {
     let resp = await options.exec(payload);
     let res = Buffer.from(resp.result, "hex");
 
-    return parsePublicKeys(res);
+    return {"publicKeys": parsePublicKeys(res)};
 }
 
 async function cmdSign(options, args) {
