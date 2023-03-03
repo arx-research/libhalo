@@ -23,7 +23,7 @@ const tests = [
                 "name": "get_pkeys"
             });
 
-            let pk1 = ec.keyFromPublic(resPkeys[1], 'hex');
+            let pk1 = ec.keyFromPublic(resPkeys.publicKeys[1], 'hex');
             let digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
 
             let res = await exec({
