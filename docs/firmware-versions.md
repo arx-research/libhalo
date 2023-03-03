@@ -6,7 +6,7 @@
 The following CLI command will reveal the HaLo firmware version for any tag:
 
 ```
-./halo-cli version
+./halocli version
 ```
 
 ### By scanning the dynamic URL
