@@ -1,4 +1,4 @@
-const {Action} = require("argparse");
+const {Action, ArgumentError} = require("argparse");
 
 class JSONParseAction extends Action {
     constructor() {
@@ -6,7 +6,11 @@ class JSONParseAction extends Action {
     }
 
     call(parser, namespace, values, option_string) {
-        namespace[this.dest] = JSON.parse(values);
+        try {
+            namespace[this.dest] = JSON.parse(values);
+        } catch (e) {
+            throw ArgumentError(this, e.message);
+        }
     }
 }
 

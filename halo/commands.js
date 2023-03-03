@@ -76,7 +76,14 @@ async function cmdSign(options, args) {
 
         digestBuf = Buffer.from(ethers.utils.hashMessage(messageBuf).slice(2), "hex");
     } else if (args.hasOwnProperty("typedData") && typeof args.typedData !== "undefined") {
-        let hashStr = ethers.utils._TypedDataEncoder.hash(args.typedData.domain, args.typedData.types, args.typedData.value);
+        let hashStr;
+
+        try {
+            hashStr = ethers.utils._TypedDataEncoder.hash(args.typedData.domain, args.typedData.types, args.typedData.value);
+        } catch (e) {
+            throw new HaloLogicError("Unable to encode typed data. Please check if the data provided conforms to the required schema.");
+        }
+
         digestBuf = Buffer.from(hashStr.slice(2), "hex");
     } else if (args.hasOwnProperty("digest") && typeof args.digest !== "undefined") {
         digestBuf = Buffer.from(args.digest, "hex");
