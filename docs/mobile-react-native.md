@@ -10,6 +10,10 @@ These steps are common for both Android and iOS applications:
 npm install --save react-native-nfc-manager
 npm install --save libhalo
 ```
+```bash
+yarn add react-native-nfc-manager
+yarn add @arx-research/libhalo
+```
 
 ## Configure react-native-nfc-manager
 
