@@ -2,13 +2,21 @@ name: Build libhalo.js
 
 on:
   push:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
     branches:
-      - '*'
+      - master
     tags:
       - 'libhalo-v*'
   pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
     branches:
-      - '*'
+      - master
 
 jobs:
   create_release:
