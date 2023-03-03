@@ -9,6 +9,9 @@ Install the library:
 ```bash
 npm install --save libhalo
 ```
+```bash
+yarn add @arx-research/libhalo
+```
 
 ## Basic usage
 
