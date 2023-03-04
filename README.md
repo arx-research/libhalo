@@ -1,6 +1,6 @@
 # LibHaLo
 
-Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+Programmatically interact with [HaLo tags](https://arx.org/?source=gh) from the web browser, mobile application or the desktop.
 
 ## Installation
 
