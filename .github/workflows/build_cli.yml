@@ -41,9 +41,9 @@ jobs:
             Standalone command line tool for desktop computers with PC/SC readers (USB/NFC readers).
             
             Release contents:
-            * `halocli` - Linux x64 build
-            * `halocli.exe` - Windows 64 build
-            * `halocli.pkg` - MacOS x64 build (signed)
+            * `halocli-linux-x64.zip` - Linux x64 build (elf; zipped)
+            * `halocli-win-x64.zip` - Windows 64 build (exe; zipped)
+            * `halocli-macos-x64.pkg` - MacOS x64 build (installer; signed)
       - name: Store release upload URL
         if: startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
@@ -59,11 +59,11 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            bin_name: halocli
+            bin_name: halocli-linux-x64.zip
           - os: windows-latest
-            bin_name: halocli.exe
+            bin_name: halocli-win-x64.zip
           - os: macos-latest
-            bin_name: halocli.pkg
+            bin_name: halocli-macos-x64.pkg
     runs-on: ${{ matrix.os }}
     needs: create_release
     steps:
@@ -108,6 +108,11 @@ jobs:
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-linux-x64 package.json
+      - name: Compress application (Linux)
+        if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
+        run: |
+          cd ./cli/dist
+          zip halocli-linux-x64.zip halocli
       - name: Package HaLo CLI tool (Windows)
         if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
@@ -122,21 +127,26 @@ jobs:
         if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
           & "C:/Program Files (x86)/Windows Kits/10/App Certification Kit/signtool.exe" sign /v /fd SHA256 /f authenticode.p12 /t http://timestamp.sectigo.com "./cli/dist/halocli.exe"
+      - name: Compress application (Windows)
+        if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
+        run: |
+          cd ./cli/dist
+          Compress-Archive halocli.exe halocli-win-x64.zip
       - name: Sign application for Mac OS
         if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
           mkdir -p cli/dist/root/usr/local/bin/
           mv cli/dist/halocli cli/dist/root/usr/local/bin/halocli
           /usr/bin/codesign --deep --force --options=runtime --entitlements ./cli/Entitlements.plist --sign "${{ secrets.MACOS_IDENTITY }}" --timestamp ./cli/dist/root/usr/local/bin/halocli
-          pkgbuild --root ./cli/dist/root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_IDENTITY_INSTALLER }}" ./cli/dist/halocli.pkg
+          pkgbuild --root ./cli/dist/root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_IDENTITY_INSTALLER }}" ./cli/dist/halocli-macos-x64.pkg
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
-          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_APPLE_ID }}" "--password=${{ secrets.MACOS_PWD_ALTOOL }}" "--team-id=${{ secrets.MACOS_TEAM_ID }}" --progress --wait ./cli/dist/halocli.pkg
+          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_APPLE_ID }}" "--password=${{ secrets.MACOS_PWD_ALTOOL }}" "--team-id=${{ secrets.MACOS_TEAM_ID }}" --progress --wait ./cli/dist/halocli-macos-x64.pkg
       - name: Staple notarized application for Mac OS
         if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
-          xcrun stapler staple -v ./cli/dist/halocli.pkg
+          xcrun stapler staple -v ./cli/dist/halocli-macos-x64.pkg
           rm -rf ./cli/dist/root/
       - name: Download release upload URL
         if: startsWith(github.ref, 'refs/tags/halocli-v')
