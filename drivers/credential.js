@@ -1,3 +1,9 @@
+/**
+ * LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+ * Copyright by Arx Research, Inc., a Delaware corporation
+ * License: MIT
+ */
+
 const {HaloTagError, HaloLogicError, NFCOperationError, NFCMethodNotSupported} = require("../halo/exceptions");
 const {ERROR_CODES} = require("../halo/errors");
 const {arr2hex} = require("../halo/utils");

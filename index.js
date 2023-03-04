@@ -1,3 +1,9 @@
+/**
+ * LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+ * Copyright by Arx Research, Inc., a Delaware corporation
+ * License: MIT
+ */
+
 const {execHaloCmdRN} = require("./drivers/nfc_manager");
 const {execHaloCmdPCSC} = require("./drivers/pcsc");
 const {

@@ -1,3 +1,9 @@
+/**
+ * LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+ * Copyright by Arx Research, Inc., a Delaware corporation
+ * License: MIT
+ */
+
 const Buffer = require('buffer/').Buffer;
 const { NFC } = require('nfc-pcsc');
 
