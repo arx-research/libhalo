@@ -1,4 +1,10 @@
 /**
+ * LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+ * Copyright by Arx Research, Inc., a Delaware corporation
+ * License: MIT
+ */
+
+/**
  * This error is thrown when there is an error response from the tag itself.
  * The "name" property will contain the exact error name (e.g. ERROR_CODE_INVALID_KEY_NO).
  */

@@ -1,3 +1,9 @@
+/**
+ * LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+ * Copyright by Arx Research, Inc., a Delaware corporation
+ * License: MIT
+ */
+
 const {checkErrors, execHaloCmd} = require("./common");
 const {HaloLogicError} = require("../halo/exceptions");
 const {readNDEF} = require("./read_ndef");

@@ -1,3 +1,9 @@
+/**
+ * LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+ * Copyright by Arx Research, Inc., a Delaware corporation
+ * License: MIT
+ */
+
 let ERROR_CODES = {
     0x01: ["ERROR_CODE_UNKNOWN_CMD", "Unknown command code."],
     0x02: ["ERROR_CODE_INVALID_KEY_NO", "Invalid key number."],
