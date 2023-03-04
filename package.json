@@ -2,6 +2,18 @@
   "name": "@arx-research/libhalo",
   "version": "1.0.11",
   "description": "LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.",
+  "contributors": [
+    {
+      "name" : "Michal Leszczynski",
+      "email" : "ml@arx.sh",
+      "url" : "https://github.com/icedevml"
+    },
+    {
+      "name" : "Cameron Robertson",
+      "email" : "cameron@arx.sh",
+      "url" : "https://github.com/ccamrobertson"
+    }
+  ],
   "keywords": ["blockchain", "ethereum", "bitcoin", "nfc"],
   "license": "MIT",
   "homepage": "https://github.com/arx-research/libhalo#readme",

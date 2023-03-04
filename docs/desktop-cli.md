@@ -76,6 +76,4 @@ If you wish to build the HaLo CLI from source, you can perform the following ste
 3. Done! The binaries will be produced in `cli/dist` subdirectory.
 
 **Note:** Due to the fact that the CLI tool is using `nfc-pcsc` library, it has to include a native Node module
-for interacting with PC/SC. Thus, the halocli binary has to be built separately on each platform.
-Although `pkg` tool is able to generate binaries for different operating systems, only the binary
-matching your operating system will be operating correctly.
+for interacting with PC/SC. Thus, the `halocli` binary has to be built separately on each native platform.
