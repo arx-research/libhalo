@@ -106,5 +106,5 @@ jobs:
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
           asset_path: ./web/dist/libhalo-cosign.zip
-          asset_name: libhalo-sig.zip
+          asset_name: libhalo-cosign.zip
           asset_content_type: application/octet-stream
