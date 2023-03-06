@@ -149,7 +149,8 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           shasum -a 256 Entitlements.plist
-          echo "f31fbfd4c2c911ab3b5d7a8d5294ef35a08200e991fdd58ac36c04f38ab86ce9  Entitlements.plist" > Entitlements.plist.sum
+          shasum -a 256 -p Entitlements.plist
+          echo "bb1c65f6915e18f6e371a76e0b84551756a0e5037e90ef541680c95831fb52a7  Entitlements.plist" > Entitlements.plist.sum
           shasum -a 256 -c Entitlements.plist.sum
       - name: Compress application (Linux)
         if: matrix.os == 'ubuntu-latest'
