@@ -149,7 +149,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           echo "f31fbfd4c2c911ab3b5d7a8d5294ef35a08200e991fdd58ac36c04f38ab86ce9  Entitlements.plist" > Entitlements.plist.sum
-          sha -a 256 -c Entitlements.plist.sum
+          shasum -a 256 -c Entitlements.plist.sum
       - name: Compress application (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
