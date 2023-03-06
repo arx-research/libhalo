@@ -41,6 +41,8 @@ jobs:
           path: release-upload-url.txt
 
   build_cli_tool:
+    permissions:
+      id-token: write
     strategy:
       matrix:
         include:
@@ -112,6 +114,9 @@ jobs:
 
   sign_cli_tool:
     environment: production
+    permissions:
+      contents: write
+      id-token: write
     strategy:
       matrix:
         include:
