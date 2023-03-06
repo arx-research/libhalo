@@ -1,0 +1,33 @@
+name: Check libhalo.js
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
+    branches:
+      - master
+
+jobs:
+  check_js_lib:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Install Node.JS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies (root)
+        run: |
+          npm --include=dev install
+      - name: Run webpack
+        run: |
+          cd web
+          webpack

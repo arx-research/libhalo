@@ -1,0 +1,40 @@
+name: Check halocli tool
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
+    branches:
+      - master
+
+jobs:
+  check_cli_tool:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install native dependencies (Linux)
+        run: |
+          sudo apt-get update && sudo apt-get install -y libpcsclite-dev
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Install Node.JS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies (root)
+        run: |
+          npm --include=dev install
+      - name: Install dependencies (cli)
+        run: |
+          cd cli
+          npm --include=dev install
+      - name: Package HaLo CLI tool (Linux)
+        run: |
+          cd cli
+          node_modules/.bin/pkg -t node16-linux-x64 package.json
