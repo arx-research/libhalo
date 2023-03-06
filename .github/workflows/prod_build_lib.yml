@@ -72,8 +72,9 @@ jobs:
       - name: Sign libhalo.js with cosign
         run: |
           cd ./web/dist
+          curl -s -o tsa.crt https://freetsa.org/files/tsa.crt
           echo y | cosign sign-blob ./libhalo.js --timestamp-server-url https://freetsa.org/tsr --output-certificate ./libhalo.js.pem --output-signature ./libhalo.js.sig --rfc3161-timestamp ./libhalo.js.tsr
-          cosign verify-blob --cert ./libhalo.js.pem --signature ./libhalo.js.sig --rfc3161-timestamp ./libhalo.js.tsr --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./libhalo.js
+          cosign verify-blob --cert ./libhalo.js.pem --signature ./libhalo.js.sig --rfc3161-timestamp ./libhalo.js.tsr --timestamp-certificate-chain tsa.crt --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./libhalo.js
           zip ./libhalo-cosign.zip ./libhalo.js.pem ./libhalo.js.sig ./libhalo.js.tsr ./libhalo.js
       - name: Upload release asset (JS bundle)
         id: upload-release-asset
