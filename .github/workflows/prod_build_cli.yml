@@ -145,11 +145,13 @@ jobs:
           cosign verify-blob --cert ./${{ matrix.bin_name }}.pem --signature ./${{ matrix.bin_name }}.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./${{ matrix.bin_name }}
           rm ./${{ matrix.bin_name }}.pem
           rm ./${{ matrix.bin_name }}.sig
-      - name: Verify Entitlements.plist (Mac OS)
+      - name: Calculate checksum of Entitlements.plist (Mac OS)
         if: matrix.os == 'macos-latest'
         run: |
           shasum -a 256 Entitlements.plist
-          shasum -a 256 -p Entitlements.plist
+      - name: Verify Entitlements.plist (Mac OS)
+        if: matrix.os == 'macos-latest'
+        run: |
           echo "bb1c65f6915e18f6e371a76e0b84551756a0e5037e90ef541680c95831fb52a7  Entitlements.plist" > Entitlements.plist.sum
           shasum -a 256 -c Entitlements.plist.sum
       - name: Compress application (Linux)
