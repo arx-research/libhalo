@@ -134,6 +134,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: entitlements-macos
+      - name: Compress application (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          zip halocli-linux-x64.zip halocli
       - name: Load signing credentials (Windows)
         if: matrix.os == 'windows-latest'
         uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
