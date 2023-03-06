@@ -31,6 +31,8 @@ jobs:
             * `halocli-linux-x64.zip` - Linux x64 build (elf; zipped)
             * `halocli-win-x64.zip` - Windows 64 build (exe; zipped)
             * `halocli-macos-x64.pkg` - MacOS x64 build (installer; signed)
+            
+            **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
       - name: Store release upload URL
         run: |
           echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
