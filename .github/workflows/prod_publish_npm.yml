@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Publish libhalo package
-    environment: production
+    environment: prod-npm
     runs-on: ubuntu-latest
     permissions:
       contents: read
