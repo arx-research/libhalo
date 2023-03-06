@@ -194,7 +194,7 @@ jobs:
           echo y | cosign sign-blob ./${{ matrix.out_name }} --output-certificate ./${{ matrix.out_name }}.pem --output-signature ./${{ matrix.out_name }}.sig
           zip ./${{ matrix.out_name }}.cosign.zip ./${{ matrix.out_name }}.pem ./${{ matrix.out_name }}.sig
       - name: Upload release asset (binary)
-        id: upload-release-asset
+        id: upload-release-asset-binary
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -204,7 +204,7 @@ jobs:
           asset_name: ${{ matrix.out_name }}
           asset_content_type: application/octet-stream
       - name: Upload release asset (cosign)
-        id: upload-release-asset
+        id: upload-release-asset-cosign
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
