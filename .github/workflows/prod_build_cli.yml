@@ -35,7 +35,7 @@ jobs:
         run: |
           echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
       - name: Store release upload URL artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: release-upload-url
           path: release-upload-url.txt
@@ -95,17 +95,20 @@ jobs:
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-macos-x64 package.json
-      - name: Store Entitlements.plist as artifact
+      - name: Store Entitlements.plist in dist
         if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: entitlements-macos
-          path: ./cli/Entitlements.plist
+        run:
+          mv ./cli/Entitlements.plist ./cli/dist/Entitlements.plist
+      - name: Install cosign
+        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
+      - name: Sign binary with cosign
+        run: |
+          echo y | cosign sign-blob ./cli/dist/${{ matrix.bin_name }} --output-certificate ./cli/dist/${{ matrix.bin_name }}.pem --output-signature ./cli/dist/${{ matrix.bin_name }}.sig
       - name: Store binary as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: binary-${{ matrix.os }}
-          path: ./cli/dist/${{ matrix.bin_name }}
+          path: ./cli/dist/
 
   sign_cli_tool:
     environment: production
@@ -125,15 +128,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
     steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
       - name: Download binary from artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: binary-${{ matrix.os }}
-      - name: Download binary from artifact
-        if: matrix.os == 'macos-latest'
-        uses: actions/download-artifact@v2
-        with:
-          name: entitlements-macos
+      - name: Verify signatures
+        run: |
+          cosign verify-blob --cert ./${{ matrix.bin_name }}.pem --signature ./${{ matrix.bin_name }}.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./${{ matrix.bin_name }}
+          rm ./${{ matrix.bin_name }}.pem ./${{ matrix.bin_name }}.sig
       - name: Compress application (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -177,7 +181,7 @@ jobs:
           xcrun stapler staple ./halocli-macos-x64.pkg
           rm -rf ./root/
       - name: Download release upload URL
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: release-upload-url
       - name: Store release upload URL output
@@ -185,7 +189,11 @@ jobs:
         shell: bash
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
-      - name: Upload release asset
+      - name: Sign output binaries with cosign
+        run: |
+          echo y | cosign sign-blob ./${{ matrix.out_name }} --output-certificate ./${{ matrix.out_name }}.pem --output-signature ./${{ matrix.out_name }}.sig
+          zip ./${{ matrix.out_name }}.cosign.zip ./${{ matrix.out_name }}.pem ./${{ matrix.out_name }}.sig
+      - name: Upload release asset (binary)
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
@@ -194,6 +202,16 @@ jobs:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
           asset_path: ./${{ matrix.out_name }}
           asset_name: ${{ matrix.out_name }}
+          asset_content_type: application/octet-stream
+      - name: Upload release asset (cosign)
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
+          asset_path: ./${{ matrix.out_name }}.cosign.zip
+          asset_name: ${{ matrix.out_name }}.cosign.zip
           asset_content_type: application/octet-stream
       - name: Delete binary artifact
         if: always()

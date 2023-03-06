@@ -26,11 +26,16 @@ jobs:
           prerelease: false
           body: |
             Standalone JavaScript library for usage with classic HTML applications.
+            
+            Release contents:
+            * `libhalo.js` - standalone JavaScript library for inclusion in classic HTML applications;
+            * `libhalo.js.LICENSE` - license information;
+            * `libhalo.cosign.zip` - build audit trail;
       - name: Store release upload URL
         if: startsWith(github.ref, 'refs/tags/libhalo-v')
         run: |
           echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: startsWith(github.ref, 'refs/tags/libhalo-v')
         with:
           name: release-upload-url
@@ -59,7 +64,7 @@ jobs:
           webpack
       - name: Download release upload URL
         if: startsWith(github.ref, 'refs/tags/libhalo-v')
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: release-upload-url
       - name: Store release upload URL output
@@ -72,10 +77,9 @@ jobs:
       - name: Sign libhalo.js with cosign
         run: |
           cd ./web/dist
-          curl -s -o tsa.crt https://freetsa.org/files/tsa.crt
-          echo y | cosign sign-blob ./libhalo.js --timestamp-server-url https://freetsa.org/tsr --output-certificate ./libhalo.js.pem --output-signature ./libhalo.js.sig --rfc3161-timestamp ./libhalo.js.tsr
-          cosign verify-blob --verbose --cert ./libhalo.js.pem --signature ./libhalo.js.sig --rfc3161-timestamp ./libhalo.js.tsr --timestamp-certificate-chain tsa.crt --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./libhalo.js
-          zip ./libhalo-cosign.zip ./libhalo.js.pem ./libhalo.js.sig ./libhalo.js.tsr ./libhalo.js
+          echo y | cosign sign-blob ./libhalo.js --output-certificate ./libhalo.js.pem --output-signature ./libhalo.js.sig
+          cosign verify-blob --cert ./libhalo.js.pem --signature ./libhalo.js.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./libhalo.js
+          zip ./libhalo.cosign.zip ./libhalo.js.pem ./libhalo.js.sig
       - name: Upload release asset (JS bundle)
         id: upload-release-asset
         if: startsWith(github.ref, 'refs/tags/libhalo-v')
@@ -106,6 +110,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./web/dist/libhalo-cosign.zip
-          asset_name: libhalo-cosign.zip
+          asset_path: ./web/dist/libhalo.cosign.zip
+          asset_name: libhalo.cosign.zip
           asset_content_type: application/octet-stream
