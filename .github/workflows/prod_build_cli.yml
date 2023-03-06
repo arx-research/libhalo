@@ -1,0 +1,202 @@
+name: Release halocli tool
+
+on:
+  push:
+    tags:
+      - 'halocli-v*'
+
+jobs:
+  create_release:
+    name: Create halocli release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare version number
+        id: parse_version
+        run: |
+          ( echo -n "version=" && ( echo "$GITHUB_REF" | cut -f2 -d- | tr -d '\n' ) ) >> "$GITHUB_OUTPUT"
+      - name: Draft release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: HaLo CLI ${{ steps.parse_version.outputs.version }}
+          draft: true
+          prerelease: false
+          body: |
+            Standalone command line tool for desktop computers with PC/SC readers (USB/NFC readers).
+            
+            Release contents:
+            * `halocli-linux-x64.zip` - Linux x64 build (elf; zipped)
+            * `halocli-win-x64.zip` - Windows 64 build (exe; zipped)
+            * `halocli-macos-x64.pkg` - MacOS x64 build (installer; signed)
+      - name: Store release upload URL
+        run: |
+          echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
+      - name: Store release upload URL artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-upload-url
+          path: release-upload-url.txt
+
+  build_cli_tool:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            bin_name: halocli
+          - os: windows-latest
+            bin_name: halocli.exe
+          - os: macos-latest
+            bin_name: halocli
+    name: Build halocli (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: create_release
+    steps:
+      - name: Install native dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update && sudo apt-get install -y libpcsclite-dev
+      - name: Install native dependencies (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install pcsc-lite
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Install Node.JS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies (root)
+        run: |
+          npm --include=dev install
+      - name: Install dependencies (cli)
+        run: |
+          cd cli
+          npm --include=dev install
+      - name: Package HaLo CLI tool (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd cli
+          node_modules/.bin/pkg -t node16-linux-x64 package.json
+      - name: Compress application (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd ./cli/dist
+          zip halocli-linux-x64.zip halocli
+      - name: Package HaLo CLI tool (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd cli
+          node_modules/.bin/pkg -t node16-win-x64 package.json
+      - name: Package HaLo CLI tool (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd cli
+          node_modules/.bin/pkg -t node16-macos-x64 package.json
+      - name: Store Entitlements.plist as artifact
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: entitlements-macos
+          path: ./cli/Entitlements.plist
+      - name: Store binary as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: binary-${{ matrix.os }}
+          path: ./cli/dist/${{ matrix.bin_name }}
+
+  sign_cli_tool:
+    environment: production
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            bin_name: halocli
+            out_name: halocli-linux-x64.zip
+          - os: windows-latest
+            bin_name: halocli.exe
+            out_name: halocli-win-x64.zip
+          - os: macos-latest
+            bin_name: halocli
+            out_name: halocli-macos-x64.pkg
+    name: Sign halocli and release (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: build_cli_tool
+    steps:
+      - name: Download binary from artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: binary-${{ matrix.os }}
+      - name: Download binary from artifact
+        if: matrix.os == 'macos-latest'
+        uses: actions/download-artifact@v2
+        with:
+          name: entitlements-macos
+      - name: Compress application (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          zip halocli-linux-x64.zip halocli
+      - name: Load signing credentials (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        with:
+          fileName: windows_sign.p12
+          fileDir: ${{ env.RUNNER_TEMP }}
+          encodedString: ${{ secrets.WINDOWS_SIGN_P12 }}
+      - name: Sign application (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          & "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe" sign /v /fd SHA256 /f "$Env:RUNNER_TEMP\windows_sign.p12" /t http://timestamp.sectigo.com ".\halocli.exe"
+          rm "$Env:RUNNER_TEMP\windows_sign.p12"
+      - name: Compress application (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          Compress-Archive halocli.exe halocli-win-x64.zip
+      - name: Load signing credentials (Mac OS)
+        if: matrix.os == 'macos-latest'
+        uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
+        with:
+          p12-file-base64: ${{ secrets.MACOS_SIGN_P12 }}
+          p12-password: ${{ secrets.MACOS_SIGN_P12_PASSWORD }}
+      - name: Sign application (Mac OS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p root/usr/local/bin/
+          mv halocli root/usr/local/bin/halocli
+          /usr/bin/codesign --deep --force --options=runtime --entitlements ./Entitlements.plist --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp ./root/usr/local/bin/halocli
+          pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halocli-macos-x64.pkg
+      - name: Notarize application for Mac OS
+        if: matrix.os == 'macos-latest'
+        run: |
+          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_NOTARIZE_APPLE_ID }}" "--password=${{ secrets.MACOS_NOTARIZE_PASSWORD }}" "--team-id=${{ secrets.MACOS_NOTARIZE_TEAM_ID }}" --progress --wait ./halocli-macos-x64.pkg
+      - name: Staple notarized application (Mac OS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          xcrun stapler staple ./halocli-macos-x64.pkg
+          rm -rf ./root/
+      - name: Download release upload URL
+        uses: actions/download-artifact@v2
+        with:
+          name: release-upload-url
+      - name: Store release upload URL output
+        id: out_store
+        shell: bash
+        run: |
+          echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
+      - name: Upload release asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
+          asset_path: ./${{ matrix.out_name }}
+          asset_name: ${{ matrix.out_name }}
+          asset_content_type: application/octet-stream
+      - name: Delete binary artifact
+        if: always()
+        uses: geekyeggo/delete-artifact@54ab544f12cdb7b71613a16a2b5a37a9ade990af
+        with:
+          name: binary-${{ matrix.os }}
