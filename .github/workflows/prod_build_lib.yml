@@ -74,7 +74,7 @@ jobs:
           cd ./web/dist
           echo y | cosign sign-blob ./libhalo.js --output-certificate ./libhalo.js.pem --output-signature ./libhalo.js.sig
           cosign verify-blob --cert ./libhalo.js.pem --signature ./libhalo.js.sig ./libhalo.js
-          zip ./libhalo-sig.zip ./libhalo.js.pem ./libhalo.js.sig
+          zip ./libhalo-cosign.zip ./libhalo.js.pem ./libhalo.js.sig ./libhalo.js
         env:
           COSIGN_EXPERIMENTAL: 1
       - name: Upload release asset (JS bundle)
@@ -107,6 +107,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./web/dist/libhalo-sig.zip
+          asset_path: ./web/dist/libhalo-cosign.zip
           asset_name: libhalo-sig.zip
           asset_content_type: application/octet-stream
