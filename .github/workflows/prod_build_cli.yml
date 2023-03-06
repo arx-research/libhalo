@@ -142,7 +142,8 @@ jobs:
       - name: Verify signatures
         run: |
           cosign verify-blob --cert ./${{ matrix.bin_name }}.pem --signature ./${{ matrix.bin_name }}.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./${{ matrix.bin_name }}
-          rm ./${{ matrix.bin_name }}.pem ./${{ matrix.bin_name }}.sig
+          rm ./${{ matrix.bin_name }}.pem
+          rm ./${{ matrix.bin_name }}.sig
       - name: Compress application (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
