@@ -39,6 +39,9 @@ jobs:
   build_js_lib:
     name: Build libhalo and release
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      id-token: write
     needs: create_release
     steps:
       - name: Checkout the repository
@@ -64,6 +67,14 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/libhalo-v')
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
+      - name: Install cosign
+        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
+      - name: Sign the images
+        run: |
+          cosign sign-blob ./web/dist/libhalo.js --output-certificate ./libhalo.js.pem --output-signature libhalo.js.sig
+          zip ./web/dist/libhalo-sig.zip ./libhalo.js.pem ./libhalo.js.sig
+        env:
+          COSIGN_EXPERIMENTAL: 1
       - name: Upload release asset (JS bundle)
         id: upload-release-asset
         if: startsWith(github.ref, 'refs/tags/libhalo-v')
@@ -86,3 +97,14 @@ jobs:
           asset_path: ./web/dist/libhalo.js.LICENSE.txt
           asset_name: libhalo.js.LICENSE.txt
           asset_content_type: text/plain
+      - name: Upload release asset (signature)
+        id: upload-release-asset
+        if: startsWith(github.ref, 'refs/tags/libhalo-v')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
+          asset_path: ./web/dist/libhalo-sig.zip
+          asset_name: libhalo-sig.zip
+          asset_content_type: application/octet-stream
