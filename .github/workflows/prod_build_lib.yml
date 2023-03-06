@@ -152,6 +152,8 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
+      - name: Install cosign
+        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
       - name: Run npm ci
         run: npm ci
       - name: Get package integrity hash
