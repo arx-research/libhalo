@@ -7,7 +7,6 @@ on:
 
 jobs:
   create_release:
-    environment: production
     runs-on: ubuntu-latest
     steps:
       - name: Prepare version number
@@ -37,7 +36,6 @@ jobs:
           path: release-upload-url.txt
 
   build_js_lib:
-    environment: production
     runs-on: ubuntu-latest
     needs: create_release
     steps:

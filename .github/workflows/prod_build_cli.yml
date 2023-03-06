@@ -7,7 +7,6 @@ on:
 
 jobs:
   create_release:
-    environment: production
     runs-on: ubuntu-latest
     steps:
       - name: Prepare version number
@@ -41,16 +40,15 @@ jobs:
           path: release-upload-url.txt
 
   build_cli_tool:
-    environment: production
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
-            bin_name: halocli-linux-x64.zip
+            bin_name: halocli
           - os: windows-latest
-            bin_name: halocli-win-x64.zip
+            bin_name: halocli.exe
           - os: macos-latest
-            bin_name: halocli-macos-x64.pkg
+            bin_name: halocli
     runs-on: ${{ matrix.os }}
     needs: create_release
     steps:
@@ -107,11 +105,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            bin_name: halocli-linux-x64.zip
+            bin_name: halocli
+            out_name: halocli-linux-x64.zip
           - os: windows-latest
-            bin_name: halocli-win-x64.zip
+            bin_name: halocli.exe
+            out_name: halocli-win-x64.zip
           - os: macos-latest
-            bin_name: halocli-macos-x64.pkg
+            bin_name: halocli
+            out_name: halocli-macos-x64.pkg
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
     steps:
@@ -173,7 +174,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./cli/dist/${{ matrix.bin_name }}
+          asset_path: ./${{ matrix.bin_name }}
           asset_name: ${{ matrix.bin_name }}
           asset_content_type: application/octet-stream
       - name: Delete binary artifact
