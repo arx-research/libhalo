@@ -96,7 +96,7 @@ jobs:
           cd cli
           node_modules/.bin/pkg -t node16-macos-x64 package.json
       - name: Store Entitlements.plist as artifact
-        if: matrix.os == 'macos-latest
+        if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v2
         with:
           name: entitlements-macos
