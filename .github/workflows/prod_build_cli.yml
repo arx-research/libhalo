@@ -148,8 +148,8 @@ jobs:
       - name: Sign application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          & "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe" sign /v /fd SHA256 /f "$Env:RUNNER_TEMP\authenticode.p12" /t http://timestamp.sectigo.com ".\halocli.exe"
-          rm "$Env:RUNNER_TEMP\authenticode.p12"
+          & "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe" sign /v /fd SHA256 /f "$Env:RUNNER_TEMP\windows_sign.p12" /t http://timestamp.sectigo.com ".\halocli.exe"
+          rm "$Env:RUNNER_TEMP\windows_sign.p12"
       - name: Compress application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
