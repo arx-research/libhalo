@@ -145,6 +145,11 @@ jobs:
           cosign verify-blob --cert ./${{ matrix.bin_name }}.pem --signature ./${{ matrix.bin_name }}.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./${{ matrix.bin_name }}
           rm ./${{ matrix.bin_name }}.pem
           rm ./${{ matrix.bin_name }}.sig
+      - name: Verify Entitlements.plist (Mac OS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "f31fbfd4c2c911ab3b5d7a8d5294ef35a08200e991fdd58ac36c04f38ab86ce9  Entitlements.plist" > Entitlements.plist.sum
+          sha -a 256 -c Entitlements.plist.sum
       - name: Compress application (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -198,8 +203,7 @@ jobs:
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Sign output binaries with cosign
         run: |
-          echo y | cosign sign-blob ./${{ matrix.out_name }} --output-certificate ./${{ matrix.out_name }}.pem --output-signature ./${{ matrix.out_name }}.sig
-          zip ./${{ matrix.out_name }}.cosign.zip ./${{ matrix.out_name }}.pem ./${{ matrix.out_name }}.sig
+          echo y | cosign sign-blob ./${{ matrix.out_name }} --output-certificate ./${{ matrix.out_name }}-keyless.pem --output-signature ./${{ matrix.out_name }}-keyless.sig
       - name: Upload release asset (binary)
         id: upload-release-asset-binary
         uses: actions/upload-release-asset@v1
@@ -210,15 +214,25 @@ jobs:
           asset_path: ./${{ matrix.out_name }}
           asset_name: ${{ matrix.out_name }}
           asset_content_type: application/octet-stream
-      - name: Upload release asset (cosign)
-        id: upload-release-asset-cosign
+      - name: Upload release asset (cosign pem)
+        id: upload-release-asset-cosign-pem
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}.cosign.zip
-          asset_name: ${{ matrix.out_name }}.cosign.zip
+          asset_path: ./${{ matrix.out_name }}-keyless.pem
+          asset_name: ${{ matrix.out_name }}-keyless.pem
+          asset_content_type: application/octet-stream
+      - name: Upload release asset (cosign sig)
+        id: upload-release-asset-cosign-sig
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
+          asset_path: ./${{ matrix.out_name }}-keyless.sig
+          asset_name: ${{ matrix.out_name }}-keyless.sig
           asset_content_type: application/octet-stream
       - name: Delete binary artifact
         if: always()
