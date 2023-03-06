@@ -139,7 +139,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: binary-${{ matrix.os }}
-      - name: Verify signatures
+      - name: Verify signatures from previous stage
+        shell: bash
         run: |
           cosign verify-blob --cert ./${{ matrix.bin_name }}.pem --signature ./${{ matrix.bin_name }}.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./${{ matrix.bin_name }}
           rm ./${{ matrix.bin_name }}.pem
