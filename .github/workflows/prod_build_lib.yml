@@ -69,10 +69,12 @@ jobs:
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Install cosign
         uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
-      - name: Sign the images
+      - name: Sign libhalo.js with cosign
         run: |
-          echo y | cosign sign-blob ./web/dist/libhalo.js --output-certificate ./libhalo.js.pem --output-signature libhalo.js.sig
-          zip ./web/dist/libhalo-sig.zip ./libhalo.js.pem ./libhalo.js.sig
+          cd ./web/dist
+          echo y | cosign sign-blob ./libhalo.js --output-certificate ./libhalo.js.pem --output-signature ./libhalo.js.sig
+          cosign verify-blob --cert ./libhalo.js.pem --signature ./libhalo.js.sig ./libhalo.js
+          zip ./libhalo-sig.zip ./libhalo.js.pem ./libhalo.js.sig
         env:
           COSIGN_EXPERIMENTAL: 1
       - name: Upload release asset (JS bundle)
