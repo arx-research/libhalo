@@ -1,4 +1,4 @@
-name: Release libhalo package
+name: Publish libhalo package
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
 
 jobs:
   build:
+    name: Publish libhalo package
     environment: production
     runs-on: ubuntu-latest
     permissions:
