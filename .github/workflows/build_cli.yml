@@ -77,18 +77,20 @@ jobs:
           brew install pcsc-lite
       - name: Import codesign certificates for application (Mac OS)
         if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
-        uses: apple-actions/import-codesign-certs@v1
+        uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
         with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATES_P12 }}
           p12-password: ${{ secrets.MACOS_CERTIFICATES_P12_PASSWORD }}
       - name: Checkout the repository
         if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         uses: actions/checkout@v3
-      - name: Load authenticode certificate (Windows)
+      - name: Load code signing certificate (Windows)
         if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
-        shell: bash
-        run: |
-          echo "${{ secrets.WINDOWS_AUTHENTICODE_P12 }}" | base64 -d > authenticode.p12
+        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        with:
+          fileName: authenticode.p12
+          fileDir: ${{ env.RUNNER_TEMP }}
+          encodedString: ${{ secrets.WINDOWS_AUTHENTICODE_P12 }}
       - name: Install Node.JS
         if: github.event_name != 'pull_request' || matrix.os == 'ubuntu-latest'
         uses: actions/setup-node@v3
@@ -126,7 +128,7 @@ jobs:
       - name: Sign application for Windows
         if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
-          & "C:/Program Files (x86)/Windows Kits/10/App Certification Kit/signtool.exe" sign /v /fd SHA256 /f authenticode.p12 /t http://timestamp.sectigo.com "./cli/dist/halocli.exe"
+          & "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe" sign /v /fd SHA256 /f "$Env:RUNNER_TEMP\authenticode.p12" /t http://timestamp.sectigo.com ".\cli\dist\halocli.exe"
       - name: Compress application (Windows)
         if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/halocli-v')
         run: |
