@@ -69,19 +69,23 @@ set -e
 WORKFLOW_NAME="$1"
 BIN_NAME="$2"
 TAG_NAME="$3"
+COMMIT_HASH=$(curl -s "https://api.github.com/repos/arx-research/libhalo/git/ref/tags/${TAG_NAME}" | jq --raw-output .object.sha)
 
 cosign verify-blob \
     --signature "${BIN_NAME}-keyless.sig" \
-    --certificate "${BIN_NAME}-keyless.sig" \
+    --certificate "${BIN_NAME}-keyless.pem" \
     --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/${WORKFLOW_NAME}.yml@refs/tags/${TAG_NAME}" \
     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+    --certificate-github-workflow-sha "$COMMIT_HASH" \
     "${BIN_NAME}"
+
+echo "Commit ID: $COMMIT_HASH"
 ```
 
 ### Usage examples
-Verify `halocli-x64-win.zip` build against the automated build of version `libhalo-v1.1.1`:
+Verify `halocli-win-x64.zip` build against the automated build of version `halocli-v1.1.1`:
 ```
-./verify.sh prod_build_cli halocli-x64-win.zip libhalo-v1.1.1
+./verify.sh prod_build_cli halocli-win-x64.zip halocli-v1.1.1
 ```
 
 Verify `libhalo.js` build against the automated build of version `libhalo-v1.1.1`:
