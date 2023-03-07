@@ -26,7 +26,7 @@ jobs:
           node-version: 16
       - name: Install dependencies (root)
         run: |
-          npm --include=dev install
+          npm --include=dev ci
       - name: Run npm ci
         run: |
           npm ci
