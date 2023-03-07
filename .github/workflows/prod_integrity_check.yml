@@ -17,11 +17,13 @@ jobs:
           curl -s -o "$RUNNER_TEMP/package-npm.json" https://registry.npmjs.org/@arx-research/libhalo/latest
           NPM_LATEST_VER=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.version' | tr -d '\n')
           NPM_HASH=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.dist.integrity' | tr -d '\n')
+          echo Latesxt ver: $NPM_LATEST_VER
           echo "NPM_LATEST_VER=$NPM_LATEST_VER" >> $GITHUB_ENV
           echo "NPM_HASH=$NPM_HASH" >> $GITHUB_ENV
       - name: Check cosign signature
         run: |
           NPM_LATEST_VER=${{ steps.get-latest-npm.outputs.NPM_LATEST_VER }}
+          echo "URL: https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt"
           curl -s -o "$RUNNER_TEMP/libhalo-npm-hash.txt" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt"
           curl -s -o "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.pem" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt-keyless.pem"
           curl -s -o "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.sig" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt-keyless.sig"
