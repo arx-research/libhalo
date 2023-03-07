@@ -14,9 +14,9 @@ jobs:
       - name: Get latest version from npm
         id: get-latest-npm
         run: |
-          curl -s https://registry.npmjs.org/@arx-research/libhalo/latest > $RUNNER_TEMP/package-npm.json
-          NPM_LATEST_VER=$(cat package-npm.json | jq --raw-output '.version' | tr -d '\n')
-          NPM_HASH=$(cat package-npm.json | jq --raw-output '.dist.integrity' | tr -d '\n')
+          curl -s https://registry.npmjs.org/@arx-research/libhalo/latest > "$RUNNER_TEMP/package-npm.json"
+          NPM_LATEST_VER=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.version' | tr -d '\n')
+          NPM_HASH=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.dist.integrity' | tr -d '\n')
           echo "NPM_LATEST_VER=$NPM_LATEST_VER" >> $GITHUB_ENV
           echo "NPM_HASH=$NPM_HASH" >> $GITHUB_ENV
       - name: Check cosign signature
