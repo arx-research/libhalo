@@ -48,8 +48,8 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://npm.pkg.github.com/@arx-research%2flibhalo
-          NPM_LATEST_VER=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.dist-tags.latest' | tr -d '\n')
-          NPM_HASH=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output ".versions.${NPM_LATEST_VER}.dist.integrity" | tr -d '\n')
+          NPM_LATEST_VER=$(cat "$RUNNER_TEMP/package-gh.json" | jq --raw-output '.["dist-tags"].latest' | tr -d '\n')
+          NPM_HASH=$(cat "$RUNNER_TEMP/package-gh.json" | jq --raw-output ".versions.[\"${NPM_LATEST_VER}\"].dist.integrity" | tr -d '\n')
           echo "NPM_LATEST_VER=$NPM_LATEST_VER" >> $GITHUB_ENV
           echo "NPM_HASH=$NPM_HASH" >> $GITHUB_ENV
       - name: Check cosign signature
