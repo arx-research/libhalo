@@ -43,34 +43,6 @@ Each of these assets is accompanied by the signature and certificate files in th
 * `<asset name>-keyless.pem` - the ephemeral certificate produced by `cosign` tool;
 * `<asset name>-keyless.sig` - the signature made with that ephemeral certificate;
 
-### Script: Verifying `halocli` build
-```bash
-
-
-cosign verify-blob \
-    --signature "${BIN_NAME}-keyless.sig" \
-    --certificate "${BIN_NAME}-keyless.sig" \
-    --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@refs/tags/${TAG_NAME}" \
-    --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-    "${BIN_NAME}"
-```
-
-### Script: Verifying `libhalo.js` build
-```
-prod_build_lib
-```
-
-### Example
-Verifying `halocli-x64-win.zip` against automated build of version `libhalo-v1.1.1`:
-```bash
-cosign verify-blob \
-    --signature halocli-x64-win.zip-keyless.sig \
-    --certificate halocli-x64-win.zip-keyless.sig \
-    --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@refs/tags/libhalo-v1.1.1" \
-    --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-    halocli-x64-win.zip
-```
-
 ## NPM package signatures
 
 * `@arx-research/libhalo` package on npmjs.com
