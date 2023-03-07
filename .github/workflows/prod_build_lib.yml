@@ -34,11 +34,9 @@ jobs:
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
       - name: Store release upload URL
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         run: |
           echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
       - uses: actions/upload-artifact@v3
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         with:
           name: release-upload-url
           path: release-upload-url.txt
@@ -65,13 +63,11 @@ jobs:
           cd web
           webpack
       - name: Download release upload URL
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/download-artifact@v3
         with:
           name: release-upload-url
       - name: Store release upload URL output
         id: out_store
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Install cosign
@@ -83,7 +79,6 @@ jobs:
           cosign verify-blob --cert ./libhalo.js-keyless.pem --signature ./libhalo.js-keyless.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./libhalo.js
       - name: Upload release asset (JS bundle)
         id: upload-release-asset
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -94,7 +89,6 @@ jobs:
           asset_content_type: text/javascript
       - name: Upload release asset (LICENSE file)
         id: upload-release-asset-license
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -105,7 +99,6 @@ jobs:
           asset_content_type: text/plain
       - name: Upload release asset (cosign pem)
         id: upload-release-asset-cosign-pem
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -116,7 +109,6 @@ jobs:
           asset_content_type: application/octet-stream
       - name: Upload release asset (cosign sig)
         id: upload-release-asset-cosign-sig
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -134,15 +126,14 @@ jobs:
       contents: write
       packages: write
       id-token: write
+    needs: create_release
     steps:
       - name: Download release upload URL
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/download-artifact@v3
         with:
           name: release-upload-url
       - name: Store release upload URL output
         id: out_store
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Checkout the repository
@@ -178,34 +169,31 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release asset (npm hash)
         id: upload-release-asset-license
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ${{ env.RUNNER_TEMP }}/libhalo-npm-hash.txt
+          asset_path: ${{ runner.temp }}/libhalo-npm-hash.txt
           asset_name: libhalo-npm-hash.txt
           asset_content_type: text/plain
       - name: Upload release asset (npm hash cosign pem)
         id: upload-release-asset-cosign-pem
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ${{ env.RUNNER_TEMP }}/libhalo-npm-hash.txt-keyless.pem
+          asset_path: ${{ runner.temp }}/libhalo-npm-hash.txt-keyless.pem
           asset_name: libhalo-npm-hash.txt-keyless.pem
           asset_content_type: application/octet-stream
       - name: Upload release asset (npm hash cosign sig)
         id: upload-release-asset-cosign-sig
-        if: startsWith(github.ref, 'refs/tags/libhalo-v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ${{ env.RUNNER_TEMP }}/libhalo-npm-hash.txt-keyless.sig
+          asset_path: ${{ runner.temp }}/libhalo-npm-hash.txt-keyless.sig
           asset_name: libhalo-npm-hash.txt-keyless.sig
           asset_content_type: application/octet-stream
