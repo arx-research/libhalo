@@ -30,7 +30,7 @@ jobs:
             Release contents:
             * `libhalo.js` - standalone JavaScript library for inclusion in classic HTML applications;
             * `libhalo.js.LICENSE` - license information;
-            * `libhalo.cosign.zip` - build audit trail;
+            * `libhalo-npm-hash.txt` - integrity hash of the package released to npmjs.com and GitHub Packages;
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
       - name: Store release upload URL
@@ -149,13 +149,13 @@ jobs:
         run: npm ci
       - name: Get package integrity hash
         run: |
-          PKG_HASH=$(npm publish --dry-run --json 2>/dev/null | jq --raw-output '.integrity')
+          PKG_HASH=$(npm publish --dry-run --json 2>/dev/null | jq --raw-output '.integrity' | tr -d '\n')
           echo "Package hash: ${PKG_HASH}"
           echo -n "${PKG_HASH}" > "${RUNNER_TEMP}/libhalo-npm-hash.txt"
           echo y | cosign sign-blob "${RUNNER_TEMP}/libhalo-npm-hash.txt" --output-certificate "${RUNNER_TEMP}/libhalo-npm-hash.txt-keyless.pem" --output-signature "${RUNNER_TEMP}/libhalo-npm-hash.txt-keyless.sig"
           cosign verify-blob --cert "${RUNNER_TEMP}/libhalo-npm-hash.txt-keyless.pem" --signature "${RUNNER_TEMP}/libhalo-npm-hash.txt-keyless.sig" --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com "${RUNNER_TEMP}/libhalo-npm-hash.txt"
       - name: Publish package to npmjs
-        run: npm publish --json
+        run: npm publish --json | tee "${RUNNER_TEMP}/npmjs-publish.json"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.RELEASE_NPM_TOKEN }}
       - name: Re-setup Node.JS with GitHub pkg
@@ -164,9 +164,15 @@ jobs:
           node-version: '16.x'
           registry-url: https://npm.pkg.github.com/
       - name: Publish package to GitHub
-        run: npm publish --json
+        run: npm publish --json | tee "${RUNNER_TEMP}/gh-publish.json"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compare released hashes
+        run: |
+          ( cat "${RUNNER_TEMP}/npmjs-publish.json" | jq --raw-output '.integrity' | tr -d '\n' ) > "${RUNNER_TEMP}/npmjs-hash.txt"
+          ( cat "${RUNNER_TEMP}/gh-publish.json" | jq --raw-output '.integrity' | tr -d '\n' ) > "${RUNNER_TEMP}/gh-hash.txt"
+          cmp -s "${RUNNER_TEMP}/libhalo-npm-hash.txt" "${RUNNER_TEMP}/npmjs-hash.txt"
+          cmp -s "${RUNNER_TEMP}/libhalo-npm-hash.txt" "${RUNNER_TEMP}/gh-hash.txt"
       - name: Upload release asset (npm hash)
         id: upload-release-asset-license
         uses: actions/upload-release-asset@v1
