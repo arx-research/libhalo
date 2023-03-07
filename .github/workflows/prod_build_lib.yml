@@ -155,7 +155,7 @@ jobs:
           echo y | cosign sign-blob "${RUNNER_TEMP}/libhalo-npm-hash.txt" --output-certificate "${RUNNER_TEMP}/libhalo-npm-hash.txt-keyless.pem" --output-signature "${RUNNER_TEMP}/libhalo-npm-hash.txt-keyless.sig"
           cosign verify-blob --cert "${RUNNER_TEMP}/libhalo-npm-hash.txt-keyless.pem" --signature "${RUNNER_TEMP}/libhalo-npm-hash.txt-keyless.sig" --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com "${RUNNER_TEMP}/libhalo-npm-hash.txt"
       - name: Publish package to npmjs
-        run: npm publish --dry-run --json | tee "${RUNNER_TEMP}/npmjs-publish.json"
+        run: npm publish --json | tee "${RUNNER_TEMP}/npmjs-publish.json"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.RELEASE_NPM_TOKEN }}
       - name: Re-setup Node.JS with GitHub pkg
@@ -164,7 +164,7 @@ jobs:
           node-version: '16.x'
           registry-url: https://npm.pkg.github.com/
       - name: Publish package to GitHub
-        run: npm publish --dry-run --json | tee "${RUNNER_TEMP}/gh-publish.json"
+        run: npm publish --json | tee "${RUNNER_TEMP}/gh-publish.json"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Compare released hashes
