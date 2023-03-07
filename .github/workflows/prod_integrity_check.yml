@@ -1,13 +1,16 @@
 name: Integrity check
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '37 21 * * *'
 
 jobs:
-  test_check:
-    name: Integrity check
+  integrity_npmjs:
+    name: Integrity check (npmjs)
     runs-on: ubuntu-latest
-    permissions:
-      packages: read
     steps:
       - name: Install cosign
         uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
@@ -17,18 +20,13 @@ jobs:
           curl -s -o "$RUNNER_TEMP/package-npm.json" https://registry.npmjs.org/@arx-research/libhalo/latest
           NPM_LATEST_VER=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.version' | tr -d '\n')
           NPM_HASH=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.dist.integrity' | tr -d '\n')
-          echo Latesxt ver: $NPM_LATEST_VER
           echo "NPM_LATEST_VER=$NPM_LATEST_VER" >> $GITHUB_ENV
           echo "NPM_HASH=$NPM_HASH" >> $GITHUB_ENV
       - name: Check cosign signature
         run: |
-          # NPM_LATEST_VER=${{ steps.get-latest-npm.outputs.NPM_LATEST_VER }}
-          echo "URL: https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt"
           curl -s -L -o "$RUNNER_TEMP/libhalo-npm-hash.txt" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt"
           curl -s -L -o "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.pem" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt-keyless.pem"
           curl -s -L -o "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.sig" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt-keyless.sig"
-          cat "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.pem"
-          cat "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.sig"
           cosign verify-blob \
             --cert "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.pem" \
             --signature "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.sig" \
@@ -37,6 +35,7 @@ jobs:
             "$RUNNER_TEMP/libhalo-npm-hash.txt"
       - name: Verify integrity hash on npmjs
         run: |
-          # NPM_HASH=${{ steps.get-latest-npm.outputs.NPM_HASH }}
           OUR_HASH=$(cat "$RUNNER_TEMP/libhalo-npm-hash.txt" | tr -d '\n')
+          echo "Our hash: $OUR_HASH"
+          echo "NPM hash: $NPM_HASH"
           [[ "$NPM_HASH" == "$OUR_HASH" ]]
