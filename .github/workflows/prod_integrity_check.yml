@@ -14,7 +14,7 @@ jobs:
       - name: Get latest version from npm
         id: get-latest-npm
         run: |
-          curl -s https://registry.npmjs.org/@arx-research/libhalo/latest > "$RUNNER_TEMP/package-npm.json"
+          curl -s -o "$RUNNER_TEMP/package-npm.json" https://registry.npmjs.org/@arx-research/libhalo/latest
           NPM_LATEST_VER=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.version' | tr -d '\n')
           NPM_HASH=$(cat "$RUNNER_TEMP/package-npm.json" | jq --raw-output '.dist.integrity' | tr -d '\n')
           echo "NPM_LATEST_VER=$NPM_LATEST_VER" >> $GITHUB_ENV
@@ -25,6 +25,8 @@ jobs:
           curl -s -o "$RUNNER_TEMP/libhalo-npm-hash.txt" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt"
           curl -s -o "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.pem" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt-keyless.pem"
           curl -s -o "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.sig" "https://github.com/arx-research/libhalo/releases/download/libhalo-v${NPM_LATEST_VER}/libhalo-npm-hash.txt-keyless.sig"
+          cat "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.pem"
+          cat "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.sig"
           cosign verify-blob \
             --cert "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.pem" \
             --signature "$RUNNER_TEMP/libhalo-npm-hash.txt-keyless.sig" \
