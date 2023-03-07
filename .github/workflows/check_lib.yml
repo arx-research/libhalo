@@ -27,9 +27,6 @@ jobs:
       - name: Install dependencies (root)
         run: |
           npm --include=dev ci
-      - name: Run npm ci
-        run: |
-          npm ci
       - name: Run webpack
         run: |
           cd web
