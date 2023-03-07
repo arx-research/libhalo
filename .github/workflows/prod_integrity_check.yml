@@ -1,11 +1,6 @@
 name: Integrity check
 
-on:
-  push:
-    branches:
-      - '*'
-  schedule:
-    - cron: '37 21 * * *'
+on: [push]
 
 jobs:
   integrity_npmjs:
