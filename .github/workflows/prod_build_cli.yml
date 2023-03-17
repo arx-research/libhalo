@@ -29,7 +29,7 @@ jobs:
             
             Release contents:
             * `halocli-linux-x64.zip` - Linux x64 build (elf; zipped)
-            * `halocli-win-x64.exe` - Windows 64 build (exe; signed)
+            * `halocli-win-x64.exe` - Windows 64 build (exe; signed; zipped)
             * `halocli-macos-x64.pkg` - Mac OS x64 build (installer; signed)
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
@@ -127,7 +127,7 @@ jobs:
             out_name: halocli-linux-x64.zip
           - os: windows-latest
             bin_name: halocli.exe
-            out_name: halocli-win-x64.exe
+            out_name: halocli-win-x64.zip
           - os: macos-latest
             bin_name: halocli
             out_name: halocli-macos-x64.pkg
@@ -251,7 +251,7 @@ jobs:
         run: |
           dotnet tool install --global AzureSignTool
           AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc "${{ secrets.AZURE_CERT_NAME }}" -ac intermediate1.cer -ac intermediate2.cer -tr http://timestamp.globalsign.com/tsa/r6advanced1 -v halocli.exe
-          mv halocli.exe halocli-win-x64.exe
+          Compress-Archive halocli.exe halocli-win-x64.zip
       - name: Load signing credentials (Mac OS)
         if: matrix.os == 'macos-latest'
         uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
