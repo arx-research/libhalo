@@ -167,12 +167,15 @@ jobs:
           path: ./chain.cer
           write-mode: overwrite
           contents: ${{ vars.WINDOWS_CODE_SIGN_CERT_CHAIN }}
-      - name: Sign application (Windows)
+      - name: Download jsign and verify (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           curl -s -L -o jsign.jar https://github.com/ebourg/jsign/releases/download/4.2/jsign-4.2.jar
-          echo "290377fc4f593256200b3ea4061b7409e8276255f449d4c6de7833faf0850cc1  jsign.jar" > jsign.sum
+          echo -n "290377fc4f593256200b3ea4061b7409e8276255f449d4c6de7833faf0850cc1 jsign.jar" > jsign.sum
           sha256sum -c jsign.sum
+      - name: Sign application (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
           java -jar jsign.jar --storetype GOOGLECLOUD --storepass "${{ secrets.WINDOWS_CODE_SIGN_GCLOUD_API_KEY }}" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
           Compress-Archive halocli.exe halocli-win-x64.zip
       - name: Load signing credentials (Mac OS)
