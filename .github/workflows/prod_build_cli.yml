@@ -160,18 +160,11 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           zip halocli-linux-x64.zip halocli
-      - name: Load signing credentials (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-        with:
-          fileName: windows_sign.p12
-          fileDir: ${{ env.RUNNER_TEMP }}
-          encodedString: ${{ secrets.WINDOWS_SIGN_P12 }}
       - name: Sign application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          & "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe" sign /v /fd SHA256 /f "$Env:RUNNER_TEMP\windows_sign.p12" /t http://timestamp.sectigo.com ".\halocli.exe"
-          rm "$Env:RUNNER_TEMP\windows_sign.p12"
+          dotnet tool install --global AzureSignTool
+          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc "${{ secrets.AZURE_CERT_NAME }}" -tr http://timestamp.globalsign.com/tsa/r6advanced1 -v halocli.exe
       - name: Compress application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
