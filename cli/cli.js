@@ -11,6 +11,7 @@ const {parseArgs} = require('./args.js');
 const {execHaloCmdPCSC} = require('../index.js');
 const {__runTestSuite} = require("../halo/tests");
 const util = require("util");
+const {wsEventCardDisconnected, wsCreateServer, wsEventCardConnected} = require("./ws_server");
 
 const nfc = new NFC();
 let stopPCSCTimeout = null;
@@ -38,12 +39,17 @@ nfc.on('reader', reader => {
     reader.autoProcessing = false;
 
     reader.on('card', card => {
-        clearTimeout(stopPCSCTimeout);
-        stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
+        if (args.name === "server") {
+            wsEventCardConnected(reader);
+            return;
+        }
 
         if (args.name === "pcsc_detect") {
             console.log("Tag inserted:", reader.reader.name, '(Type: ' + card.type + ', ATR: ' + card.atr.toString('hex').toUpperCase() + ')');
         }
+
+        clearTimeout(stopPCSCTimeout);
+        stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
 
         (async () => {
             let res = await checkCard(reader);
@@ -88,6 +94,14 @@ nfc.on('reader', reader => {
         })();
     });
 
+    reader.on('card.off', card => {
+        wsEventCardDisconnected(reader);
+    });
+
+    reader.on('end', () => {
+        wsEventCardDisconnected(reader);
+    });
+
     reader.on('error', err => {
         console.log(`${reader.reader.name} an error occurred`, err);
     });
@@ -125,4 +139,8 @@ function stopPCSC(code, output) {
     }
 }
 
-stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
+if (args.name === "server") {
+    wsCreateServer(args);
+} else {
+    stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
+}
