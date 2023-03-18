@@ -140,7 +140,9 @@ function stopPCSC(code, output) {
 }
 
 if (args.name === "server") {
+    console.log('Launching Web Socket Server...');
     wsCreateServer(args);
+    console.log('Web Socket Server is listening...');
 } else {
     stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
 }
