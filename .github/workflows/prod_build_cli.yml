@@ -176,18 +176,24 @@ jobs:
           sha256sum -c jsign.sum
       - name: Authenticate with gcloud (Windows)
         if: matrix.os == 'windows-latest'
-        id: gcloud-auth
         uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d
         with:
           credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
-          token_format: access_token
-          access_token_lifetime: 60s
-          access_token_scopes: https://www.googleapis.com/auth/cloudkms
+      - name: Set up Cloud SDK (Windows)
+        uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587
+        if: matrix.os == 'windows-latest'
+        with:
+          install_components: 'gcloud'
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
       - name: Sign application (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
         run: |
-          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "${{ steps.gcloud-auth.outputs.access_token }}" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
+          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
+      - name: Revoke gcloud token (Windows)
+        if: ${{ always() && matrix.os == 'windows-latest' }}
+        run: |
+          gcloud auth revoke --all
       - name: Compress application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
