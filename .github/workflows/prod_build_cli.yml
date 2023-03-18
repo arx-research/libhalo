@@ -207,6 +207,7 @@ jobs:
           /usr/bin/codesign --deep --force --options=runtime --entitlements ./Entitlements.plist --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp ./root/usr/local/bin/halocli
           /usr/bin/codesign --deep --force --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp "./root/Applications/HaLo CLI Bridge Server.app"
           chmod +x ./root/usr/local/bin/halocli
+          chmod +x "./root/Applications/HaLo CLI Bridge Server.app/Contents/MacOS/halocli_bridge"
           pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halocli-macos-x64.pkg
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest'
