@@ -94,6 +94,7 @@ jobs:
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-macos-x64 package.json
+          mv "cli/HaLo CLI Bridge Server.app" "cli/dist/HaLo CLI Bridge Server.app"
       - name: Store Entitlements.plist in dist
         if: matrix.os == 'macos-latest'
         run:
@@ -200,8 +201,11 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           mkdir -p root/usr/local/bin/
+          mkdir -p root/Applications/
           mv halocli root/usr/local/bin/halocli
+          mv "HaLo CLI Bridge Server.app" "root/Applications/HaLo CLI Bridge Server.app"
           /usr/bin/codesign --deep --force --options=runtime --entitlements ./Entitlements.plist --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp ./root/usr/local/bin/halocli
+          /usr/bin/codesign --deep --force --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp "./root/Applications/HaLo CLI Bridge Server.app"
           chmod +x ./root/usr/local/bin/halocli
           pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halocli-macos-x64.pkg
       - name: Notarize application for Mac OS
