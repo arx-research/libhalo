@@ -180,8 +180,9 @@ jobs:
         uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d
         with:
           credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
-          token_format: id_token
+          token_format: access_token
           access_token_lifetime: 60s
+          access_token_scopes: https://www.googleapis.com/auth/cloudkms
       - name: Sign application (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
