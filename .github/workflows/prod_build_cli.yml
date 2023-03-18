@@ -29,7 +29,7 @@ jobs:
             
             Release contents:
             * `halocli-linux-x64.zip` - Linux x64 build (elf; zipped)
-            * `halocli-win-x64.zip` - Windows 64 build (exe; zipped)
+            * `halocli-win-x64.exe` - Windows 64 build (exe; signed; zipped)
             * `halocli-macos-x64.pkg` - Mac OS x64 build (installer; signed)
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
@@ -160,18 +160,36 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           zip halocli-linux-x64.zip halocli
-      - name: Load signing credentials (Windows)
+      - name: Write certificate file (Windows)
         if: matrix.os == 'windows-latest'
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
         with:
-          fileName: windows_sign.p12
-          fileDir: ${{ env.RUNNER_TEMP }}
-          encodedString: ${{ secrets.WINDOWS_SIGN_P12 }}
+          path: ./chain.cer
+          write-mode: overwrite
+          contents: ${{ vars.WINDOWS_CODE_SIGN_CERT_CHAIN }}
+      - name: Download jsign and verify (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          curl -s -L -o jsign.jar https://github.com/ebourg/jsign/releases/download/4.2/jsign-4.2.jar
+          echo "290377fc4f593256200b3ea4061b7409e8276255f449d4c6de7833faf0850cc1 jsign.jar" > jsign.sum
+          sha256sum -c jsign.sum
+      - name: Authenticate with gcloud (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
+      - name: Set up Cloud SDK (Windows)
+        uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587
+        if: matrix.os == 'windows-latest'
+        with:
+          install_components: 'gcloud'
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
       - name: Sign application (Windows)
         if: matrix.os == 'windows-latest'
+        shell: bash
         run: |
-          & "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe" sign /v /fd SHA256 /f "$Env:RUNNER_TEMP\windows_sign.p12" /t http://timestamp.sectigo.com ".\halocli.exe"
-          rm "$Env:RUNNER_TEMP\windows_sign.p12"
+          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
       - name: Compress application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
