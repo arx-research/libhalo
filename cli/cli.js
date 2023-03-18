@@ -5,13 +5,19 @@
  */
 
 const Buffer = require('buffer/').Buffer;
-const { NFC } = require('nfc-pcsc');
+const {NFC} = require('nfc-pcsc');
 
 const {parseArgs} = require('./args.js');
 const {execHaloCmdPCSC} = require('../index.js');
 const {__runTestSuite} = require("../halo/tests");
 const util = require("util");
-const {wsEventCardDisconnected, wsCreateServer, wsEventCardConnected} = require("./ws_server");
+const {
+    wsEventCardDisconnected,
+    wsCreateServer,
+    wsEventCardConnected,
+    wsEventReaderConnected,
+    wsEventReaderDisconnected
+} = require("./ws_server");
 
 const nfc = new NFC();
 let stopPCSCTimeout = null;
@@ -34,6 +40,8 @@ nfc.on('reader', reader => {
 
     if (args.name === "pcsc_detect") {
         console.log('Detected PC/SC reader:', reader.reader.name);
+    } else if (args.name === "server") {
+        wsEventReaderConnected(reader);
     }
 
     reader.autoProcessing = false;
@@ -100,6 +108,7 @@ nfc.on('reader', reader => {
 
     reader.on('end', () => {
         wsEventCardDisconnected(reader);
+        wsEventReaderDisconnected(reader);
     });
 
     reader.on('error', err => {
@@ -141,7 +150,7 @@ function stopPCSC(code, output) {
 
 if (args.name === "server") {
     console.log('Launching Web Socket Server...');
-    wsCreateServer(args);
+    wsCreateServer(args, () => Object.keys(nfc.readers).map(r => nfc.readers[r].name));
     console.log('Web Socket Server is listening...');
 } else {
     stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);

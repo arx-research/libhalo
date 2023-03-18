@@ -1,4 +1,4 @@
-const { WebSocketServer } = require('ws');
+const {WebSocketServer} = require('ws');
 const crypto = require('crypto').webcrypto;
 const {execHaloCmdPCSC} = require('../index.js');
 
@@ -11,14 +11,10 @@ function generateHandle() {
     return Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64');
 }
 
-function generateAuthPin() {
-    let val = Buffer.from(crypto.getRandomValues(new Uint8Array(3))).toString('hex');
-    return val.slice(0, 3) + '-' + val.slice(3);
-}
-
 function sendToCurrentWs(ws, data) {
+    console.log('send', data);
+
     if (currentWsClient !== null && (ws === null || currentWsClient === ws)) {
-        console.log('send', data);
         currentWsClient.send(JSON.stringify(data));
         return true;
     }
@@ -32,7 +28,8 @@ function wsEventCardConnected(reader) {
             "event": "handle_removed",
             "uid": null,
             "data": {
-                "handle": currentState.handle
+                "handle": currentState.handle,
+                "reader_name": currentState.reader.reader.name
             }
         });
     }
@@ -43,7 +40,8 @@ function wsEventCardConnected(reader) {
         "event": "handle_added",
         "uid": null,
         "data": {
-            "handle": handle
+            "handle": handle,
+            "reader_name": reader.reader.name
         }
     });
 }
@@ -54,14 +52,35 @@ function wsEventCardDisconnected(reader) {
             "event": "handle_removed",
             "uid": null,
             "data": {
-                "handle": currentState.handle
+                "handle": currentState.handle,
+                "reader_name": reader.reader.name
             }
         });
         currentState = null;
     }
 }
 
-function wsCreateServer(args) {
+function wsEventReaderConnected(reader) {
+    sendToCurrentWs(null, {
+        "event": "reader_added",
+        "uid": null,
+        "data": {
+            "reader_name": reader.reader.name
+        }
+    });
+}
+
+function wsEventReaderDisconnected(reader) {
+    sendToCurrentWs(null, {
+        "event": "reader_removed",
+        "uid": null,
+        "data": {
+            "reader_name": reader.reader.name
+        }
+    });
+}
+
+function wsCreateServer(args, getReaderNames) {
     wss = new WebSocketServer({host: args.listenHost, port: args.listenPort});
 
     wss.on('connection', (ws, req) => {
@@ -130,16 +149,35 @@ function wsCreateServer(args) {
             "data": {}
         });
 
+        let readerNames = getReaderNames();
+
+        for (let readerName of readerNames) {
+            sendToCurrentWs(null, {
+                "event": "reader_added",
+                "uid": null,
+                "data": {
+                    "reader_name": readerName
+                }
+            });
+        }
+
         if (currentState) {
             sendToCurrentWs(null, {
                 "event": "handle_added",
                 "uid": null,
                 "data": {
-                    "handle": currentState.handle
+                    "handle": currentState.handle,
+                    "reader_name": currentState.reader.reader.name
                 }
             });
         }
     });
 }
 
-module.exports = {wsCreateServer, wsEventCardConnected, wsEventCardDisconnected};
+module.exports = {
+    wsCreateServer,
+    wsEventCardConnected,
+    wsEventCardDisconnected,
+    wsEventReaderConnected,
+    wsEventReaderDisconnected
+};
