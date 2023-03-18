@@ -94,7 +94,7 @@ jobs:
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-macos-x64 package.json
-          mv "cli/HaLo CLI Bridge Server.app" "cli/dist/HaLo CLI Bridge Server.app"
+          mv "HaLo CLI Bridge Server.app" "dist/HaLo CLI Bridge Server.app"
       - name: Store Entitlements.plist in dist
         if: matrix.os == 'macos-latest'
         run:
