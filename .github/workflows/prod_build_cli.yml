@@ -181,6 +181,11 @@ jobs:
           path: ./gcloud-key.json
           write-mode: overwrite
           contents: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+        if: matrix.os == 'windows-latest'
+        with:
+          skip_install: true
       - name: Sign application (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
