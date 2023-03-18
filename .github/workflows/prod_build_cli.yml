@@ -50,7 +50,7 @@ jobs:
         include:
           - os: ubuntu-latest
             bin_name: halocli
-          - os: windows-2019
+          - os: windows-latest
             bin_name: halocli.exe
           - os: macos-latest
             bin_name: halocli
@@ -90,7 +90,7 @@ jobs:
           cd ./cli/dist
           zip halocli-linux-x64.zip halocli
       - name: Package HaLo CLI tool (Windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-latest'
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-win-x64 package.json
@@ -125,7 +125,7 @@ jobs:
           - os: ubuntu-latest
             bin_name: halocli
             out_name: halocli-linux-x64.zip
-          - os: windows-2019
+          - os: windows-latest
             bin_name: halocli.exe
             out_name: halocli-win-x64.zip
           - os: macos-latest
@@ -161,39 +161,38 @@ jobs:
         run: |
           zip halocli-linux-x64.zip halocli
       - name: Write certificate file (Windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-latest'
         uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
         with:
           path: ./chain.cer
           write-mode: overwrite
           contents: ${{ vars.WINDOWS_CODE_SIGN_CERT_CHAIN }}
       - name: Download jsign and verify (Windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-latest'
         shell: bash
         run: |
           curl -s -L -o jsign.jar https://github.com/ebourg/jsign/releases/download/4.2/jsign-4.2.jar
           echo "290377fc4f593256200b3ea4061b7409e8276255f449d4c6de7833faf0850cc1 jsign.jar" > jsign.sum
           sha256sum -c jsign.sum
-      - name: Write gcloud auth file
-        if: matrix.os == 'windows-2019'
-        uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
+      - name: Authenticate with gcloud (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: google-github-actions/auth@v1
         with:
-          path: ./gcloud-key.json
-          write-mode: overwrite
-          contents: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1'
-        if: matrix.os == 'windows-2019'
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
+      - name: Set up Cloud SDK (Windows)
+        uses: google-github-actions/setup-gcloud@v1
+        if: matrix.os == 'windows-latest'
         with:
-          skip_install: true
+          install_components: 'gcloud'
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
       - name: Sign application (Windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-latest'
         shell: bash
         run: |
-          gcloud auth activate-service-account "${{ secrets.GCLOUD_SERVICE_ACCOUNT_LOGIN }}" "--key-file=gcloud-key.json" "--project=${{ secrets.GCLOUD_PROJECT_ID }}"
-          rm gcloud-key.json
-          GCLOUD_TOKEN=$(gcloud auth print-access-token)
-          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "${GCLOUD_TOKEN}" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
+          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
+      - name: Compress application (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
           Compress-Archive halocli.exe halocli-win-x64.zip
       - name: Load signing credentials (Mac OS)
         if: matrix.os == 'macos-latest'
