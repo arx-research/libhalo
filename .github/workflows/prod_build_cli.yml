@@ -28,7 +28,7 @@ jobs:
             Standalone command line tool for desktop computers with PC/SC readers (USB/NFC readers).
             
             Release contents:
-            * `halocli-linux-x64.zip` - Linux x64 build (elf; zipped)
+            * `halocli-linux-x64.tgz` - Linux x64 build (elf; tar-gzip compressed)
             * `halocli-win-x64.exe` - Windows 64 build (exe; signed; zipped)
             * `halocli-macos-x64.pkg` - Mac OS x64 build (installer; signed)
             
@@ -84,11 +84,6 @@ jobs:
         run: |
           cd cli
           node_modules/.bin/pkg -t node16-linux-x64 package.json
-      - name: Compress application (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          cd ./cli/dist
-          zip halocli-linux-x64.zip halocli
       - name: Package HaLo CLI tool (Windows)
         if: matrix.os == 'windows-latest'
         run: |
@@ -124,7 +119,7 @@ jobs:
         include:
           - os: ubuntu-latest
             bin_name: halocli
-            out_name: halocli-linux-x64.zip
+            out_name: halocli-linux-x64.tgz
           - os: windows-latest
             bin_name: halocli.exe
             out_name: halocli-win-x64.zip
@@ -159,7 +154,8 @@ jobs:
       - name: Compress application (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          zip halocli-linux-x64.zip halocli
+          chmod +x halocli
+          tar -pczf halocli-linux-x64.tgz halocli
       - name: Write certificate file (Windows)
         if: matrix.os == 'windows-latest'
         uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
@@ -206,6 +202,7 @@ jobs:
           mkdir -p root/usr/local/bin/
           mv halocli root/usr/local/bin/halocli
           /usr/bin/codesign --deep --force --options=runtime --entitlements ./Entitlements.plist --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp ./root/usr/local/bin/halocli
+          chmod +x ./root/usr/local/bin/halocli
           pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halocli-macos-x64.pkg
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest'
