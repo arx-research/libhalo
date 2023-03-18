@@ -190,10 +190,6 @@ jobs:
         shell: bash
         run: |
           java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
-      - name: Revoke gcloud token (Windows)
-        if: ${{ always() && matrix.os == 'windows-latest' }}
-        run: |
-          gcloud auth revoke --all
       - name: Compress application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
