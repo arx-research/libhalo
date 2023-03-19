@@ -6,6 +6,7 @@
 
 const Buffer = require('buffer/').Buffer;
 const {NFC} = require('nfc-pcsc');
+const open = require('open');
 
 const {execHaloCmdPCSC} = require('../index.js');
 const {__runTestSuite} = require("../halo/tests");
@@ -150,6 +151,10 @@ function runHalo(entryMode, args) {
         console.log('Launching Web Socket Server...');
         wsCreateServer(args, () => Object.keys(nfc.readers).map(r => nfc.readers[r].name));
         console.log('Web Socket Server is listening...');
+
+        if (!args.nonInteractive) {
+            open('http://127.0.0.1:' + args.listenPort);
+        }
     } else {
         stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
     }

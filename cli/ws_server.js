@@ -116,7 +116,7 @@ function wsCreateServer(args, getReaderNames) {
                 ws.close(4002, "Connecting origin is not on the configured allow list.");
                 return;
             }
-        } else if (originHostname !== "localhost" || originHostname !== "127.0.0.1") {
+        } else if (originHostname !== "localhost" && originHostname !== "127.0.0.1") {
             ws.close(4003, "Connecting origin is not localhost. No other allowed origins are configured.");
             return;
         }

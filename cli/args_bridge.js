@@ -27,9 +27,9 @@ parser.add_argument("-a", "--allow-origins", {
     default: null,
     dest: "allowOrigins"
 });
-parser.add_argument("--interactive", {
-    help: "Interactive mode (automatically launch web browser)",
-    dest: "interactive",
+parser.add_argument("--non-interactive", {
+    help: "Non-interactive mode (don't launch the web browser)",
+    dest: "nonInteractive",
     action: "store_true",
     "default": false
 });

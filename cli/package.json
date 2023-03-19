@@ -45,6 +45,7 @@
     "express": "^4.18.2",
     "nfc-pcsc": "^0.8.1",
     "nunjucks": "^3.2.3",
+    "open": "^8.4.2",
     "ws": "^8.13.0"
   },
   "devDependencies": {
