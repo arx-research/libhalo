@@ -216,9 +216,6 @@ jobs:
         shell: bash
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
-      - name: Sign output binaries with cosign
-        run: |
-          echo y | cosign sign-blob ./${{ matrix.out_name }} --output-certificate ./${{ matrix.out_name }}-keyless.pem --output-signature ./${{ matrix.out_name }}-keyless.sig
       - name: Upload release asset (binary)
         id: upload-release-asset-binary
         uses: actions/upload-release-asset@v1
@@ -228,26 +225,6 @@ jobs:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
           asset_path: ./${{ matrix.out_name }}
           asset_name: ${{ matrix.out_name }}
-          asset_content_type: application/octet-stream
-      - name: Upload release asset (cosign pem)
-        id: upload-release-asset-cosign-pem
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}-keyless.pem
-          asset_name: ${{ matrix.out_name }}-keyless.pem
-          asset_content_type: application/octet-stream
-      - name: Upload release asset (cosign sig)
-        id: upload-release-asset-cosign-sig
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}-keyless.sig
-          asset_name: ${{ matrix.out_name }}-keyless.sig
           asset_content_type: application/octet-stream
       - name: Delete binary artifact
         if: always()
