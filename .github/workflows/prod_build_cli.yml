@@ -49,11 +49,8 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            bin_name: halocli
           - os: windows-latest
-            bin_name: halocli.exe
           - os: macos-latest
-            bin_name: halocli
     name: Build halocli (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: create_release
@@ -83,27 +80,25 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -t node16-linux-x64 package.json
+          node_modules/.bin/pkg -t node16-linux-x64 -c package.json -o dist/halocli entry_cli.js
+          node_modules/.bin/pkg -t node16-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.js
       - name: Package HaLo CLI tool (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -t node16-win-x64 package.json
+          node_modules/.bin/pkg -t node16-win-x64 -c package.json -o dist/halocli.exe entry_cli.js
+          node_modules/.bin/pkg -t node16-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.js
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
           cd cli
-          node_modules/.bin/pkg -t node16-macos-x64 package.json
+          node_modules/.bin/pkg -t node16-macos-x64 -c package.json -o dist/halocli entry_cli.js
+          node_modules/.bin/pkg -t node16-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.js
           mv "HaLo CLI Bridge Server.app" "dist/HaLo CLI Bridge Server.app"
       - name: Store Entitlements.plist in dist
         if: matrix.os == 'macos-latest'
         run:
           mv ./cli/Entitlements.plist ./cli/dist/Entitlements.plist
-      - name: Install cosign
-        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
-      - name: Sign binary with cosign
-        run: |
-          echo y | cosign sign-blob ./cli/dist/${{ matrix.bin_name }} --output-certificate ./cli/dist/${{ matrix.bin_name }}.pem --output-signature ./cli/dist/${{ matrix.bin_name }}.sig
       - name: Store binary as artifact
         uses: actions/upload-artifact@v3
         with:
@@ -119,30 +114,19 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            bin_name: halocli
             out_name: halocli-linux-x64.tgz
           - os: windows-latest
-            bin_name: halocli.exe
             out_name: halocli-win-x64.zip
           - os: macos-latest
-            bin_name: halocli
             out_name: halocli-macos-x64.pkg
     name: Sign halocli and release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
     steps:
-      - name: Install cosign
-        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
       - name: Download binary from artifact
         uses: actions/download-artifact@v3
         with:
           name: binary-${{ matrix.os }}
-      - name: Verify signatures from previous stage
-        shell: bash
-        run: |
-          cosign verify-blob --cert ./${{ matrix.bin_name }}.pem --signature ./${{ matrix.bin_name }}.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./${{ matrix.bin_name }}
-          rm ./${{ matrix.bin_name }}.pem
-          rm ./${{ matrix.bin_name }}.sig
       - name: Calculate checksum of Entitlements.plist (Mac OS)
         if: matrix.os == 'macos-latest'
         run: |
@@ -156,7 +140,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           chmod +x halocli
-          tar -pczf halocli-linux-x64.tgz halocli
+          chmod +x halo-bridge
+          tar -pczf halocli-linux-x64.tgz halocli halo-bridge
       - name: Write certificate file (Windows)
         if: matrix.os == 'windows-latest'
         uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
@@ -187,6 +172,7 @@ jobs:
         shell: bash
         run: |
           java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
+          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halo-bridge.exe
       - name: Compress application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
@@ -203,11 +189,14 @@ jobs:
           mkdir -p root/usr/local/bin/
           mkdir -p root/Applications/
           mv halocli root/usr/local/bin/halocli
+          mv halo-bridge root/usr/local/bin/halo-bridge
           mv "HaLo CLI Bridge Server.app" "root/Applications/HaLo CLI Bridge Server.app"
           /usr/bin/codesign --deep --force --options=runtime --entitlements ./Entitlements.plist --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp ./root/usr/local/bin/halocli
+          /usr/bin/codesign --deep --force --options=runtime --entitlements ./Entitlements.plist --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp ./root/usr/local/bin/halo-bridge
           /usr/bin/codesign --deep --force --sign "${{ secrets.MACOS_SIGN_IDENTITY_APPLICATION }}" --timestamp "./root/Applications/HaLo CLI Bridge Server.app"
           chmod +x ./root/usr/local/bin/halocli
-          chmod +x "./root/Applications/HaLo CLI Bridge Server.app/Contents/MacOS/halocli_bridge"
+          chmod +x ./root/usr/local/bin/halo-bridge
+          chmod +x "./root/Applications/HaLo CLI Bridge Server.app/Contents/MacOS/halocli_bridge_launcher"
           pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halocli-macos-x64.pkg
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest'

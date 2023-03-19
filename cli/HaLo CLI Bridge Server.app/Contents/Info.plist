@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>arx.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>halocli_bridge</string>
+	<string>halocli_bridge_launcher</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.0.0</string>
+	<string>0.0.1</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 </dict>

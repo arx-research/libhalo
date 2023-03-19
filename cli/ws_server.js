@@ -1,6 +1,9 @@
+const express = require('express');
+const nunjucks = require("nunjucks");
 const {WebSocketServer} = require('ws');
 const crypto = require('crypto').webcrypto;
 const {execHaloCmdPCSC} = require('../index.js');
+const {dirname} = require("./util");
 
 let wss = null;
 
@@ -81,7 +84,27 @@ function wsEventReaderDisconnected(reader) {
 }
 
 function wsCreateServer(args, getReaderNames) {
-    wss = new WebSocketServer({host: args.listenHost, port: args.listenPort});
+    const app = express();
+    const server = app.listen(args.listenPort, args.listenHost);
+
+    wss = new WebSocketServer({noServer: true});
+
+    app.use('/assets/static', express.static(dirname + '/assets/static'));
+
+    nunjucks.configure(dirname + '/assets/views', {
+        autoescape: true,
+        express: app
+    });
+
+    app.get('/', (req, res) => {
+        res.render('ws_demo.html');
+    });
+
+    server.on('upgrade', (request, socket, head) => {
+        wss.handleUpgrade(request, socket, head, socket => {
+            wss.emit('connection', socket, request);
+        });
+    });
 
     wss.on('connection', (ws, req) => {
         let originHostname = new URL(req.headers.origin).hostname;

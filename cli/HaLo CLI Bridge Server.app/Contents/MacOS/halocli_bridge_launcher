@@ -1,0 +1,3 @@
+#!/bin/bash
+
+open -a Terminal -e "/usr/local/bin/halo-bridge"
