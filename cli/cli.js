@@ -5,24 +5,24 @@
  */
 
 const Buffer = require('buffer/').Buffer;
-const { NFC } = require('nfc-pcsc');
+const {NFC} = require('nfc-pcsc');
+const open = require('open');
 
-const {parseArgs} = require('./args.js');
 const {execHaloCmdPCSC} = require('../index.js');
 const {__runTestSuite} = require("../halo/tests");
 const util = require("util");
-const {wsEventCardDisconnected, wsCreateServer, wsEventCardConnected} = require("./ws_server");
+const {
+    wsEventCardDisconnected,
+    wsCreateServer,
+    wsEventCardConnected,
+    wsEventReaderConnected,
+    wsEventReaderDisconnected
+} = require("./ws_server");
 
 const nfc = new NFC();
 let stopPCSCTimeout = null;
 let isConnected = false;
 let isClosing = false;
-
-let args = parseArgs();
-
-if (!args) {
-    process.exit(0);
-}
 
 async function checkCard(reader) {
     // try to select Halo ETH Core Layer
@@ -30,119 +30,134 @@ async function checkCard(reader) {
     return resSelect.compare(Buffer.from([0x90, 0x00])) === 0;
 }
 
-nfc.on('reader', reader => {
-
-    if (args.name === "pcsc_detect") {
-        console.log('Detected PC/SC reader:', reader.reader.name);
-    }
-
-    reader.autoProcessing = false;
-
-    reader.on('card', card => {
-        if (args.name === "server") {
-            wsEventCardConnected(reader);
-            return;
-        }
+function runHalo(entryMode, args) {
+    nfc.on('reader', reader => {
 
         if (args.name === "pcsc_detect") {
-            console.log("Tag inserted:", reader.reader.name, '(Type: ' + card.type + ', ATR: ' + card.atr.toString('hex').toUpperCase() + ')');
+            console.log('Detected PC/SC reader:', reader.reader.name);
+        } else if (entryMode === "server") {
+            wsEventReaderConnected(reader);
         }
 
-        clearTimeout(stopPCSCTimeout);
-        stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
+        reader.autoProcessing = false;
 
-        (async () => {
-            let res = await checkCard(reader);
+        reader.on('card', card => {
+            if (entryMode === "server") {
+                wsEventCardConnected(reader);
+                return;
+            }
 
-            if (res) {
-                clearTimeout(stopPCSCTimeout);
-                isConnected = true;
-                let res = null;
+            if (args.name === "pcsc_detect") {
+                console.log("Tag inserted:", reader.reader.name, '(Type: ' + card.type + ', ATR: ' + card.atr.toString('hex').toUpperCase() + ')');
+            }
 
-                if (args.name === "pcsc_detect") {
-                    console.log("HaLo tag detected:", reader.reader.name);
-                    res = {"status": "ok"};
-                } else if (args.name === "test") {
-                    res = await __runTestSuite({"__this_is_unsafe": true},
-                        "pcsc", async (command) => await execHaloCmdPCSC(command, reader));
-                } else {
-                    try {
-                        res = await execHaloCmdPCSC(args, reader);
-                    } catch (e) {
-                        if (args.output === "color") {
-                            console.error(e);
-                        } else {
-                            console.log(JSON.stringify({"_exception": {"message": String(e), "stack": e.stack}}));
+            clearTimeout(stopPCSCTimeout);
+            stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
+
+            (async () => {
+                let res = await checkCard(reader);
+
+                if (res) {
+                    clearTimeout(stopPCSCTimeout);
+                    isConnected = true;
+                    let res = null;
+
+                    if (args.name === "pcsc_detect") {
+                        console.log("HaLo tag detected:", reader.reader.name);
+                        res = {"status": "ok"};
+                    } else if (args.name === "test") {
+                        res = await __runTestSuite({"__this_is_unsafe": true},
+                            "pcsc", async (command) => await execHaloCmdPCSC(command, reader));
+                    } else {
+                        try {
+                            res = await execHaloCmdPCSC(args, reader);
+                        } catch (e) {
+                            if (args.output === "color") {
+                                console.error(e);
+                            } else {
+                                console.log(JSON.stringify({"_exception": {"message": String(e), "stack": e.stack}}));
+                            }
                         }
                     }
-                }
 
-                if (res !== null) {
-                    if (args.output === "color") {
-                        console.log(util.inspect(res, {depth: Infinity, colors: true}));
+                    if (res !== null) {
+                        if (args.output === "color") {
+                            console.log(util.inspect(res, {depth: Infinity, colors: true}));
+                        } else {
+                            console.log(JSON.stringify(res));
+                        }
+
+                        stopPCSC("done", args.output);
                     } else {
-                        console.log(JSON.stringify(res));
+                        stopPCSC("error", args.output);
                     }
-
-                    stopPCSC("done", args.output);
                 } else {
-                    stopPCSC("error", args.output);
+                    console.log("Not a HaLo tag:", reader.reader.name);
                 }
-            } else {
-                console.log("Not a HaLo tag:", reader.reader.name);
+            })();
+        });
+
+        reader.on('card.off', card => {
+            if (entryMode === "server") {
+                wsEventCardDisconnected(reader);
             }
-        })();
+        });
+
+        reader.on('end', () => {
+            if (entryMode === "server") {
+                wsEventCardDisconnected(reader);
+                wsEventReaderDisconnected(reader);
+            }
+        });
+
+        reader.on('error', err => {
+            console.log(`${reader.reader.name} an error occurred`, err);
+        });
+
     });
 
-    reader.on('card.off', card => {
-        wsEventCardDisconnected(reader);
+    nfc.on('error', err => {
+        if (!isClosing) {
+            console.log('an error occurred', err);
+        }
     });
 
-    reader.on('end', () => {
-        wsEventCardDisconnected(reader);
-    });
+    function stopPCSC(code, output) {
+        clearTimeout(stopPCSCTimeout);
 
-    reader.on('error', err => {
-        console.log(`${reader.reader.name} an error occurred`, err);
-    });
+        if (code === "error" && output === "color") {
+            console.error('Command execution failed.');
+        } else if (code !== "done") {
+            if (output === "color") {
+                console.error("NFC card or compatible PC/SC reader not found.");
+            } else {
+                console.log(JSON.stringify({"_error": "NFC card or compatible PC/SC reader not found."}));
+            }
+        }
 
-});
+        for (let rdrName in nfc.readers) {
+            nfc.readers[rdrName].close();
+        }
 
-nfc.on('error', err => {
-    if (!isClosing) {
-        console.log('an error occurred', err);
-    }
-});
+        isClosing = true;
+        nfc.close();
 
-function stopPCSC(code, output) {
-    clearTimeout(stopPCSCTimeout);
-
-    if (code === "error" && output === "color") {
-        console.error('Command execution failed.');
-    } else if (code !== "done") {
-        if (output === "color") {
-            console.error("NFC card or compatible PC/SC reader not found.");
-        } else {
-            console.log(JSON.stringify({"_error": "NFC card or compatible PC/SC reader not found."}));
+        if (code !== "done") {
+            process.exit(1);
         }
     }
 
-    for (let rdrName in nfc.readers) {
-        nfc.readers[rdrName].close();
-    }
+    if (entryMode === "server") {
+        console.log('Launching Web Socket Server...');
+        wsCreateServer(args, () => Object.keys(nfc.readers).map(r => nfc.readers[r].name));
+        console.log('Web Socket Server is listening...');
 
-    isClosing = true;
-    nfc.close();
-
-    if (code !== "done") {
-        process.exit(1);
+        if (!args.nonInteractive) {
+            open('http://127.0.0.1:' + args.listenPort);
+        }
+    } else {
+        stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
     }
 }
 
-if (args.name === "server") {
-    console.log('Launching Web Socket Server...');
-    wsCreateServer(args);
-    console.log('Web Socket Server is listening...');
-} else {
-    stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
-}
+module.exports = {runHalo};

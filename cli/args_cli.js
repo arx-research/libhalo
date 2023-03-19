@@ -27,25 +27,6 @@ if (process.env.__UNSAFE_ENABLE_TESTS === "1") {
     });
 }
 
-let serverParser = subparsers.add_parser("server", {help: "Run local WebSocket server."});
-serverParser.add_argument("-l", "--listen-host", {
-    help: "IP where the server should bind",
-    default: "127.0.0.1",
-    dest: "listenHost"
-});
-serverParser.add_argument("-p", "--listen-port", {
-    help: "Port where the server should bind",
-    type: "int",
-    default: 49437,
-    dest: "listenPort"
-});
-serverParser.add_argument("-a", "--allow-origins", {
-    help: "List of origins that are allowed to connect (semicolon-separated)",
-    type: "str",
-    default: null,
-    dest: "allowOrigins"
-});
-
 subparsers.add_parser("read_ndef", {help: "Read dynamic URL on the tag."});
 
 let signParser = subparsers.add_parser("sign", {help: "Sign message using ECDSA/Keccak algorithm."});

@@ -29,11 +29,12 @@
   "bin": "cli.js",
   "pkg": {
     "targets": [
-      "node16"
+      "node18"
     ],
     "outputPath": "dist",
     "assets": [
-      "node_modules/@pokusew/pcsclite/build/Release/pcsclite.node"
+      "node_modules/@pokusew/pcsclite/build/Release/pcsclite.node",
+      "assets/**"
     ]
   },
   "type": "commonjs",
@@ -41,10 +42,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "express": "^4.18.2",
     "nfc-pcsc": "^0.8.1",
+    "nunjucks": "^3.2.3",
+    "open": "^8.4.2",
+    "websocket-as-promised": "^2.0.1",
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "pkg": "^5.8.0"
+    "pkg": "^5.8.0",
+    "webpack": "^5.76.2",
+    "webpack-cli": "^5.0.1"
   }
 }
