@@ -1,3 +1,65 @@
+<script src="/assets/static/wsdemo.js"></script>
+
 <script>
-    window.location.href = 'https://dev-tmp1.nfcdeveloper.com/ethdev/ws/wsdemo.html';
+    function log(data) {
+        console.log(data);
+        document.getElementById('log').innerText += '\n' + data;
+    }
+
+    let wsp = createWs('ws://localhost:49437');
+
+    async function processTag(handle) {
+        let res = await wsp.sendRequest({
+            "type": "exec_halo",
+            "handle": handle,
+            "command": {
+                "name": "get_pkeys"
+            }
+        });
+
+        if (res.event === "exec_exception") {
+            log("!!! ERROR !!! Failed to execute HaLo command.");
+        }
+
+        log(JSON.stringify(res));
+
+        res = await wsp.sendRequest({
+            "type": "exec_halo",
+            "handle": handle,
+            "command": {
+                "name": "sign",
+                "message": "010203",
+                "keyNo": 1
+            }
+        });
+
+        if (res.event === "exec_exception") {
+            log("!!! ERROR !!! Failed to execute HaLo command.");
+        }
+
+        log(JSON.stringify(res));
+    }
+
+    wsp.onUnpackedMessage.addListener(async ev => {
+        if (ev.event !== "exec_success" && ev.event !== "exec_exception") {
+            log(JSON.stringify(ev));
+        }
+
+        if (ev.event === "handle_added") {
+            await processTag(ev.data.handle);
+        }
+    });
+
+    wsp.onClose.addListener(event => {
+        if (event.code === 4001) {
+            log('Connection closed, new client has connected.');
+        } else {
+            log('Connection closed: ' + event.code);
+        }
+    });
+
+    wsp.open();
 </script>
+
+<pre id="log">Connecting to the server...</pre>
+
