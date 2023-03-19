@@ -176,7 +176,7 @@ jobs:
       - name: Compress application (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          Compress-Archive halocli.exe halo-bridge.exe halocli-win-x64.zip
+          Compress-Archive -Path halocli.exe halo-bridge.exe -DestinationPath halocli-win-x64.zip
       - name: Load signing credentials (Mac OS)
         if: matrix.os == 'macos-latest'
         uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
