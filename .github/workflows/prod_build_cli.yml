@@ -140,6 +140,7 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
       - name: Validate signatures from previous stage
+        shell: bash
         run: |
           cosign verify-blob --cert ./dist.tgz-keyless.pem --signature ./dist.tgz-keyless.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_cli.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./dist.tgz
       - name: Uncompress previous stage
