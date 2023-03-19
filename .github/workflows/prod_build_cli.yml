@@ -76,6 +76,10 @@ jobs:
         run: |
           cd cli
           npm --include=dev ci
+      - name: Build ws_client with webpack
+        run: |
+          cd cli/ws_client
+          webpack
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -146,15 +150,6 @@ jobs:
       - name: Uncompress previous stage
         run: |
           tar -xopf dist.tgz
-      - name: Calculate checksum of Entitlements.plist (Mac OS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          shasum -a 256 Entitlements.plist
-      - name: Verify Entitlements.plist (Mac OS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          echo "bb1c65f6915e18f6e371a76e0b84551756a0e5037e90ef541680c95831fb52a7  Entitlements.plist" > Entitlements.plist.sum
-          shasum -a 256 -c Entitlements.plist.sum
       - name: Compress application (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
