@@ -79,7 +79,7 @@ jobs:
       - name: Build ws_client with webpack
         run: |
           cd cli/ws_client
-          node_modules/.bin/webpack
+          webpack
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
