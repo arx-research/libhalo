@@ -97,7 +97,7 @@ function wsCreateServer(args, getReaderNames) {
     });
 
     app.get('/', (req, res) => {
-        res.render('ws_demo.html');
+        res.render('ws_client.html');
     });
 
     server.on('upgrade', (request, socket, head) => {
