@@ -174,9 +174,10 @@ jobs:
           java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
           java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halo-bridge.exe
       - name: Compress application (Windows)
+        shell: bash
         if: matrix.os == 'windows-latest'
         run: |
-          Compress-Archive -Path halocli.exe halo-bridge.exe -DestinationPath halocli-win-x64.zip
+          zip halocli-win-x64.zip halocli.exe halo-bridge.exe
       - name: Load signing credentials (Mac OS)
         if: matrix.os == 'macos-latest'
         uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
