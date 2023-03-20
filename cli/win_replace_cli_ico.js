@@ -112,3 +112,7 @@ if (process.argv.length < 3) {
 }
 
 fixBinary(name, bin_name);
+
+// $env:PKG_PATCHED_BIN = 1
+// $env:PKG_CACHE_PATH = './.pkg-cache/'
+// $env:PKG_IGNORE_TAG = 1
