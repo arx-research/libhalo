@@ -7,12 +7,7 @@ const crypto = require("crypto");
 
 const {
     hostArch,
-    hostPlatform,
-    isValidNodeRange,
-    knownArchs,
-    knownPlatforms,
-    toFancyArch,
-    toFancyPlatform,
+    hostPlatform
 } = system;
 
 function computeSha256(filePath) {
@@ -113,6 +108,7 @@ if (process.argv.length < 3) {
 
 fixBinary(name, bin_name);
 
+// run pkg with:
 // $env:PKG_PATCHED_BIN = 1
 // $env:PKG_CACHE_PATH = './.pkg-cache/'
 // $env:PKG_IGNORE_TAG = 1
