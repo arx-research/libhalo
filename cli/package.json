@@ -29,7 +29,7 @@
   "bin": "cli.js",
   "pkg": {
     "targets": [
-      "node18"
+      "node16"
     ],
     "outputPath": "dist",
     "assets": [
@@ -51,6 +51,8 @@
   },
   "devDependencies": {
     "pkg": "^5.8.0",
+    "pkg-fetch": "^3.4.2",
+    "resedit": "^2.0.0",
     "webpack": "^5.76.2",
     "webpack-cli": "^5.0.1"
   }
