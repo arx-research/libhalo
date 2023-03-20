@@ -90,7 +90,19 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd cli
+          node win_fix_binary.js cli
+          $env:PKG_PATCHED_BIN = '1'
+          $env:PKG_CACHE_PATH = './.pkg-cache/'
+          $env:PKG_IGNORE_TAG = '1'
           node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halocli.exe entry_cli.js
+      - name: Package HaLo Bridge tool (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd cli
+          node win_fix_binary.js bridge
+          $env:PKG_PATCHED_BIN = '1'
+          $env:PKG_CACHE_PATH = './.pkg-cache/'
+          $env:PKG_IGNORE_TAG = '1'
           node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.js
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.os == 'macos-latest'
