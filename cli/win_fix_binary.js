@@ -23,7 +23,7 @@ function computeSha256(filePath) {
     });
 }
 
-async function fixBinary(name, bin_name) {
+async function fixBinary(name, bin_name, version) {
     // unable to normally require, this is ES6 module
     const ResEdit = await import('resedit');
 
@@ -54,8 +54,8 @@ async function fixBinary(name, bin_name) {
     vi.removeStringValue(language, 'OriginalFilename');
     vi.removeStringValue(language, 'InternalName');
 
-    vi.setProductVersion(1, 0, 0, 0, language.lang);
-    vi.setFileVersion(1, 0, 0, 0, language.lang);
+    vi.setProductVersion(...version, language.lang);
+    vi.setFileVersion(...version, language.lang);
 
     vi.setStringValues(language, {
         FileDescription: name,
@@ -67,7 +67,7 @@ async function fixBinary(name, bin_name) {
     vi.outputToResourceEntries(res.entries);
 
     // Add icon
-    const iconFile = ResEdit.Data.IconFile.from(readFileSync("arx.ico"));
+    const iconFile = ResEdit.Data.IconFile.from(readFileSync("halo.ico"));
     ResEdit.Resource.IconGroupEntry.replaceIconsForResource(
         res.entries,
         1,
@@ -92,21 +92,33 @@ async function fixBinary(name, bin_name) {
 }
 
 let name = null;
-let bin_name = null;
+let binName = null;
 
 if (process.argv.length < 3) {
     throw Error("Binary type not specified in argv.");
 } else if (process.argv[2] === "cli") {
     name = 'HaLo CLI';
-    bin_name = 'halocli.exe';
+    binName = 'halocli.exe';
 } else if (process.argv[2] === "bridge") {
     name = 'HaLo Bridge Server';
-    bin_name = 'halo-bridge.exe';
+    binName = 'halo-bridge.exe';
 } else {
     throw Error("Unknown binary type specified.");
 }
 
-fixBinary(name, bin_name);
+let tagName = process.env.GITHUB_REF_NAME;
+let version = null;
+
+if (tagName && tagName.startsWith('halocli-v')) {
+    let vStr = tagName.split('-v')[1];
+    let vStr2 = vStr.split('.');
+    version = [parseInt(vStr2[0]), parseInt(vStr2[1]), parseInt(vStr2[2]), 0];
+} else {
+    version = [0, 0, 0, 0];
+}
+
+console.log('Using version', version);
+fixBinary(name, binName, version);
 
 // run pkg with:
 // $env:PKG_PATCHED_BIN = 1
