@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>halocli_bridge_launcher</string>
 	<key>CFBundleIconFile</key>
-	<string>arx.icns</string>
+	<string>halo.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>halocli_bridge</string>
 	<key>CFBundleInfoDictionaryVersion</key>
