@@ -7,7 +7,7 @@
 const {ArgumentParser} = require("argparse");
 
 const parser = new ArgumentParser({
-    description: 'HaLo - Bridge Server'
+    description: 'HaLo Bridge Server'
 });
 
 parser.add_argument("-l", "--listen-host", {
@@ -18,7 +18,7 @@ parser.add_argument("-l", "--listen-host", {
 parser.add_argument("-p", "--listen-port", {
     help: "Port where the server should bind",
     type: "int",
-    default: 49437,
+    default: 32868,
     dest: "listenPort"
 });
 parser.add_argument("-a", "--allow-origins", {

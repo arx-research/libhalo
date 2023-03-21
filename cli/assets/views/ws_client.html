@@ -1,15 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>HaLo Bridge Server</title>
+</head>
+<body>
+<div class="container">
+    <h1>HaLo Bridge Server</h1>
+    <p>
+        This is the example web application of HaLo Bridge Server.
+        Please connect your PC/SC reader and tap the compatible HaLo tag.
+    </p>
+    <pre id="log">Connecting to the server...</pre>
+</div>
 <script src="/assets/static/ws_client.js"></script>
-
 <script>
     function log(data) {
         console.log(data);
         document.getElementById('log').innerText += '\n' + data;
     }
 
-    let wsp = createWs('ws://localhost:49437');
+    let wsp = createWs('ws://localhost:32868');
+
+    async function execHaloCommand(command) {
+        log('Executing command: ' + JSON.stringify(command));
+        let res = await wsp.sendRequest(command);
+
+        if (res.event === "exec_success") {
+            log('Command executed successfully: ' + JSON.stringify(res));
+        } else if (res.event === "exec_exception") {
+            log('[!] Failed to execute command: ' + JSON.stringify(res));
+        } else {
+            log('Unknown response: ' + JSON.stringify(res));
+        }
+    }
 
     async function processTag(handle) {
-        let res = await wsp.sendRequest({
+        await execHaloCommand({
             "type": "exec_halo",
             "handle": handle,
             "command": {
@@ -17,13 +45,7 @@
             }
         });
 
-        if (res.event === "exec_exception") {
-            log("!!! ERROR !!! Failed to execute HaLo command.");
-        }
-
-        log(JSON.stringify(res));
-
-        res = await wsp.sendRequest({
+        await execHaloCommand({
             "type": "exec_halo",
             "handle": handle,
             "command": {
@@ -32,17 +54,27 @@
                 "keyNo": 1
             }
         });
-
-        if (res.event === "exec_exception") {
-            log("!!! ERROR !!! Failed to execute HaLo command.");
-        }
-
-        log(JSON.stringify(res));
     }
 
     wsp.onUnpackedMessage.addListener(async ev => {
         if (ev.event !== "exec_success" && ev.event !== "exec_exception") {
-            log(JSON.stringify(ev));
+            switch (ev.event) {
+                case 'ws_connected':
+                    log('Connected to the server.');
+                    break;
+                case 'reader_added':
+                    log('Reader connected: ' + ev.data.reader_name);
+                    break;
+                case 'reader_removed':
+                    log('Reader disconnected: ' + ev.data.reader_name);
+                    break;
+                case 'handle_added':
+                    log('Detected tag: ' + ev.data.reader_name + ' (handle: ' + ev.data.handle + ')');
+                    break;
+                case 'handle_removed':
+                    log('Removed tag: ' + ev.data.reader_name + ' (handle: ' + ev.data.handle + ')');
+                    break;
+            }
         }
 
         if (ev.event === "handle_added") {
@@ -60,6 +92,5 @@
 
     wsp.open();
 </script>
-
-<pre id="log">Connecting to the server...</pre>
-
+</body>
+</html>
