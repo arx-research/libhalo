@@ -25,7 +25,7 @@ Please check [HaLo Tag Firmware Versions](/docs/firmware-versions.md) for the de
 Sign an arbitrary message using ERC-191 (version 0x45) algorithm, typed data (EIP-712), or sign a raw digest using plain ECDSA (secp256k1) algorithm. This command could use tag's private key slot #1 or #3.
 
 ### Arguments
-* `message` (str) - the hex-encoded message to be signed using Ethereum's hashing algorithm;
+* `message` (str) - the hex-encoded message to be signed as an Ethereum EIP-191 personal message;
 * `digest` (str) - the raw hex-encoded 32 byte digest to be signed using plain ECDSA;
 * `typedData` (object) - EIP-712 typed data to be signed, should contain sub-keys: `domain`, `types`, `value`;
 * `keyNo` (int) - number of the key slot to use;
@@ -250,6 +250,35 @@ Keccak-256 algorithm, and the resulting digest will be sent to the NFC tag in or
 
 If you wish to use different hashing scheme, please compute the message hash on your side, and then pass
 the hex-encoded message hash to the library by using `command.digest` key. Any 32 byte digest will be supported.
+
+### Verifying messages on-chain
+
+If you are going to verify the message in a smart contract and have various types of data that you would like to sign, you
+will also need to consider the how you recover the address from the signature on chain, for instance using
+[OpenZeppelin's ECDSA library](https://docs.openzeppelin.com/contracts/4.x/api/utils#ECDSA).
+
+For example, if you wish to sign an EIP-191 personal message consisting of an Ethereum `address` and a `bytes32` string, 
+you will need to manually hash the individual components using 
+[ethers](https://docs.ethers.org/v5/api/utils/hashing/#utils-solidityKeccak256) with `ethers.solidityKeccak256` and then
+hash with the `\x19Ethereum Signed Message:` prefix:
+
+```js
+export const hashMessageEIP191SolidityKeccak = (
+  address: string,
+  blockhash: string
+) => {
+  const messagePrefix = "\x19Ethereum Signed Message:\n32";
+  const message = ethers.utils.solidityKeccak256(["address", "bytes32"], [address, blockhash])
+  return ethers.utils.solidityKeccak256(
+    ["string", "bytes32"],
+    [messagePrefix, ethers.utils.arrayify(message)]
+  );
+};
+```
+
+When signing with a HaLo, you will want to use the output from `hashMessageEIP191SolidityKeccak` above as raw input for 
+the `command.digest` key as opposed to `command.message` so as not to apply an additional round of unncessary hashing on 
+the data. 
 
 ## Command: sign_random
 
