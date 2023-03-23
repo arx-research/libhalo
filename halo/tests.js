@@ -94,6 +94,12 @@ const tests = [
         });
 
         assert(resGenKeyConfirm.status === "ok");
+
+        let resGenKeyFinalize = await exec({
+            "name": "gen_key_finalize"
+        });
+
+        assert(resGenKeyConfirm.status === "ok");
     }],
     ["testSign3", async function(driver, exec) {
         let digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
