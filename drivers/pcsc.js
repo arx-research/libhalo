@@ -20,7 +20,14 @@ async function selectCore(reader) {
 async function transceive(reader, command, options) {
     options = options || {};
 
+    let start = performance.now();
     let res = await reader.transmit(command, 255);
+    let end = performance.now();
+
+    if (process.env.DEBUG_PCSC === "1") {
+        console.log('=> ' + command.toString('hex'));
+        console.log('<= [' + Math.round(end - start) + ' ms] ' + res.toString('hex'));
+    }
 
     let check1 = res.slice(-2).compare(Buffer.from([0x90, 0x00])) !== 0;
     let check2 = res.slice(-2).compare(Buffer.from([0x91, 0x00])) !== 0;
