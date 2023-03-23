@@ -61,6 +61,15 @@ signRandomParser.add_argument("-k", "--key-no", {
     'default': 2
 });
 
+let signChallenge = subparsers.add_parser("sign_challenge", {help: "Sign challenge using ECDSA/Keccak algorithm."});
+signChallenge.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    help: "Number of the key slot to use.",
+    type: 'int',
+    required: true
+});
+signChallenge.add_argument("-c", "--challenge", {help: "Challenge to be signed (32 bytes hex)."});
+
 let writeLatchParser = subparsers.add_parser("write_latch", {help: "Write value into the latch slot."});
 writeLatchParser.add_argument("-n", "--latch-no", {
     dest: "latchNo",
@@ -155,6 +164,8 @@ genKeyParser.add_argument("--entropy", {
 
 let genKeyConfirmParser = subparsers.add_parser("gen_key_confirm", {help: "Confirm public key in slot #3 (only if additional entropy was provided)."});
 genKeyConfirmParser.add_argument("--public-key", {dest: 'publicKey', help: "Key slot #3 public key", required: true});
+
+subparsers.add_parser("gen_key_finalize", {help: "Finalize key generation in slot #3."});
 
 subparsers.add_parser("get_pkeys", {help: "Get tag's public keys #1, #2 and #3."});
 

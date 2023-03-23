@@ -12,7 +12,10 @@ const {
     HaloLogicError,
     HaloTagError
 } = require("../halo/exceptions");
-const {cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm} = require("../halo/commands");
+const {
+    cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm, cmdGenKeyFinalize,
+    cmdSignChallenge
+} = require("../halo/commands");
 const {ERROR_CODES} = require("../halo/errors");
 
 let isCallRunning = null;
@@ -41,6 +44,8 @@ async function execHaloCmd(command, options) {
             return await cmdSign(options, command);
         case 'sign_random':
             return await cmdSignRandom(options, command);
+        case 'sign_challenge':
+            return await cmdSignChallenge(options, command);
         case 'write_latch':
             return await cmdWriteLatch(options, command);
         case 'cfg_ndef':
@@ -49,6 +54,8 @@ async function execHaloCmd(command, options) {
             return await cmdGenKey(options, command);
         case 'gen_key_confirm':
             return await cmdGenKeyConfirm(options, command);
+        case 'gen_key_finalize':
+            return await cmdGenKeyFinalize(options, command);
         default:
             throw new HaloLogicError("Unsupported command.name parameter specified.");
     }
