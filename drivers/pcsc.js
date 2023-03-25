@@ -65,6 +65,16 @@ async function getVersion(reader) {
     }
 }
 
+async function getAddonVersion(reader) {
+    let addonVersionRes = await transceive(reader, Buffer.from("00510000011000", "hex"), {noCheck: true});
+
+    if (addonVersionRes.slice(-2).compare(Buffer.from([0x90, 0x00])) !== 0) {
+        return null;
+    }
+
+    return addonVersionRes.slice(0, -2).toString();
+}
+
 async function execCoreCommand(reader, command) {
     const cmdBuf = Buffer.concat([
         Buffer.from("B0510000", "hex"),
@@ -93,7 +103,6 @@ async function execHaloCmdPCSC(command, reader) {
     let version = await getVersion(reader);
 
     let [verMajor, verMinor, verSeq, verShortId] = version.split('.');
-    verMajor = parseInt(verMajor, 10);
     verSeq = parseInt(verSeq, 10);
 
     if (verMajor > 1) {
@@ -105,13 +114,33 @@ async function execHaloCmdPCSC(command, reader) {
 
     if (command.name === "version") {
         // PCSC-specific version retrieval command
+        let addonVersion = await getAddonVersion(reader);
+        let addonParts = null;
+
+        if (addonVersion) {
+            let [verAMajor, verAMinor, verASeq, verAShortId] = addonVersion.split('.');
+            verASeq = parseInt(verASeq, 10);
+            addonParts = {
+                verAMajor,
+                verAMinor,
+                verASeq,
+                verAShortId
+            };
+        }
+
         return {
-            "version": version,
-            "parts": {
-                verMajor,
-                verMinor,
-                verSeq,
-                verShortId
+            "core": {
+                "ver": version,
+                "parts": {
+                    verMajor,
+                    verMinor,
+                    verSeq,
+                    verShortId
+                }
+            },
+            "addons": {
+                "ver": addonVersion,
+                "parts": addonParts
             }
         };
     } else if (command.name === "read_ndef") {

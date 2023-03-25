@@ -23,7 +23,7 @@ let ERROR_CODES = {
     0x10: ["ERROR_CODE_PWD_NOT_SET", "Password was not set."],
     0x11: ["ERROR_CODE_WRONG_PWD", "Wrong password provided."],
     0x12: ["ERROR_CODE_PWD_ALREADY_SET", "Password is already set."],
-    0x13: ["ERROR_CODE_MODE_NOT_SUPPORTED", "Internal error: invalid structure passed when calling the command."]
+    0x13: ["ERROR_CODE_NO_ADDON", "HaLo Addons are not installed on this tag."]
 };
 
 module.exports = {ERROR_CODES};
