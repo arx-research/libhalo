@@ -188,20 +188,22 @@ async function cmdSignRandom(options, args) {
 
     let resBuf = Buffer.from(resp.result, 'hex');
     let digest = resBuf.slice(0, 32);
-    let signature = resBuf.slice(32);
+    let signature = resBuf.slice(32, 32 + resBuf[33] + 2);
+    let publicKey = resBuf.slice(32 + resBuf[33] + 2);
 
     let counter = digest.readUInt32BE(0);
 
     return {
         "counter": counter,
         "digest": digest.toString('hex'),
-        "signature": signature.toString('hex')
+        "signature": signature.toString('hex'),
+        "publicKey": publicKey.toString('hex')
     };
 }
 
 async function cmdSignChallenge(options, args) {
     let challengeBuf = Buffer.from(args.challenge, "hex");
-    let resp = await options.exec(Buffer.from([CMD.SHARED_CMD_SIGN_CHALLENGE, args.keyNo, challengeBuf]));
+    let resp = await options.exec(Buffer.from([CMD.SHARED_CMD_SIGN_CHALLENGE, args.keyNo, ...challengeBuf]));
 
     let resBuf = Buffer.from(resp.result, 'hex');
     let sigLen = 2 + resBuf[1];
