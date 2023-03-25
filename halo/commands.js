@@ -188,14 +188,32 @@ async function cmdSignRandom(options, args) {
 
     let resBuf = Buffer.from(resp.result, 'hex');
     let digest = resBuf.slice(0, 32);
-    let signature = resBuf.slice(32);
+    let signature = resBuf.slice(32, 32 + resBuf[33] + 2);
+    let publicKey = resBuf.slice(32 + resBuf[33] + 2);
 
     let counter = digest.readUInt32BE(0);
 
     return {
         "counter": counter,
         "digest": digest.toString('hex'),
-        "signature": signature.toString('hex')
+        "signature": signature.toString('hex'),
+        "publicKey": publicKey.toString('hex')
+    };
+}
+
+async function cmdSignChallenge(options, args) {
+    let challengeBuf = Buffer.from(args.challenge, "hex");
+    let resp = await options.exec(Buffer.from([CMD.SHARED_CMD_SIGN_CHALLENGE, args.keyNo, ...challengeBuf]));
+
+    let resBuf = Buffer.from(resp.result, 'hex');
+    let sigLen = 2 + resBuf[1];
+
+    let signature = resBuf.slice(0, sigLen);
+    let publicKey = resBuf.slice(sigLen);
+
+    return {
+        "signature": signature.toString('hex'),
+        "publicKey": publicKey.toString('hex')
     };
 }
 
@@ -293,4 +311,24 @@ async function cmdGenKeyConfirm(options, args) {
     return {"status": "ok"};
 }
 
-module.exports = {cmdSign, cmdSignRandom, cmdWriteLatch, cmdCfgNDEF, cmdGenKey, cmdGenKeyConfirm, cmdGetPkeys};
+async function cmdGenKeyFinalize(options, args) {
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_GENERATE_3RD_KEY_FINALIZE])
+    ]);
+
+    await options.exec(payload);
+
+    return {"status": "ok"};
+}
+
+module.exports = {
+    cmdSign,
+    cmdSignRandom,
+    cmdWriteLatch,
+    cmdCfgNDEF,
+    cmdGenKey,
+    cmdGenKeyConfirm,
+    cmdGetPkeys,
+    cmdGenKeyFinalize,
+    cmdSignChallenge
+};
