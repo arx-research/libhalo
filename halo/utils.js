@@ -91,7 +91,7 @@ function parseSig(res) {
     };
 }
 
-function reformatSignature(digest, signature, publicKey) {
+function convertSignature(digest, signature, publicKey) {
     signature = Buffer.from(signature, "hex");
     let fixedSig = parseSig(signature);
 
@@ -120,14 +120,12 @@ function reformatSignature(digest, signature, publicKey) {
     }
 
     return {
-        "signature": {
-            "raw": {
-                ...fixedSig,
-                v: recoveryParam + 0x1b
-            },
-            "der": signature.toString('hex'),
-            "ether": finalSig.toString('hex')
-        }
+        "raw": {
+            ...fixedSig,
+            v: recoveryParam + 0x1b
+        },
+        "der": signature.toString('hex'),
+        "ether": finalSig.toString('hex')
     };
 }
 
@@ -142,7 +140,7 @@ module.exports = {
     hex2arr,
     arr2hex,
     parseSig,
-    reformatSignature,
+    convertSignature,
     parsePublicKeys,
     mode
 };
