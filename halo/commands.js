@@ -7,7 +7,7 @@
 const Buffer = require('buffer/').Buffer;
 const ethers = require('ethers');
 const {HaloLogicError, HaloTagError} = require("./exceptions");
-const {reformatSignature, mode, parseSig, parsePublicKeys} = require("./utils");
+const {convertSignature, mode, parseSig, parsePublicKeys} = require("./utils");
 const {FLAGS} = require("./flags");
 const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
@@ -160,7 +160,7 @@ async function cmdSign(options, args) {
     if (publicKey) {
         return {
             "input": inputObj,
-            ...reformatSignature(digestBuf.toString('hex'), sig.toString('hex'), publicKey.toString('hex')),
+            "signature": convertSignature(digestBuf.toString('hex'), sig.toString('hex'), publicKey.toString('hex')),
             publicKey: publicKey.toString('hex')
         };
     } else {

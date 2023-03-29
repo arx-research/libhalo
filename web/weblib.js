@@ -16,14 +16,21 @@ const {
     NFCOperationError
 } = require("../halo/exceptions");
 const {
-    arr2hex, hex2arr
+    arr2hex, hex2arr, parsePublicKeys, convertSignature
 } = require("../halo/utils");
 const {__runTestSuite} = require("../halo/tests");
 
 module.exports = {
+    // utilities
     arr2hex,
     hex2arr,
+    haloParsePublicKeys: parsePublicKeys,
+    haloConvertSignature: convertSignature,
+
+    // for web usage
     execHaloCmdWeb,
+
+    // exceptions
     HaloTagError,
     HaloLogicError,
     NFCPermissionRequestDenied,
