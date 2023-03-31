@@ -17,7 +17,7 @@ const {
     NFCAbortedError,
     NFCOperationError
 } = require("./halo/exceptions");
-const {parsePublicKeys, convertSignature} = require("./halo/utils");
+const {parsePublicKeys, convertSignature, recoverPublicKey} = require("./halo/utils");
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
@@ -36,6 +36,7 @@ module.exports = {
     // exported utils
     haloParsePublicKeys: parsePublicKeys,
     haloConvertSignature: convertSignature,
+    haloRecoverPublicKey: recoverPublicKey,
 
     // exceptions
     HaloTagError,
