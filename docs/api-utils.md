@@ -87,3 +87,48 @@ haloConvertSignature(
     "ether": "0xfb2ee8172a6cb2615276bcc7e7a56f1c299b93192b3af61406ffd8356c7303091b0afe49897224a009db67151f994633e32ef8f9f5e78a1b6ee506a2523e98ec1c"
 }
 ```
+
+## haloRecoverPublicKey
+
+Take the signed message digest and the resulting signature, compute two public key candidates.
+
+**Prototype:**
+All parameters should be hex-encoded strings.
+
+```javascript
+haloRecoverPublicKey(digest, derSignature);
+```
+
+**Example usage:**
+```javascript
+import {haloRecoverPublicKey} from '@arx-research/libhalo';
+
+const KEY_NO = 1;
+
+let signRes = await execHaloCmdWeb({
+    "name": "sign",
+    "message": "010203",
+    "keyNo": KEY_NO,
+    "legacySignCommand": true
+});
+
+// this will return two public keys
+// one of them will be actually the tag's public key
+console.log(haloRecoverPublicKey(signRes.input.digest, signRes.signature.der));
+```
+
+**Example function call:**
+```javascript
+haloRecoverPublicKey(
+    "bcf83051a4d206c6e43d7eaa4c75429737ac0d5ee08ee68430443bd815e6ac05",
+    "3046022100fb2ee8172a6cb2615276bcc7e7a56f1c299b93192b3af61406ffd8356c730309022100e4f501b6768ddb5ff62498eae066b9cad77fe3ecb961162050ed57ea7df7a855"
+);
+```
+
+**Example return value:**
+```javascript
+[
+  '04c057b11fd0ecaad8decc4df64de9b95d1b41fad96017c82d809eabc5240fa7d9cac3d65e1412d5f103598f1541eaeb6e27dc401b6a873576322cfd73074aebd8',
+  '04e2b8ec92be2ed99962470555b31f094a1862d7fa3fb8a5de1f4d7f475bd93ffb27d7295e94ac11e8fa67b70582df375fc660c5e36078e83f7a1e9f7e6ae08142' 
+]
+```

@@ -129,6 +129,19 @@ function convertSignature(digest, signature, publicKey) {
     };
 }
 
+function recoverPublicKey(digest, signature) {
+    let out = [];
+
+    signature = Buffer.from(signature, "hex");
+    let fixedSig = parseSig(signature);
+
+    for (let i = 0; i < 2; i++) {
+        out.push(ec.recoverPubKey(new BN(digest, 16), fixedSig, i).encode('hex'));
+    }
+
+    return out;
+}
+
 function mode(arr) {
     return arr.sort((a, b) =>
         arr.filter(v => v === a).length
@@ -142,5 +155,6 @@ module.exports = {
     parseSig,
     convertSignature,
     parsePublicKeys,
+    recoverPublicKey,
     mode
 };

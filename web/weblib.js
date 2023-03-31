@@ -16,7 +16,7 @@ const {
     NFCOperationError
 } = require("../halo/exceptions");
 const {
-    arr2hex, hex2arr, parsePublicKeys, convertSignature
+    arr2hex, hex2arr, parsePublicKeys, convertSignature, recoverPublicKey
 } = require("../halo/utils");
 const {__runTestSuite} = require("../halo/tests");
 
@@ -26,6 +26,7 @@ module.exports = {
     hex2arr,
     haloParsePublicKeys: parsePublicKeys,
     haloConvertSignature: convertSignature,
+    haloRecoverPublicKey: recoverPublicKey,
 
     // for web usage
     execHaloCmdWeb,
