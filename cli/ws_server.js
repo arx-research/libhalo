@@ -10,6 +10,9 @@ let wss = null;
 let currentWsClient = null;
 let currentState = null;
 
+let lastCsrfToken = null;
+let userConsentOrigin = null;
+
 function generateHandle() {
     return Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64');
 }
@@ -89,6 +92,7 @@ function wsCreateServer(args, getReaderNames) {
 
     wss = new WebSocketServer({noServer: true});
 
+    app.use(express.urlencoded({extended: false}));
     app.use('/assets/static', express.static(dirname + '/assets/static'));
 
     nunjucks.configure(dirname + '/assets/views', {
@@ -100,6 +104,40 @@ function wsCreateServer(args, getReaderNames) {
         res.render('ws_client.html');
     });
 
+    app.get('/consent', (req, res) => {
+        lastCsrfToken = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('hex');
+
+        let url = new URL(req.query.website);
+
+        res.render('consent.html', {
+            csrfToken: lastCsrfToken,
+            website: url.href
+        });
+    });
+
+    app.post('/consent/post', (req, res) => {
+        if (req.body.csrf_token !== lastCsrfToken) {
+            res.render('consent_error.html', {
+                errorMessage: 'Failed to check CSRF token. Please navigate back, refresh the page and try again.'
+            });
+
+            return;
+        }
+
+        if (req.body.submit !== "allow") {
+            res.render('consent_error.html', {
+                errorMessage: 'No consent was given to authorize the website. You can close this page.'
+            });
+
+            return;
+        }
+
+        let url = new URL(req.body.website);
+        userConsentOrigin = url.protocol + '//' + url.host;
+
+        res.redirect(req.body.website);
+    });
+
     server.on('upgrade', (request, socket, head) => {
         wss.handleUpgrade(request, socket, head, socket => {
             wss.emit('connection', socket, request);
@@ -107,17 +145,27 @@ function wsCreateServer(args, getReaderNames) {
     });
 
     wss.on('connection', (ws, req) => {
+        let permitted = false;
         let originHostname = new URL(req.headers.origin).hostname;
 
         if (args.allowOrigins) {
             let allowedOrigins = args.allowOrigins.split(';');
 
-            if (!allowedOrigins.includes(req.headers.origin)) {
-                ws.close(4002, "Connecting origin is not on the configured allow list.");
-                return;
+            if (allowedOrigins.includes(req.headers.origin)) {
+                permitted = true;
             }
-        } else if (originHostname !== "localhost" && originHostname !== "127.0.0.1") {
-            ws.close(4003, "Connecting origin is not localhost. No other allowed origins are configured.");
+        }
+
+        if (userConsentOrigin && req.headers.origin === userConsentOrigin) {
+            permitted = true;
+        }
+
+        if (originHostname === "127.0.0.1" || originHostname === "localhost") {
+            permitted = true;
+        }
+
+        if (!permitted) {
+            ws.close(4002, "Origin is not on the allow list and there was no user's consent.");
             return;
         }
 
