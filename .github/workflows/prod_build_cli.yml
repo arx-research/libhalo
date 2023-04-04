@@ -97,9 +97,9 @@ jobs:
         run: |
           cd cli
           node win_fix_binary.js cli
-          PKG_PATCHED_BIN='1'
-          PKG_CACHE_PATH='./.pkg-cache/'
-          PKG_IGNORE_TAG='1'
+          export PKG_PATCHED_BIN='1'
+          export PKG_CACHE_PATH='./.pkg-cache/'
+          export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halocli.exe entry_cli.js
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.os == 'windows-latest'
@@ -107,9 +107,9 @@ jobs:
         run: |
           cd cli
           node win_fix_binary.js bridge
-          PKG_PATCHED_BIN='1'
-          PKG_CACHE_PATH='./.pkg-cache/'
-          PKG_IGNORE_TAG='1'
+          export PKG_PATCHED_BIN='1'
+          export PKG_CACHE_PATH='./.pkg-cache/'
+          export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.js
       - name: Package HaLo Gateway tool (Windows)
         if: matrix.os == 'windows-latest'
@@ -117,9 +117,9 @@ jobs:
         run: |
           cd cli
           node win_fix_binary.js gateway
-          PKG_PATCHED_BIN='1'
-          PKG_CACHE_PATH='./.pkg-cache/'
-          PKG_IGNORE_TAG='1'
+          export PKG_PATCHED_BIN='1'
+          export PKG_CACHE_PATH='./.pkg-cache/'
+          export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.js
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.os == 'macos-latest'
