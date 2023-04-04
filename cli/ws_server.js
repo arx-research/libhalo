@@ -3,18 +3,47 @@ const nunjucks = require("nunjucks");
 const {WebSocketServer} = require('ws');
 const crypto = require('crypto').webcrypto;
 const {execHaloCmdPCSC} = require('../index.js');
-const {dirname} = require("./util");
+const {dirname, randomBuffer} = require("./util");
+const jwt = require('jsonwebtoken');
 
 let wss = null;
 
 let currentWsClient = null;
 let currentState = null;
 
-let lastCsrfToken = null;
-let userConsentOrigin = null;
+let jwtSigningKey = randomBuffer().toString('hex');
+let userConsentOrigins = new Set();
 
 function generateHandle() {
-    return Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64');
+    return randomBuffer().toString('base64');
+}
+
+async function makeCSRFToken() {
+    return new Promise((resolve, reject) => {
+        jwt.sign({purpose: 'csrf-consent'}, jwtSigningKey, {expiresIn: 120}, (err, token) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(token);
+            }
+        });
+    });
+}
+
+async function validateCSRFToken(token) {
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, jwtSigningKey, (err, decoded) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (decoded.purpose !== 'csrf-consent') {
+                    reject(new Error('Incorrect token purpose.'));
+                } else {
+                    resolve(decoded);
+                }
+            }
+        });
+    });
 }
 
 function sendToCurrentWs(ws, data) {
@@ -104,19 +133,20 @@ function wsCreateServer(args, getReaderNames) {
         res.render('ws_client.html');
     });
 
-    app.get('/consent', (req, res) => {
-        lastCsrfToken = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('hex');
-
+    app.get('/consent', async (req, res) => {
         let url = new URL(req.query.website);
+        let csrfToken = await makeCSRFToken();
 
         res.render('consent.html', {
-            csrfToken: lastCsrfToken,
+            csrfToken,
             website: url.href
         });
     });
 
-    app.post('/consent/post', (req, res) => {
-        if (req.body.csrf_token !== lastCsrfToken) {
+    app.post('/consent/post', async (req, res) => {
+        try {
+            await validateCSRFToken(req.body.csrf_token);
+        } catch (e) {
             res.render('consent_error.html', {
                 errorMessage: 'Failed to check CSRF token. Please navigate back, refresh the page and try again.'
             });
@@ -133,7 +163,7 @@ function wsCreateServer(args, getReaderNames) {
         }
 
         let url = new URL(req.body.website);
-        userConsentOrigin = url.protocol + '//' + url.host;
+        userConsentOrigins.add(url.protocol + '//' + url.host);
 
         res.redirect(req.body.website);
     });
@@ -156,7 +186,7 @@ function wsCreateServer(args, getReaderNames) {
             }
         }
 
-        if (userConsentOrigin && req.headers.origin === userConsentOrigin) {
+        if (userConsentOrigins.has(req.headers.origin)) {
             permitted = true;
         }
 
