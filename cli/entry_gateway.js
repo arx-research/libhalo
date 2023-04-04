@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-const crypto = require('crypto');
+const crypto = require('crypto').webcrypto;
 const {parseArgs} = require('./args_gateway.js');
 const express = require("express");
 const {WebSocketServer} = require("ws");
