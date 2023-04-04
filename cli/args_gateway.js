@@ -7,7 +7,7 @@
 const {ArgumentParser} = require("argparse");
 
 const parser = new ArgumentParser({
-    description: 'HaLo Mobile Bridge Server'
+    description: 'HaLo Gateway Server'
 });
 
 parser.add_argument("-l", "--listen-host", {

@@ -70,18 +70,22 @@ jobs:
         with:
           node-version: 16
       - name: Install dependencies (root)
+        shell: bash
         run: |
           npm --include=dev ci
       - name: Install dependencies (cli)
+        shell: bash
         run: |
           cd cli
           npm --include=dev ci
       - name: Build ws_client with webpack
+        shell: bash
         run: |
           cd cli/ws_client
           ../node_modules/.bin/webpack
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
+        shell: bash
         run: |
           cd cli
           node_modules/.bin/pkg --compress GZip -t node16-linux-x64 -c package.json -o dist/halocli entry_cli.js
@@ -89,6 +93,7 @@ jobs:
           node_modules/.bin/pkg --compress GZip -t node16-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.js
       - name: Package HaLo CLI tool (Windows)
         if: matrix.os == 'windows-latest'
+        shell: bash
         run: |
           cd cli
           node win_fix_binary.js cli
@@ -98,6 +103,7 @@ jobs:
           node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halocli.exe entry_cli.js
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.os == 'windows-latest'
+        shell: bash
         run: |
           cd cli
           node win_fix_binary.js bridge
@@ -107,6 +113,7 @@ jobs:
           node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.js
       - name: Package HaLo Gateway tool (Windows)
         if: matrix.os == 'windows-latest'
+        shell: bash
         run: |
           cd cli
           node win_fix_binary.js gateway
@@ -116,6 +123,7 @@ jobs:
           node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.js
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.os == 'macos-latest'
+        shell: bash
         run: |
           cd cli
           node_modules/.bin/pkg --compress GZip -t node16-macos-x64 -c package.json -o dist/halocli entry_cli.js
