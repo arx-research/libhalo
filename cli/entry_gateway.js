@@ -54,11 +54,15 @@ function processRequestor(ws) {
         console.log('req', obj);
 
         if (obj.type === "request_cmd") {
-            sobj.requestUID = obj.uid;
-            sobj.executor.send(JSON.stringify({
-                "type": "requested_cmd",
-                "payload": obj.payload
-            }));
+            if (sobj.requestUID !== null) {
+                sobj.requestor.close(4055, "Protocol error on requestor side.");
+            } else {
+                sobj.requestUID = obj.uid;
+                sobj.executor.send(JSON.stringify({
+                    "type": "requested_cmd",
+                    "payload": obj.payload
+                }));
+            }
         }
     });
 
@@ -81,6 +85,7 @@ function processExecutor(ws, sessionId) {
     }
 
     sobj.executor = ws;
+    sobj.requestUID = null;
     sobj.requestor.send(JSON.stringify({"type": "executor_connected"}));
 
     ws.on('error', console.error);
