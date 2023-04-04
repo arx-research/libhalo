@@ -4,6 +4,8 @@
  * License: MIT
  */
 
+const WebSocketAsPromised = require('websocket-as-promised');
+const QRCode = require('qrcode');
 const {execCredential} = require("./credential");
 const {execWebNFC} = require("./webnfc");
 const {
@@ -134,4 +136,84 @@ async function execHaloCmdWeb(command, options) {
     }
 }
 
-module.exports = {execHaloCmdWeb, execHaloCmd, checkErrors};
+function makeQR(url) {
+    return new Promise((resolve, reject) => {
+        QRCode.toDataURL(url, function (err, url) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(url);
+            }
+        });
+    });
+}
+
+class HaloGateway {
+    constructor(gatewayServer, gatewayServerHttp, statusCallback) {
+        this.gatewayServer = gatewayServer;
+        this.gatewayServerHttp = gatewayServerHttp;
+        this.statusCallback = statusCallback;
+        this.lastCommand = null;
+
+        this.isRunning = false;
+
+        this.ws = new WebSocketAsPromised('ws://' + this.gatewayServer + '/?side=requestor', {
+            packMessage: data => JSON.stringify(data),
+            unpackMessage: data => JSON.parse(data),
+            attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
+            extractRequestId: data => data && data.uid
+        });
+
+        this.ws.onSend.addListener(data => {
+            let obj = JSON.parse(data);
+
+            if (obj.type === "request_cmd") {
+                this.lastCommand = obj;
+            }
+        });
+
+        this.ws.onUnpackedMessage.addListener(data => {
+            if (data.type === "executor_connected" && this.lastCommand) {
+                // existing executor connection was replaced, repeat last command
+                this.ws.sendPacked(this.lastCommand);
+            }
+        });
+    }
+
+    async startPairing() {
+        await this.ws.open();
+
+        // TODO this doesn't throw when websocket is closed while waiting
+
+        let welcomeMsg = await this.ws.waitUnpackedMessage(ev => ev && ev.type === "welcome");
+        let execURL = 'http://' + this.gatewayServerHttp + '/#/' + welcomeMsg.sessionId + '/';
+        return await makeQR(execURL);
+    }
+
+    async waitConnected() {
+        // TODO this doesn't throw when websocket is closed while waiting
+        await this.ws.waitUnpackedMessage(ev => ev && ev.type === "executor_connected");
+    }
+
+    async execHaloCmd(command) {
+        if (this.isRunning) {
+            throw new Error("Can not make multiple calls to execHaloCmd() in parallel.");
+        }
+
+        try {
+            return await this.ws.sendRequest({
+                "type": "request_cmd",
+                command
+            });
+        } finally {
+            this.isRunning = false;
+        }
+    }
+}
+
+module.exports = {
+    execHaloCmdWeb,
+    execHaloCmd,
+    checkErrors,
+    HaloGateway
+};

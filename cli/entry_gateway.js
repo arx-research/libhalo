@@ -35,11 +35,11 @@ function processRequestor(ws) {
         "executor": null
     };
 
+    let sobj = sessionIds[sessionId];
+
     ws.on('error', console.error);
 
     ws.on('close', function close() {
-        let sobj = sessionIds[sessionId];
-
         if (sobj.executor) {
             sobj.executor.close(4051, "Requestor closed the connection.");
         }
@@ -49,7 +49,15 @@ function processRequestor(ws) {
     });
 
     ws.on('message', function message(data) {
-        console.log(data);
+        let obj = JSON.parse(data);
+        console.log('req', obj);
+
+        if (obj.type === "request_cmd") {
+            sobj.executor.send(JSON.stringify({
+                "type": "requested_cmd",
+                "payload": obj.payload
+            }));
+        }
     });
 
     ws.send(JSON.stringify({
@@ -76,7 +84,15 @@ function processExecutor(ws, sessionId) {
     ws.on('error', console.error);
 
     ws.on('message', function message(data) {
-        console.log(data);
+        let obj = JSON.parse(data);
+        console.log('exec', obj);
+
+        if (obj.type === "executed_cmd") {
+            sobj.requestor.send(JSON.stringify({
+                "type": "result_cmd",
+                "payload": obj.payload
+            }));
+        }
     });
 
     ws.send(JSON.stringify({"type": "ping"}));
@@ -86,7 +102,10 @@ function createServer(args) {
     const app = express();
     const server = app.listen(args.listenPort, args.listenHost);
 
-    let wss = new WebSocketServer({noServer: true});
+    let wss = new WebSocketServer({
+        noServer: true,
+        maxPayload: 6 * 1024 // max packet size - 6 kB
+    });
 
     app.use(express.urlencoded({extended: false}));
     app.use('/assets/static', express.static(dirname + '/assets/static'));
@@ -98,11 +117,6 @@ function createServer(args) {
 
     app.get('/', (req, res) => {
         res.render('gateway_index.html');
-    });
-
-    // TODO remove this
-    app.get('/_requestor', (req, res) => {
-        res.render('gateway_requestor.html');
     });
 
     server.on('upgrade', (request, socket, head) => {

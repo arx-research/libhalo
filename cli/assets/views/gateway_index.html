@@ -8,17 +8,19 @@
 <body>
 <div class="container">
     <h1>HaLo Gateway server</h1>
+    <button id="click-btn" class="btn btn-primary">Confirm</button>
     <pre id="log">Connecting to the server...</pre>
 </div>
+<script src="/assets/static/libhalo.js"></script>
 <script src="/assets/static/ws_client.js"></script>
 <script>
     function log(data) {
         console.log(data);
-        document.getElementById('log').innerText += '\n' + data;
+        document.getElementById('log').innerText = data;
     }
 
     let searchParts = window.location.hash.split('/');
-    console.log(searchParts);
+    let currentCmd = null;
     let wsp;
 
     if (window.location.protocol === "https:") {
@@ -27,16 +29,36 @@
         protocol = 'ws://';
     }
 
+    document.getElementById('click-btn').disabled = true;
+    document.getElementById('click-btn').onclick = async function (ev) {
+        document.getElementById('click-btn').disabled = true;
+        let res;
+
+        try {
+            res = await execHaloCmdWeb(currentCmd);
+        } catch (e) {
+            document.getElementById('click-btn').disabled = false;
+            return;
+        }
+
+        currentCmd = null;
+        wsp.sendPacked({"type": "executed_cmd", "payload": res});
+        log("Executed command, result sent.");
+    };
+
     // TODO validate searchParts[1]
     wsp = createWs(protocol + window.location.host + '/?side=executor&sessionId=' + searchParts[1]);
 
     wsp.onUnpackedMessage.addListener(async ev => {
         if (ev.type === "ping") {
-            log("Received welcome from server.");
+            log("Received welcome from server. Waiting for command");
+        } else if (ev.type === "requested_cmd") {
+            log("Requested to execute the following command:\n" + JSON.stringify(ev.payload, null, 4));
+            currentCmd = ev.payload;
+            document.getElementById('click-btn').disabled = false;
+        } else {
+            log("Unknown packet:\n" + JSON.stringify(ev));
         }
-
-        // TODO load the command into UI
-        log(JSON.stringify(ev));
     });
 
     wsp.onClose.addListener(event => {

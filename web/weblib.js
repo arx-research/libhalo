@@ -5,7 +5,7 @@
  */
 
 const {
-    execHaloCmdWeb,
+    execHaloCmdWeb, HaloGateway,
 } = require("../drivers/common");
 const {
     HaloTagError,
@@ -30,6 +30,9 @@ module.exports = {
 
     // for web usage
     execHaloCmdWeb,
+
+    // for web usage with gateway
+    HaloGateway,
 
     // exceptions
     HaloTagError,
