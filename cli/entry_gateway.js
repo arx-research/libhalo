@@ -32,7 +32,8 @@ function processRequestor(ws) {
 
     sessionIds[sessionId] = {
         "requestor": ws,
-        "executor": null
+        "executor": null,
+        "requestUID": null
     };
 
     let sobj = sessionIds[sessionId];
@@ -53,6 +54,7 @@ function processRequestor(ws) {
         console.log('req', obj);
 
         if (obj.type === "request_cmd") {
+            sobj.requestUID = obj.uid;
             sobj.executor.send(JSON.stringify({
                 "type": "requested_cmd",
                 "payload": obj.payload
@@ -88,10 +90,14 @@ function processExecutor(ws, sessionId) {
         console.log('exec', obj);
 
         if (obj.type === "executed_cmd") {
-            sobj.requestor.send(JSON.stringify({
-                "type": "result_cmd",
-                "payload": obj.payload
-            }));
+            if (sobj.requestUID !== null) {
+                sobj.requestor.send(JSON.stringify({
+                    "type": "result_cmd",
+                    "payload": obj.payload,
+                    "uid": sobj.requestUID
+                }));
+                sobj.requestUID = null;
+            }
         }
     });
 

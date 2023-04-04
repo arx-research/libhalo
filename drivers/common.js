@@ -157,7 +157,7 @@ class HaloGateway {
 
         this.isRunning = false;
 
-        this.ws = new WebSocketAsPromised('ws://' + this.gatewayServer + '/?side=requestor', {
+        this.ws = new WebSocketAsPromised(this.gatewayServer + '/?side=requestor', {
             packMessage: data => JSON.stringify(data),
             unpackMessage: data => JSON.parse(data),
             attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
@@ -186,7 +186,7 @@ class HaloGateway {
         // TODO this doesn't throw when websocket is closed while waiting
 
         let welcomeMsg = await this.ws.waitUnpackedMessage(ev => ev && ev.type === "welcome");
-        let execURL = 'http://' + this.gatewayServerHttp + '/#/' + welcomeMsg.sessionId + '/';
+        let execURL = this.gatewayServerHttp + '/#/' + welcomeMsg.sessionId + '/';
         return await makeQR(execURL);
     }
 

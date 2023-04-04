@@ -44,7 +44,7 @@
         document.getElementById('message').value = arr2hex(rnd);
 
         async function btnSignMessageClicked() {
-            let gate = new HaloGateway('localhost:32842', '192.168.0.173:32842', () => null);
+            let gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com', 'https://dev-gate.nfcdeveloper.com', () => null);
             window.gate = gate;
 
             try {
