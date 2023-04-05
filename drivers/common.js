@@ -160,7 +160,7 @@ class HaloGateway {
         this.gatewayServerHttp = gatewayServerHttp;
         this.lastCommand = null;
 
-        this.ws = new WebSocketAsPromised(this.gatewayServer + '/?side=requestor', {
+        this.ws = new WebSocketAsPromised(this.gatewayServer + '?side=requestor', {
             packMessage: data => JSON.stringify(data),
             unpackMessage: data => JSON.parse(data),
             attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
@@ -192,7 +192,7 @@ class HaloGateway {
         await this.ws.open();
         // TODO this is not guaranteed to hit if the code executes really fast
         let welcomeMsg = await this.ws.waitUnpackedMessage(ev => ev && ev.type === "welcome");
-        let execURL = this.gatewayServerHttp + '?_=' + randomQs + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
+        let execURL = this.gatewayServerHttp + '/e?_=' + randomQs + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
         let qrCode = await makeQR(execURL);
 
         return {
@@ -211,10 +211,16 @@ class HaloGateway {
             throw new Error("Can not make multiple calls to execHaloCmd() in parallel.");
         }
 
+        this.isRunning = true;
+        let nonce = crypto.randomBytes(8).toString('hex');
+
         try {
             let res = await this.ws.sendRequest({
                 "type": "request_cmd",
-                "payload": await this.jweUtil.encrypt(command)
+                "payload": await this.jweUtil.encrypt({
+                    nonce,
+                    command
+                })
             });
 
             if (res.type !== "result_cmd") {
@@ -222,7 +228,19 @@ class HaloGateway {
             }
 
             this.lastCommand = null;
-            return await this.jweUtil.decrypt(res.payload);
+            let out;
+
+            try {
+                out = await this.jweUtil.decrypt(res.payload);
+            } catch (e) {
+                throw new Error("Failed to validate or decrypt response packet.");
+            }
+
+            if (out.nonce !== nonce) {
+                throw new Error("Mismatched nonce in reply.");
+            }
+
+            return out.response;
         } finally {
             this.isRunning = false;
         }

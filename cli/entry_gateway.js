@@ -29,11 +29,13 @@ function processRequestor(ws) {
     }
 
     let sessionId = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url');
+    console.log('[' + sessionId + '] Requestor connected.');
 
     sessionIds[sessionId] = {
         "requestor": ws,
         "executor": null,
-        "requestUID": null
+        "requestUID": null,
+        "reconnects": 0
     };
 
     let sobj = sessionIds[sessionId];
@@ -45,13 +47,12 @@ function processRequestor(ws) {
             sobj.executor.close(4051, "Requestor closed the connection.");
         }
 
-        console.log('Deleting ' + sessionId);
+        console.log('[' + sessionId + '] Disconnected both sides.');
         delete sessionIds[sessionId];
     });
 
     ws.on('message', function message(data) {
         let obj = JSON.parse(data);
-        console.log('req', obj);
 
         if (obj.type === "request_cmd") {
             if (sobj.requestUID !== null) {
@@ -82,8 +83,18 @@ function processExecutor(ws, sessionId) {
 
     if (sobj.executor) {
         sobj.executor.close(4054, "Connection replaced.");
+        console.log('[' + sessionId + '] Executor reconnected.');
+    } else {
+        console.log('[' + sessionId + '] Executor connected.');
     }
 
+    if (sobj.reconnects > 5) {
+        sobj.requestor.close(4055, "Protocol error on executor side: Too many reconnections.");
+        ws.close(4062, "Too many reconnections.");
+        return;
+    }
+
+    sobj.reconnects++;
     sobj.executor = ws;
     sobj.requestUID = null;
     sobj.requestor.send(JSON.stringify({"type": "executor_connected"}));
@@ -130,6 +141,18 @@ function createServer(args) {
         res.render('gateway_index.html');
     });
 
+    app.get('/health', (req, res) => {
+        res.type('text/plain').send('OK');
+    });
+
+    app.get('/e', (req, res) => {
+        res.render('gateway_executor.html');
+    });
+
+    app.get('/ws', (req, res) => {
+        res.status(426).type('text/plain').send('Upgrade required');
+    });
+
     server.on('upgrade', (request, socket, head) => {
         wss.handleUpgrade(request, socket, head, socket => {
             wss.emit('connection', socket, request);
@@ -137,15 +160,25 @@ function createServer(args) {
     });
 
     wss.on('connection', (ws, req) => {
-        let query = req.url.split('?', 2)[1];
-        let qs = queryString.parse(query);
+        if (!req.url.startsWith('/ws?')) {
+            ws.close(4060, "Invalid URL.");
+            return;
+        }
 
-        if (qs.side === "requestor") {
-            processRequestor(ws);
-        } else if (qs.side === "executor") {
-            processExecutor(ws, qs.sessionId);
-        } else {
-            ws.close(4050, "Invalid query string parameters specified.");
+        try {
+            let query = req.url.split('?', 2)[1];
+            let qs = queryString.parse(query);
+
+            if (qs.side === "requestor") {
+                processRequestor(ws);
+            } else if (qs.side === "executor") {
+                processExecutor(ws, qs.sessionId);
+            } else {
+                ws.close(4050, "Invalid query string parameters specified.");
+            }
+        } catch (e) {
+            console.error(e);
+            ws.close(4061, "Unhandled exception.");
         }
     });
 }
