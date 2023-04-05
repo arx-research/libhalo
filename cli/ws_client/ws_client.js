@@ -1,4 +1,5 @@
 const WebSocketAsPromised = require('websocket-as-promised');
+const {JWEUtil} = require("../../halo/jwe_util");
 
 function createWs(url) {
     return new WebSocketAsPromised(url, {
@@ -9,7 +10,7 @@ function createWs(url) {
     });
 }
 
-module.exports = {createWs};
+module.exports = {createWs, JWEUtil};
 
 if (window) {
     Object.keys(module.exports).forEach((key) => {

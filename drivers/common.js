@@ -19,6 +19,7 @@ const {
     cmdSignChallenge
 } = require("../halo/commands");
 const {ERROR_CODES} = require("../halo/errors");
+const {JWEUtil} = require("../halo/jwe_util");
 
 let isCallRunning = null;
 
@@ -149,13 +150,13 @@ function makeQR(url) {
 }
 
 class HaloGateway {
-    constructor(gatewayServer, gatewayServerHttp, statusCallback) {
+    constructor(gatewayServer, gatewayServerHttp) {
+        this.jweUtil = new JWEUtil();
+        this.isRunning = false;
+
         this.gatewayServer = gatewayServer;
         this.gatewayServerHttp = gatewayServerHttp;
-        this.statusCallback = statusCallback;
         this.lastCommand = null;
-
-        this.isRunning = false;
 
         this.ws = new WebSocketAsPromised(this.gatewayServer + '/?side=requestor', {
             packMessage: data => JSON.stringify(data),
@@ -185,9 +186,16 @@ class HaloGateway {
 
         // TODO this doesn't throw when websocket is closed while waiting
 
+        let sharedKey = await this.jweUtil.generateKey();
+
         let welcomeMsg = await this.ws.waitUnpackedMessage(ev => ev && ev.type === "welcome");
-        let execURL = this.gatewayServerHttp + '/#/' + welcomeMsg.sessionId + '/';
-        return await makeQR(execURL);
+        let execURL = this.gatewayServerHttp + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
+        let qrCode = await makeQR(execURL);
+
+        return {
+            execURL: execURL,
+            qrCode: qrCode
+        };
     }
 
     async waitConnected() {
@@ -201,10 +209,16 @@ class HaloGateway {
         }
 
         try {
-            return await this.ws.sendRequest({
+            let res = await this.ws.sendRequest({
                 "type": "request_cmd",
-                command
+                "command": await this.jweUtil.encrypt(command)
             });
+
+            if (res.type !== "result_cmd") {
+                throw new Error("Unexpected packet type.");
+            }
+
+            return await this.jweUtil.decrypt(res.payload);
         } finally {
             this.isRunning = false;
         }

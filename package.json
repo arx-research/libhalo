@@ -33,8 +33,10 @@
   "dependencies": {
     "argparse": "^2.0.1",
     "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
     "elliptic": "^6.5.4",
     "ethers": "^5.5.4",
+    "jose": "^4.13.1",
     "js-sha256": "^0.9.0",
     "qrcode": "^1.5.1",
     "query-string": "^7.1.1",

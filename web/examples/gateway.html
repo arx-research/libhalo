@@ -31,10 +31,10 @@
         <label class="form-label">Message to be signed with ECDSA/Keccak (hex-encoded)</label>
         <input type="text" class="form-control" id="message" value="">
     </div>
-    <button class="btn btn-secondary" onclick="btnInitiateSessClicked();">Initiate session</button>
-    <button class="btn btn-secondary" onclick="btnSignMessageClicked();">Sign message using key #1</button>
-    <button class="btn btn-secondary" onclick="btnOneShotClicked();">Initiate&amp;sign in one shot</button>
+    <button class="btn btn-secondary" onclick="btnSignMessageClicked();">Pair and sign</button>
+    <button class="btn btn-secondary" onclick="btnInitiateSessClicked();">Send sign command</button>
 
+    <br>
     <img id="qr">
 
     <script type="text/javascript">
@@ -43,13 +43,18 @@
         crypto.getRandomValues(rnd);
         document.getElementById('message').value = arr2hex(rnd);
 
+        function log(data) {
+            console.log(data);
+            document.getElementById('statusText').innerText += '\n' + data;
+        }
+
         async function btnSignMessageClicked() {
-            let gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com', 'https://dev-gate.nfcdeveloper.com', () => null);
+            let gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com', 'https://dev-gate.nfcdeveloper.com');
             window.gate = gate;
 
             try {
-                let qr = await gate.startPairing();
-                document.getElementById('qr').src = qr;
+                let pairInfo = await gate.startPairing();
+                document.getElementById('qr').src = pairInfo.qr;
             } catch (e) {
                 console.error('fail');
             }
@@ -62,22 +67,22 @@
                 console.error('fail2');
             }
 
-            console.log('pairing completed');
+            log('Smartphone paired succesfully.');
+            let cmd = {"name": "sign", "message": "010203", "keyNo": 1};
 
             try {
-                let res = await window.gate.ws.sendRequest({"type": "request_cmd", "payload": {"name": "sign", "message": "010203", "keyNo": 1}});
-                console.log('res', res);
+                let res = await gate.execHaloCmd(cmd);
+                log('Command completed. ' + JSON.stringify(res));
             } catch (e) {
                 console.error('wtf');
                 console.error(e);
             }
-
-            console.log('completed');
         }
 
         async function btnInitiateSessClicked() {
             try {
-                await window.gate.ws.sendRequest({"type": "request_cmd", "payload": {"name": "sign", "message": "010203", "keyNo": 1}});
+                let res = await window.gate.execHaloCmd(cmd);
+                log('Command completed. ' + JSON.stringify(res));
             } catch (e) {
                 console.error('wtf');
                 console.error(e);
