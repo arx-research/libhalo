@@ -20,6 +20,7 @@ const {
 } = require("../halo/utils");
 const {__runTestSuite} = require("../halo/tests");
 const {JWEUtil} = require("../halo/jwe_util");
+const WebSocketAsPromised = require("websocket-as-promised");
 
 function createWs(url) {
     return new WebSocketAsPromised(url, {
