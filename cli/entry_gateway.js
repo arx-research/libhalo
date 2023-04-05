@@ -29,7 +29,13 @@ function processRequestor(ws) {
     }
 
     let sessionId = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url');
-    console.log('[' + sessionId + '] Requestor connected.');
+    let ipStr = 'IP: ' + req.socket.remoteAddress;
+
+    if (req.headers['x-forwarded-for']) {
+        ipStr += ', Fwd: ' + req.headers['x-forwarded-for'];
+    }
+
+    console.log('[' + sessionId + '] Requestor connected. ' + ipStr);
 
     sessionIds[sessionId] = {
         "requestor": ws,
@@ -79,19 +85,24 @@ function processRequestor(ws) {
     }));
 }
 
-function processExecutor(ws, sessionId) {
+function processExecutor(ws, req, sessionId) {
     if (!sessionIds.hasOwnProperty(sessionId)) {
         ws.close(4052, "No such session ID.");
         return;
     }
 
     let sobj = sessionIds[sessionId];
+    let ipStr = 'IP: ' + req.socket.remoteAddress;
+
+    if (req.headers['x-forwarded-for']) {
+        ipStr += ', Fwd: ' + req.headers['x-forwarded-for'];
+    }
 
     if (sobj.executor) {
         sobj.executor.close(4054, "Connection replaced.");
-        console.log('[' + sessionId + '] Executor reconnected.');
+        console.log('[' + sessionId + '] Executor reconnected. ' + ipStr);
     } else {
-        console.log('[' + sessionId + '] Executor connected.');
+        console.log('[' + sessionId + '] Executor connected.' + ipStr);
     }
 
     if (sobj.reconnects > 5) {
@@ -179,9 +190,9 @@ function createServer(args) {
             let qs = queryString.parse(query);
 
             if (qs.side === "requestor") {
-                processRequestor(ws);
+                processRequestor(ws, req);
             } else if (qs.side === "executor") {
-                processExecutor(ws, qs.sessionId);
+                processExecutor(ws, req, qs.sessionId);
             } else {
                 ws.close(4050, "Invalid query string parameters specified.");
             }

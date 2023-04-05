@@ -5,7 +5,7 @@
  */
 
 const {
-    execHaloCmdWeb, HaloGateway,
+    execHaloCmdWeb
 } = require("../drivers/common");
 const {
     HaloTagError,
@@ -21,6 +21,7 @@ const {
 const {__runTestSuite} = require("../halo/tests");
 const {JWEUtil} = require("../halo/jwe_util");
 const WebSocketAsPromised = require("websocket-as-promised");
+const {HaloGateway} = require("../halo/gateway/requestor");
 
 function createWs(url) {
     return new WebSocketAsPromised(url, {
