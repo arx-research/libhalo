@@ -6,11 +6,5 @@ module.exports = {
         filename: 'libhalo.js'
     },
     mode: 'production',
-    target: 'web',
-    resolve: {
-        fallback: {
-            "crypto": require.resolve("crypto-browserify"),
-            "stream": false
-        }
-    }
+    target: 'web'
 };

@@ -1,38 +1,37 @@
-const crypto = require("crypto").webcrypto;
-const jose = require("jose");
-
 class JWEUtil {
     constructor() {
 
     }
 
     async generateKey() {
-        let sharedKey = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('hex');
+        /* let sharedKey = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('hex');
         this.sharedKeyObj = await crypto.subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
             "decrypt",
         ]);
-        return sharedKey;
+        return sharedKey; */
     }
 
     async loadKey(sharedKey) {
-        this.sharedKeyObj = await crypto.subtle.importKey("raw", sharedKey, "AES-GCM", true, [
+        /* this.sharedKeyObj = await crypto.subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
             "decrypt",
-        ]);
+        ]); */
     }
 
     async encrypt(data) {
-        return await new jose.CompactEncrypt(
+        /* return await new jose.CompactEncrypt(
             new TextEncoder().encode(JSON.stringify(data)))
             .setProtectedHeader({alg: 'dir', enc: 'A256GCM'})
-            .encrypt(this.sharedKeyObj);
+            .encrypt(this.sharedKeyObj); */
+        return data;
     }
 
     async decrypt(jwe) {
-        const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
+        /* const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
         // TODO check protectedHeader
-        return JSON.parse(plaintext);
+        return JSON.parse(plaintext); */
+        return jwe;
     }
 }
 

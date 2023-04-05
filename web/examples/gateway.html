@@ -56,6 +56,7 @@
                 let pairInfo = await gate.startPairing();
                 document.getElementById('qr').src = pairInfo.qr;
             } catch (e) {
+                console.error(e);
                 console.error('fail');
             }
 
