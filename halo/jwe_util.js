@@ -38,7 +38,7 @@ class JWEUtil {
         const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
         // TODO check protectedHeader
         console.log('decrypted', plaintext);
-        return JSON.parse(plaintext);
+        return JSON.parse(Buffer.from(plaintext).toString());
     }
 }
 
