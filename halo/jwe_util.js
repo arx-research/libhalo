@@ -1,6 +1,5 @@
 const Buffer = require('buffer/').Buffer;
 const crypto = require('crypto');
-const {hex2arr} = require("./utils");
 const { subtle } = globalThis.crypto;
 const jose = require('jose');
 
@@ -10,10 +9,8 @@ class JWEUtil {
     }
 
     async generateKey() {
-        console.log('call c');
         let sharedKey = crypto.randomBytes(16)
         let sharedKeyEnc = sharedKey.toString('base64').replace('+', '-').replace('/', '_');
-        console.log('call c2');
         this.sharedKeyObj = await subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
             "decrypt",
@@ -43,8 +40,7 @@ class JWEUtil {
             throw new Error("Unsupported type of JWE.");
         }
 
-        console.log('decrypted', plaintext);
-        return JSON.parse(Buffer.from(plaintext).toString());
+        return JSON.parse(new TextDecoder().decode(plaintext));
     }
 }
 

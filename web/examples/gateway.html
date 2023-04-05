@@ -51,15 +51,11 @@
         }
 
         async function btnSignMessageClicked() {
-            console.log('x');
             let gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com', 'https://dev-gate.nfcdeveloper.com');
             window.gate = gate;
-            console.log('xx');
 
             try {
-                console.log('start pairing');
                 let pairInfo = await gate.startPairing();
-                console.log('stop');
                 console.log(pairInfo.execURL);
                 document.getElementById('qr').src = pairInfo.qrCode;
             } catch (e) {
@@ -81,7 +77,7 @@
                 let res = await gate.execHaloCmd(cmd);
                 log('Command completed. ' + JSON.stringify(res));
             } catch (e) {
-                console.error('wtf');
+                console.error('fail3');
                 console.error(e);
             }
         }
@@ -91,7 +87,7 @@
                 let res = await window.gate.execHaloCmd(cmd);
                 log('Command completed. ' + JSON.stringify(res));
             } catch (e) {
-                console.error('wtf');
+                console.error('fail4');
                 console.error(e);
             }
         }

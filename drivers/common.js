@@ -189,16 +189,11 @@ class HaloGateway {
         let sharedKey = await this.jweUtil.generateKey();
         let randomQs = crypto.randomBytes(4).toString('hex');
 
-        console.log('hang on wait');
-
         await this.ws.open();
         // TODO this is not guaranteed to hit if the code executes really fast
         let welcomeMsg = await this.ws.waitUnpackedMessage(ev => ev && ev.type === "welcome");
-        console.log('xxx3');
         let execURL = this.gatewayServerHttp + '?_=' + randomQs + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
-        console.log('xxx2');
         let qrCode = await makeQR(execURL);
-        console.log('xxx4');
 
         return {
             execURL: execURL,
