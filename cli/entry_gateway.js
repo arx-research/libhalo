@@ -22,7 +22,7 @@ if (!args) {
 
 let sessionIds = {};
 
-function processRequestor(ws) {
+function processRequestor(ws, req) {
     if (Object.keys(sessionIds).length >= MAX_SESSION_LIMIT) {
         ws.close(4053, "Too many connections.");
         return;
