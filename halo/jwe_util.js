@@ -11,7 +11,7 @@ class JWEUtil {
 
     async generateKey() {
         console.log('call c');
-        let sharedKey = crypto.randomBytes(16).toString('hex');
+        let sharedKey = crypto.randomBytes(32).toString('hex');
         console.log('call c2');
         this.sharedKeyObj = await subtle.importKey("raw", hex2arr(sharedKey), "AES-GCM", true, [
             "encrypt",
@@ -37,6 +37,7 @@ class JWEUtil {
     async decrypt(jwe) {
         const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
         // TODO check protectedHeader
+        console.log('decrypted', plaintext);
         return JSON.parse(plaintext);
     }
 }
