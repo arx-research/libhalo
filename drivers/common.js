@@ -20,7 +20,8 @@ const {
 } = require("../halo/commands");
 const {ERROR_CODES} = require("../halo/errors");
 const {JWEUtil} = require("../halo/jwe_util");
-const crypto = require('crypto').webcrypto;
+const crypto = require('crypto');
+const Buffer = require('buffer/').Buffer;
 
 let isCallRunning = null;
 
@@ -183,16 +184,21 @@ class HaloGateway {
     }
 
     async startPairing() {
-        await this.ws.open();
-
         // TODO this doesn't throw when websocket is closed while waiting
 
         let sharedKey = await this.jweUtil.generateKey();
-        let randomQs = Buffer.from(crypto.getRandomValues(new Uint8Array(4))).toString('hex');
+        let randomQs = crypto.randomBytes(4).toString('hex');
 
+        console.log('hang on wait');
+
+        await this.ws.open();
+        // TODO this is not guaranteed to hit if the code executes really fast
         let welcomeMsg = await this.ws.waitUnpackedMessage(ev => ev && ev.type === "welcome");
+        console.log('xxx3');
         let execURL = this.gatewayServerHttp + '?_=' + randomQs + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
+        console.log('xxx2');
         let qrCode = await makeQR(execURL);
+        console.log('xxx4');
 
         return {
             execURL: execURL,

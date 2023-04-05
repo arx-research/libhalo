@@ -49,11 +49,15 @@
         }
 
         async function btnSignMessageClicked() {
+            console.log('x');
             let gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com', 'https://dev-gate.nfcdeveloper.com');
             window.gate = gate;
+            console.log('xx');
 
             try {
+                console.log('start pairing');
                 let pairInfo = await gate.startPairing();
+                console.log('stop');
                 console.log(pairInfo);
                 document.getElementById('qr').src = pairInfo.qrCode;
             } catch (e) {

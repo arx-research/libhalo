@@ -1,5 +1,7 @@
 const Buffer = require('buffer/').Buffer;
-const crypto = require('crypto').webcrypto;
+const crypto = require('crypto');
+const {hex2arr} = require("./utils");
+const { subtle } = globalThis.crypto;
 
 class JWEUtil {
     constructor() {
@@ -7,8 +9,10 @@ class JWEUtil {
     }
 
     async generateKey() {
-        let sharedKey = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('hex');
-        this.sharedKeyObj = await crypto.subtle.importKey("raw", sharedKey, "AES-GCM", true, [
+        console.log('call c');
+        let sharedKey = crypto.randomBytes(16).toString('hex');
+        console.log('call c2');
+        this.sharedKeyObj = await subtle.importKey("raw", hex2arr(sharedKey), "AES-GCM", true, [
             "encrypt",
             "decrypt",
         ]);
@@ -16,7 +20,7 @@ class JWEUtil {
     }
 
     async loadKey(sharedKey) {
-        this.sharedKeyObj = await crypto.subtle.importKey("raw", sharedKey, "AES-GCM", true, [
+        this.sharedKeyObj = await subtle.importKey("raw", hex2arr(sharedKey), "AES-GCM", true, [
             "encrypt",
             "decrypt",
         ]);
