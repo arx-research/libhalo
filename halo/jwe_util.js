@@ -11,7 +11,7 @@ class JWEUtil {
 
     async generateKey() {
         console.log('call c');
-        let sharedKey = crypto.randomBytes(16).toString('base64url');
+        let sharedKey = crypto.randomBytes(16).toString('base64');
         console.log('call c2');
         this.sharedKeyObj = await subtle.importKey("raw", hex2arr(sharedKey), "AES-GCM", true, [
             "encrypt",
@@ -21,7 +21,7 @@ class JWEUtil {
     }
 
     async loadKey(sharedKey) {
-        let sharedKeyBuf = Buffer.from(sharedKey, 'base64url');
+        let sharedKeyBuf = Buffer.from(sharedKey, 'base64');
         this.sharedKeyObj = await subtle.importKey("raw", sharedKeyBuf, "AES-GCM", true, [
             "encrypt",
             "decrypt",
