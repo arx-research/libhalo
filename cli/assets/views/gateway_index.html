@@ -25,7 +25,7 @@
         let currentCmd = null;
         let wsp;
 
-        await jweUtil.loadKey(searchParts[2]);
+        await jweUtil.loadKey(hex2arr(searchParts[2]));
 
         document.getElementById('click-btn').disabled = true;
         document.getElementById('click-btn').onclick = async function (ev) {
