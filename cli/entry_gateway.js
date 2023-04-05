@@ -57,11 +57,16 @@ function processRequestor(ws) {
         if (obj.type === "request_cmd") {
             if (sobj.requestUID !== null) {
                 sobj.requestor.close(4055, "Protocol error on requestor side.");
-            } else {
+            } else if (sobj.executor) {
                 sobj.requestUID = obj.uid;
                 sobj.executor.send(JSON.stringify({
                     "type": "requested_cmd",
                     "payload": obj.payload
+                }));
+            } else {
+                sobj.requestor.send(JSON.stringify({
+                    "uid": obj.uid,
+                    "type": "no_executor"
                 }));
             }
         }
@@ -103,7 +108,6 @@ function processExecutor(ws, sessionId) {
 
     ws.on('message', function message(data) {
         let obj = JSON.parse(data);
-        console.log('exec', obj);
 
         if (obj.type === "executed_cmd") {
             if (sobj.requestUID !== null) {
@@ -114,6 +118,9 @@ function processExecutor(ws, sessionId) {
                 }));
                 sobj.requestUID = null;
             }
+        } else {
+            sobj.requestor.close(4057, "Protocol error on executor side: Invalid message.");
+            ws.close(4067, "Invalid message.");
         }
     });
 
