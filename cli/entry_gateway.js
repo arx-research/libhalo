@@ -12,6 +12,7 @@ const queryString = require('query-string');
 const {dirname} = require("./util");
 const nunjucks = require("nunjucks");
 
+const REQUESTOR_SESS_LIMIT = 10 * 60 * 1000;
 const MAX_SESSION_LIMIT = 1000;
 
 let args = parseArgs();
@@ -48,7 +49,7 @@ function processRequestor(ws, req) {
 
     setTimeout(() => {
         ws.close(4080, "Session timed out.");
-    }, 5000);
+    }, REQUESTOR_SESS_LIMIT);
 
     ws.on('error', console.error);
 
@@ -63,6 +64,11 @@ function processRequestor(ws, req) {
 
     ws.on('message', function message(data) {
         let obj = JSON.parse(data);
+
+        if (obj.type === "keepalive") {
+            // ignore
+            return;
+        }
 
         if (obj.type === "request_cmd") {
             if (sobj.requestUID !== null) {
@@ -125,6 +131,11 @@ function processExecutor(ws, req, sessionId) {
     ws.on('message', function message(data) {
         let obj = JSON.parse(data);
 
+        if (obj.type === "keepalive") {
+            // ignore
+            return;
+        }
+
         if (obj.type === "executed_cmd") {
             if (sobj.requestUID !== null) {
                 sobj.requestor.send(JSON.stringify({
@@ -178,17 +189,18 @@ function createServer(args) {
     });
 
     server.on('upgrade', (request, socket, head) => {
-        wss.handleUpgrade(request, socket, head, socket => {
-            wss.emit('connection', socket, request);
-        });
+        const { pathname } = parse(request.url);
+
+        if (pathname === "/ws") {
+            wss.handleUpgrade(request, socket, head, socket => {
+                wss.emit('connection', socket, request);
+            });
+        } else {
+            socket.destroy();
+        }
     });
 
     wss.on('connection', (ws, req) => {
-        if (!req.url.startsWith('/ws?')) {
-            ws.close(4060, "Invalid URL.");
-            return;
-        }
-
         try {
             let query = req.url.split('?', 2)[1];
             let qs = queryString.parse(query);
