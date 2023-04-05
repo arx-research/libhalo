@@ -2,6 +2,7 @@ const Buffer = require('buffer/').Buffer;
 const crypto = require('crypto');
 const {hex2arr} = require("./utils");
 const { subtle } = globalThis.crypto;
+const jose = require('jose');
 
 class JWEUtil {
     constructor() {
