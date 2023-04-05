@@ -46,6 +46,10 @@ function processRequestor(ws, req) {
 
     let sobj = sessionIds[sessionId];
 
+    setTimeout(() => {
+        ws.close(4080, "Session timed out.");
+    }, 5000);
+
     ws.on('error', console.error);
 
     ws.on('close', function close() {
