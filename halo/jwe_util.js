@@ -4,19 +4,19 @@ class JWEUtil {
     }
 
     async generateKey() {
-        /* let sharedKey = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('hex');
+        let sharedKey = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('hex');
         this.sharedKeyObj = await crypto.subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
             "decrypt",
         ]);
-        return sharedKey; */
+        return sharedKey;
     }
 
     async loadKey(sharedKey) {
-        /* this.sharedKeyObj = await crypto.subtle.importKey("raw", sharedKey, "AES-GCM", true, [
+        this.sharedKeyObj = await crypto.subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
             "decrypt",
-        ]); */
+        ]);
     }
 
     async encrypt(data) {

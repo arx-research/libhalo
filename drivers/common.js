@@ -212,7 +212,7 @@ class HaloGateway {
         try {
             let res = await this.ws.sendRequest({
                 "type": "request_cmd",
-                "command": await this.jweUtil.encrypt(command)
+                "payload": await this.jweUtil.encrypt(command)
             });
 
             if (res.type !== "result_cmd") {
