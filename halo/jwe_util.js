@@ -34,12 +34,13 @@ class JWEUtil {
     }
 
     async decrypt(jwe) {
-        const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
+        const hdr = jose.decodeProtectedHeader(jwe);
 
-        if (protectedHeader.alg !== "dir" || protectedHeader.enc !== "A128GCM") {
-            throw new Error("Unsupported type of JWE.");
+        if (Object.keys(hdr).length !== 2 || hdr.alg !== "dir" || hdr.enc !== "A128GCM") {
+            throw new Error("Unexpected type of JWE provided.");
         }
 
+        const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
         return JSON.parse(new TextDecoder().decode(plaintext));
     }
 }
