@@ -20,6 +20,7 @@ const {
 } = require("../halo/commands");
 const {ERROR_CODES} = require("../halo/errors");
 const {JWEUtil} = require("../halo/jwe_util");
+const crypto = require('crypto').webcrypto;
 
 let isCallRunning = null;
 

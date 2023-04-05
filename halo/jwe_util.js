@@ -1,3 +1,6 @@
+const Buffer = require('buffer/').Buffer;
+const crypto = require('crypto').webcrypto;
+
 class JWEUtil {
     constructor() {
 
@@ -20,18 +23,16 @@ class JWEUtil {
     }
 
     async encrypt(data) {
-        /* return await new jose.CompactEncrypt(
+        return await new jose.CompactEncrypt(
             new TextEncoder().encode(JSON.stringify(data)))
             .setProtectedHeader({alg: 'dir', enc: 'A256GCM'})
-            .encrypt(this.sharedKeyObj); */
-        return data;
+            .encrypt(this.sharedKeyObj);
     }
 
     async decrypt(jwe) {
-        /* const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
+        const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
         // TODO check protectedHeader
-        return JSON.parse(plaintext); */
-        return jwe;
+        return JSON.parse(plaintext);
     }
 }
 
