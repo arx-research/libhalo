@@ -45,6 +45,14 @@
         };
 
         // TODO validate searchParts[1]
+        let protocol;
+
+        if (window.location.protocol === 'https:') {
+            protocol = 'wss://';
+        } else {
+            protocol = 'ws://';
+        }
+
         wsp = createWs(protocol + window.location.host + '/?side=executor&sessionId=' + searchParts[1]);
 
         wsp.onUnpackedMessage.addListener(async ev => {
