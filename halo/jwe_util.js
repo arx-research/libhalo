@@ -11,7 +11,7 @@ class JWEUtil {
 
     async generateKey() {
         console.log('call c');
-        let sharedKey = crypto.randomBytes(32).toString('hex');
+        let sharedKey = crypto.randomBytes(16).toString('hex');
         console.log('call c2');
         this.sharedKeyObj = await subtle.importKey("raw", hex2arr(sharedKey), "AES-GCM", true, [
             "encrypt",
@@ -30,13 +30,17 @@ class JWEUtil {
     async encrypt(data) {
         return await new jose.CompactEncrypt(
             new TextEncoder().encode(JSON.stringify(data)))
-            .setProtectedHeader({alg: 'dir', enc: 'A256GCM'})
+            .setProtectedHeader({alg: 'dir', enc: 'A128GCM'})
             .encrypt(this.sharedKeyObj);
     }
 
     async decrypt(jwe) {
         const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
-        // TODO check protectedHeader
+
+        if (protectedHeader.alg !== "dir" || protectedHeader.enc !== "A128GCM") {
+            throw new Error("Unsupported type of JWE.");
+        }
+
         console.log('decrypted', plaintext);
         return JSON.parse(Buffer.from(plaintext).toString());
     }

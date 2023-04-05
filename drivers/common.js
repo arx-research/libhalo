@@ -226,6 +226,7 @@ class HaloGateway {
                 throw new Error("Unexpected packet type.");
             }
 
+            this.lastCommand = null;
             return await this.jweUtil.decrypt(res.payload);
         } finally {
             this.isRunning = false;

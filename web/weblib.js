@@ -19,6 +19,16 @@ const {
     arr2hex, hex2arr, parsePublicKeys, convertSignature, recoverPublicKey
 } = require("../halo/utils");
 const {__runTestSuite} = require("../halo/tests");
+const {JWEUtil} = require("../halo/jwe_util");
+
+function createWs(url) {
+    return new WebSocketAsPromised(url, {
+        packMessage: data => JSON.stringify(data),
+        unpackMessage: data => JSON.parse(data),
+        attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
+        extractRequestId: data => data && data.uid
+    });
+}
 
 module.exports = {
     // utilities
@@ -33,6 +43,8 @@ module.exports = {
 
     // for web usage with gateway
     HaloGateway,
+    JWEUtil,
+    createWs,
 
     // exceptions
     HaloTagError,

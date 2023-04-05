@@ -43,6 +43,8 @@
         crypto.getRandomValues(rnd);
         document.getElementById('message').value = arr2hex(rnd);
 
+        let cmd = {"name": "sign", "message": "010203", "keyNo": 1};
+
         function log(data) {
             console.log(data);
             document.getElementById('statusText').innerText += '\n' + data;
@@ -74,7 +76,6 @@
             }
 
             log('Smartphone paired succesfully.');
-            let cmd = {"name": "sign", "message": "010203", "keyNo": 1};
 
             try {
                 let res = await gate.execHaloCmd(cmd);

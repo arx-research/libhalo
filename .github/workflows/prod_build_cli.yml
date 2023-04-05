@@ -78,10 +78,10 @@ jobs:
         run: |
           cd cli
           npm --include=dev ci
-      - name: Build ws_client with webpack
+      - name: Build libhalo with webpack
         shell: bash
         run: |
-          cd cli/ws_client
+          cd web
           ../node_modules/.bin/webpack
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
