@@ -28,7 +28,7 @@ function processRequestor(ws) {
         return;
     }
 
-    let sessionId = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('hex');
+    let sessionId = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url');
 
     sessionIds[sessionId] = {
         "requestor": ws,
