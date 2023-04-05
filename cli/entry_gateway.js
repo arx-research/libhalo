@@ -63,6 +63,7 @@ function processRequestor(ws) {
                     "type": "requested_cmd",
                     "payload": obj.payload
                 }));
+                console.log('[' + sessionId + '] Command request sent to executor.');
             } else {
                 sobj.requestor.send(JSON.stringify({
                     "uid": obj.uid,
@@ -117,6 +118,7 @@ function processExecutor(ws, sessionId) {
                     "uid": sobj.requestUID
                 }));
                 sobj.requestUID = null;
+                console.log('[' + sessionId + '] Command result sent to requestor.');
             }
         } else {
             sobj.requestor.close(4057, "Protocol error on executor side: Invalid message.");
