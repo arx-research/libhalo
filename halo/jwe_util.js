@@ -11,13 +11,14 @@ class JWEUtil {
 
     async generateKey() {
         console.log('call c');
-        let sharedKey = crypto.randomBytes(16).toString('base64').replace('+', '-').replace('/', '_');
+        let sharedKey = crypto.randomBytes(16)
+        let sharedKeyEnc = sharedKey.toString('base64').replace('+', '-').replace('/', '_');
         console.log('call c2');
-        this.sharedKeyObj = await subtle.importKey("raw", hex2arr(sharedKey), "AES-GCM", true, [
+        this.sharedKeyObj = await subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
             "decrypt",
         ]);
-        return sharedKey;
+        return sharedKeyEnc;
     }
 
     async loadKey(sharedKey) {
