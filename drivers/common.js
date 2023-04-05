@@ -187,9 +187,10 @@ class HaloGateway {
         // TODO this doesn't throw when websocket is closed while waiting
 
         let sharedKey = await this.jweUtil.generateKey();
+        let randomQs = Buffer.from(crypto.getRandomValues(new Uint8Array(4))).toString('hex');
 
         let welcomeMsg = await this.ws.waitUnpackedMessage(ev => ev && ev.type === "welcome");
-        let execURL = this.gatewayServerHttp + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
+        let execURL = this.gatewayServerHttp + '?_=' + randomQs + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
         let qrCode = await makeQR(execURL);
 
         return {

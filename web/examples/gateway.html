@@ -54,7 +54,7 @@
 
             try {
                 let pairInfo = await gate.startPairing();
-                document.getElementById('qr').src = pairInfo.qr;
+                document.getElementById('qr').src = pairInfo.qrCode;
             } catch (e) {
                 console.error(e);
                 console.error('fail');
