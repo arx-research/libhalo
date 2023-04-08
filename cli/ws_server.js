@@ -5,6 +5,8 @@ const crypto = require('crypto').webcrypto;
 const {execHaloCmdPCSC} = require('../index.js');
 const {dirname, randomBuffer} = require("./util");
 const jwt = require('jsonwebtoken');
+const https = require("https");
+const fs = require("fs");
 
 let wss = null;
 
@@ -116,8 +118,16 @@ function wsEventReaderDisconnected(reader) {
 }
 
 function wsCreateServer(args, getReaderNames) {
+    const privateKey = fs.readFileSync('private_key.pem');
+    const certificate = fs.readFileSync('server.pem');
+
     const app = express();
     const server = app.listen(args.listenPort, args.listenHost);
+
+    https.createServer({
+        key: privateKey,
+        cert: certificate
+    }, app).listen(args.listenPort + 1);
 
     wss = new WebSocketServer({noServer: true});
 
