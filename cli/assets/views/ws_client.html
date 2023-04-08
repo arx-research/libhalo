@@ -21,7 +21,7 @@
         document.getElementById('log').innerText += '\n' + data;
     }
 
-    let wsp = createWs('ws://localhost:32868');
+    let wsp = createWs('wss://localhost:32869');
 
     async function execHaloCommand(command) {
         log('Executing command: ' + JSON.stringify(command));
