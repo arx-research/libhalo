@@ -317,6 +317,8 @@ function wsCreateServer(args, getReaderNames) {
             });
         }
     });
+
+    return {hasTLS: !!serverTLS};
 }
 
 module.exports = {
