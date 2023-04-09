@@ -1,13 +1,13 @@
-name: Release halocli tool
+name: Release halo-tools
 
 on:
   push:
     tags:
-      - 'halocli-v*'
+      - 'halotools-v*'
 
 jobs:
   create_release:
-    name: Create halocli release
+    name: Create halo-tools release
     runs-on: ubuntu-latest
     steps:
       - name: Prepare version number
@@ -51,7 +51,7 @@ jobs:
           - os: ubuntu-latest
           - os: windows-latest
           - os: macos-latest
-    name: Build halocli (${{ matrix.os }})
+    name: Build halo-tools (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: create_release
     steps:
@@ -146,7 +146,7 @@ jobs:
             out_name: halo-tools-win-x64.zip
           - os: macos-latest
             out_name: halo-tools-macos-x64.pkg
-    name: Sign halocli and release (${{ matrix.os }})
+    name: Sign halo-tools and release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
     steps:
