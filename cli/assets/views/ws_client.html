@@ -102,6 +102,15 @@
     });
 
     wsp.onClose.addListener(event => {
+        {% if displayTLSWarn %}
+            if (event.code === 1006) {
+                log('IMPORTANT: You might be missing a local certificate, which is required for halo-bridge on Safari. ' +
+                    'If the halo-bridge doesn\'t work at all, please try to reinstall the entire toolset using the ' +
+                    'release PKG file. When the installer will ask you about certificate generation, ' +
+                    'please choose "Generate certificate" option.');
+            }
+        {% endif %}
+
         if (event.code === 4001) {
             log('Connection closed, new client has connected.');
         } else {

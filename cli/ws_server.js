@@ -148,11 +148,15 @@ function wsCreateServer(args, getReaderNames) {
     const app = express();
     const server = app.listen(args.listenPort, args.listenHost);
 
+    let displayTLSWarn = (process.platform === "darwin");
+
     if (tlsData) {
         serverTLS = https.createServer({
             key: tlsData.privateKey,
             cert: tlsData.certificate
         }, app).listen(args.listenPortTLS, args.listenHost);
+
+        displayTLSWarn = false;
     }
 
     wss = new WebSocketServer({noServer: true});
@@ -166,7 +170,7 @@ function wsCreateServer(args, getReaderNames) {
     });
 
     app.get('/', (req, res) => {
-        res.render('ws_client.html');
+        res.render('ws_client.html', {displayTLSWarn: displayTLSWarn});
     });
 
     app.get('/consent', async (req, res) => {
