@@ -9,7 +9,12 @@ then
 fi
 
 # create a directory for our certificate
-mkdir /usr/local/etc/halo-bridge
+mkdir -p /usr/local/etc/halo-bridge
+
+# remove stale files
+rm -f /usr/local/etc/halo-bridge/private_key.pem
+rm -f /usr/local/etc/halo-bridge/server.csr
+rm -f /usr/local/etc/halo-bridge/server.csr
 
 # generate new local certificate
 openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
@@ -18,5 +23,11 @@ openssl req -x509 -sha256 -days 3650 -key /usr/local/etc/halo-bridge/private_key
 
 # add certificate to the trust list
 security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /usr/local/etc/halo-bridge/server.pem
+
+# add halo-bridge.local domain to /etc/hosts if it doesn't exist yet
+if ! grep -q "halo-bridge.local" /etc/hosts
+then
+  echo "127.0.0.1  halo-bridge.local" >> /etc/hosts
+fi
 
 exit 0

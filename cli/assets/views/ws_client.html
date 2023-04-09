@@ -21,7 +21,15 @@
         document.getElementById('log').innerText += '\n' + data;
     }
 
-    let wsp = createWs('wss://localhost:32869');
+    let wsAddress;
+
+    if (window.location.protocol === 'https:') {
+        wsAddress = 'wss://halo-bridge.local:32869';
+    } else {
+        wsAddress = 'ws://localhost:32868';
+    }
+
+    let wsp = createWs(wsAddress);
 
     async function execHaloCommand(command) {
         log('Executing command: ' + JSON.stringify(command));
