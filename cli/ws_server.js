@@ -328,6 +328,16 @@ function wsCreateServer(args, getReaderNames) {
         }
     });
 
+    const exitSignal = (process.platform === "win32" ? 'SIGINT' : 'SIGTERM');
+
+    process.on(exitSignal, () => {
+        if (currentWsClient) {
+            currentWsClient.close(4070, "The server is shutting down.");
+        }
+
+        process.exit(0);
+    });
+
     return {hasTLS: !!serverTLS};
 }
 
