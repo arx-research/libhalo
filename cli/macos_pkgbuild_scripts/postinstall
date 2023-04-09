@@ -21,6 +21,9 @@ openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
 openssl req -new -sha256 -key /usr/local/etc/halo-bridge/private_key.pem -out /usr/local/etc/halo-bridge/server.csr -subj '/CN=halo-bridge.local/'
 openssl req -x509 -sha256 -days 3650 -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.pem
 
+# notify user that we are going to modify the trust list
+osascript -e 'display alert "HaLo CLI Installer" message "We will generate a self-signed certificate for halo-bridge'\''s local domain and mark it as trusted in the system.\n\nThis step is required in order to support Safari web browser."'
+
 # add certificate to the trust list
 security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /usr/local/etc/halo-bridge/server.pem
 
