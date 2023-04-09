@@ -21,7 +21,26 @@
         document.getElementById('log').innerText += '\n' + data;
     }
 
-    let wsp = createWs('ws://localhost:32868');
+    let wsAddress;
+    let wsPort;
+
+    if (!window.location.host.includes(':')) {
+        if (window.location.protocol === 'https:') {
+            wsPort = 443;
+        } else {
+            wsPort = 80;
+        }
+    } else {
+        wsPort = parseInt(window.location.host.split(':')[1]);
+    }
+
+    if (window.location.protocol === 'https:') {
+        wsAddress = 'wss://halo-bridge.local:' + wsPort;
+    } else {
+        wsAddress = 'ws://127.0.0.1:' + wsPort;
+    }
+
+    let wsp = createWs(wsAddress);
 
     async function execHaloCommand(command) {
         log('Executing command: ' + JSON.stringify(command));
