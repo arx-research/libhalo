@@ -16,6 +16,9 @@
 </div>
 <script src="/assets/static/ws_client.js"></script>
 <script>
+    const forceUseTLS = {% if forceUseTLS %}true{% else %}false{% endif %};
+    const displayTLSWarn = {% if displayTLSWarn %}true{% else %}false{% endif %};
+
     function log(data) {
         console.log(data);
         document.getElementById('log').innerText += '\n' + data;
@@ -34,7 +37,7 @@
         wsPort = parseInt(window.location.host.split(':')[1]);
     }
 
-    if (window.location.protocol === 'https:') {
+    if (window.location.protocol === 'https:' || forceUseTLS) {
         wsAddress = 'wss://halo-bridge.local:' + wsPort;
     } else {
         wsAddress = 'ws://127.0.0.1:' + wsPort;
@@ -102,14 +105,12 @@
     });
 
     wsp.onClose.addListener(event => {
-        {% if displayTLSWarn %}
-            if (event.code === 1006) {
-                log('IMPORTANT: You might be missing a local certificate, which is required for halo-bridge on Safari. ' +
-                    'If the halo-bridge doesn\'t work at all, please try to reinstall the entire toolset using the ' +
-                    'release PKG file. When the installer will ask you about certificate generation, ' +
-                    'please choose "Generate certificate" option.');
-            }
-        {% endif %}
+        if (event.code === 1006 && displayTLSWarn) {
+            log('IMPORTANT: You might be missing a local certificate, which is required for halo-bridge on Safari. ' +
+                'If the halo-bridge doesn\'t work at all, please try to reinstall the entire toolset using the ' +
+                'release PKG file. When the installer will ask you about certificate generation, ' +
+                'please choose "Generate certificate" option.');
+        }
 
         if (event.code === 4001) {
             log('Connection closed, new client has connected.');

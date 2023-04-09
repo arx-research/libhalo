@@ -148,6 +148,7 @@ function wsCreateServer(args, getReaderNames) {
     const app = express();
     const server = app.listen(args.listenPort, args.listenHost);
 
+    let forceUseTLS = (process.platform === "darwin");
     let displayTLSWarn = (process.platform === "darwin");
 
     if (tlsData) {
@@ -170,7 +171,10 @@ function wsCreateServer(args, getReaderNames) {
     });
 
     app.get('/', (req, res) => {
-        res.render('ws_client.html', {displayTLSWarn: displayTLSWarn});
+        res.render('ws_client.html', {
+            forceUseTLS: forceUseTLS,
+            displayTLSWarn: displayTLSWarn
+        });
     });
 
     app.get('/consent', async (req, res) => {
