@@ -173,7 +173,9 @@ function wsCreateServer(args, getReaderNames) {
     app.get('/', (req, res) => {
         res.render('ws_client.html', {
             forceUseTLS: forceUseTLS,
-            displayTLSWarn: displayTLSWarn
+            displayTLSWarn: displayTLSWarn,
+            wsPort: args.listenPort,
+            wssPort: args.listenPortTLS
         });
     });
 
