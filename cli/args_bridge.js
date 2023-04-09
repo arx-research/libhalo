@@ -16,10 +16,16 @@ parser.add_argument("-l", "--listen-host", {
     dest: "listenHost"
 });
 parser.add_argument("-p", "--listen-port", {
-    help: "Port where the server should bind",
+    help: "Port where the server should bind (HTTP/WS)",
     type: "int",
     default: 32868,
     dest: "listenPort"
+});
+parser.add_argument("-P", "--listen-port-tls", {
+    help: "Port where the server should bind (HTTPS/WSS)",
+    type: "int",
+    default: 32869,
+    dest: "listenPortTLS"
 });
 parser.add_argument("-a", "--allow-origins", {
     help: "List of origins that are allowed to connect (semicolon-separated)",

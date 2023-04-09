@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+# check if user requested us not to override the certificate
+if [ -f /usr/local/etc/halo-bridge/DONT_OVERRIDE ]
+then
+    exit 0
+fi
+
+# create a directory for our certificate
+mkdir /usr/local/etc/halo-bridge
+
+# generate new local certificate
+openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
+openssl req -new -sha256 -key /usr/local/etc/halo-bridge/private_key.pem -out /usr/local/etc/halo-bridge/server.csr -subj '/CN=halo-bridge.local/'
+openssl req -x509 -sha256 -days 3650 -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.pem
+
+# add certificate to the trust list
+security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /usr/local/etc/halo-bridge/server.pem
+
+exit 0

@@ -111,6 +111,7 @@ jobs:
           node_modules/.bin/pkg --compress GZip -t node16-macos-x64 -c package.json -o dist/halocli entry_cli.js
           node_modules/.bin/pkg --compress GZip -t node16-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.js
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
+          mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
           mv "Entitlements.plist" "dist/Entitlements.plist"
       - name: Compress dist files
         shell: bash
@@ -223,7 +224,7 @@ jobs:
           chmod +x ./root/usr/local/bin/halocli
           chmod +x ./root/usr/local/bin/halo-bridge
           chmod +x "./root/Applications/HaLo CLI Bridge Server.app/Contents/MacOS/halocli_bridge_launcher"
-          pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halocli-macos-x64.pkg
+          pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --scripts "macos_pkgbuild_scripts/" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halocli-macos-x64.pkg
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest'
         run: |
