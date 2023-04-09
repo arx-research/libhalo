@@ -17,7 +17,7 @@ rm -f /usr/local/etc/halo-bridge/server.csr
 rm -f /usr/local/etc/halo-bridge/server.csr
 
 # ask user whether he wants to generate a certificate for halo-bridge.local
-if osascript -e 'display dialog "In order for halo-bridge to work correctly, we will need to generate a self-signed certificate for the '\''halo-bridge.local'\'' domain and mark it as trusted in the system.\n\nYou can skip that step if you don'\''t need to use halo-bridge tool." buttons {"Skip", "Generate certificate"} default button "Generate certificate" cancel button "Skip" with icon caution with title "HaLo CLI Installer"'
+if osascript -e 'display dialog "In order for halo-bridge to work correctly, we will need to generate a self-signed certificate for the '\''halo-bridge.local'\'' domain and mark it as trusted in the system.\n\nYou can skip that step if you don'\''t need to use halo-bridge tool." buttons {"Skip", "Generate certificate"} default button "Generate certificate" cancel button "Skip" with icon caution with title "HaLo Tools Installer"'
 then
   # generate new local certificate
   openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
