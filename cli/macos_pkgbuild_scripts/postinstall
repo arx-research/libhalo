@@ -31,6 +31,7 @@ fi
 # add halo-bridge.local domain to /etc/hosts if it doesn't exist yet
 if ! grep -q "halo-bridge.local" /etc/hosts
 then
+  echo "" >> /etc/hosts
   echo "127.0.0.1  halo-bridge.local" >> /etc/hosts
 fi
 
