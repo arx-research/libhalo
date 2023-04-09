@@ -328,15 +328,9 @@ function wsCreateServer(args, getReaderNames) {
         }
     });
 
-    process.on('SIGTERM', () => {
-        if (currentWsClient) {
-            currentWsClient.close(4070, "The server is shutting down.");
-        }
+    const exitSignal = (process.platform === "win32" ? 'SIGINT' : 'SIGTERM');
 
-        process.exit(0);
-    });
-
-    process.on('SIGINT', () => {
+    process.on(exitSignal, () => {
         if (currentWsClient) {
             currentWsClient.close(4070, "The server is shutting down.");
         }
