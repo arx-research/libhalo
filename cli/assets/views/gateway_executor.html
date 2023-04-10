@@ -37,7 +37,7 @@
         try {
             await haloGateExecutorCreateWs(log, (command) => {
                 // callback when a new command arrives
-                log("Requested to execute the following command:\n" + JSON.stringify(payload.command, null, 4));
+                log("Requested to execute the following command:\n" + JSON.stringify(command, null, 4));
                 document.getElementById('click-btn').disabled = false;
             });
         } catch (e) {
