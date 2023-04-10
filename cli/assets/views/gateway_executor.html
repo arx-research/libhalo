@@ -25,6 +25,8 @@
         try {
             await haloGateExecutorUserConfirm(log);
         } catch (e) {
+            log("Something went wrong when running the command.\n" + e.stack);
+            document.getElementById('click-btn').disabled = false;
             return;
         }
 
