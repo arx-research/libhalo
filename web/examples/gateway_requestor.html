@@ -75,7 +75,7 @@
                 return;
             }
 
-            log('Smartphone paired succesfully. Now, click [Confirm] on your smartphone and tap HaLo tag to the smartphone.');
+            log('Smartphone paired succesfully.');
             document.getElementById('qr').style.display = 'none';
 
             await btnInitiateSessClicked();
@@ -86,6 +86,7 @@
 
         async function btnInitiateSessClicked() {
             document.getElementById('signBtn').disabled = true;
+            log('Requested to execute a command. Please click [Confirm] on your smartphone and tap your HaLo tag.');
 
             try {
                 let res = await gate.execHaloCmd(cmd);
