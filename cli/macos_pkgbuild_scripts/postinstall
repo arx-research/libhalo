@@ -22,7 +22,7 @@ then
   # generate new local certificate
   openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
   openssl req -new -sha256 -key /usr/local/etc/halo-bridge/private_key.pem -out /usr/local/etc/halo-bridge/server.csr -subj '/CN=halo-tools (Local Certificate)/'
-  openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local,DNS:localhost,IP:127.0.0.1,IP:::1'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth\ncertificatePolicies=ia5org,@polsect\n[polsect]\npolicyIdentifier=2.5.29.32.0\nCPS=https://github.com/arx-research/libhalo/tree/master/docs/bridge-local-certs.md") -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.pem
+  openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local,DNS:localhost,IP:127.0.0.1,IP:::1'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.pem
 
   # add certificate to the trust list
   security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /usr/local/etc/halo-bridge/server.pem
