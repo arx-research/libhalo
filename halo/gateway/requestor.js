@@ -68,13 +68,12 @@ class HaloGateway {
 
     async startPairing() {
         let sharedKey = await this.jweUtil.generateKey();
-        let randomQs = crypto.randomBytes(4).toString('hex');
 
         let waitPromise = this.waitForWelcomePacket();
         await this.ws.open();
         let welcomeMsg = await waitPromise;
 
-        let execURL = this.gatewayServerHttp + '/e?_=' + randomQs + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
+        let execURL = this.gatewayServerHttp + '/e?id=' + welcomeMsg.sessionId + '/#!/' + sharedKey + '/';
         let qrCode = await makeQR(execURL);
 
         return {

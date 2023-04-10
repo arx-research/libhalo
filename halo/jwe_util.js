@@ -10,7 +10,12 @@ class JWEUtil {
 
     async generateKey() {
         let sharedKey = crypto.randomBytes(16)
-        let sharedKeyEnc = sharedKey.toString('base64').replace('+', '-').replace('/', '_');
+        let sharedKeyEnc = sharedKey
+            .toString('base64')
+            .replace('+', '-')
+            .replace('/', '_')
+            .replace('==', '');
+
         this.sharedKeyObj = await subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
             "decrypt",
@@ -19,7 +24,17 @@ class JWEUtil {
     }
 
     async loadKey(sharedKey) {
-        let sharedKeyBuf = Buffer.from(sharedKey.replace('-', '+').replace('_', '/'), 'base64');
+        // automatically add "=" padding if it's not present
+        let padLen = (-sharedKey.length % 3) + 3;
+
+        if (padLen === 3) {
+            padLen = 0;
+        }
+
+        const fixedKeyStr = (sharedKey + "=".repeat(padLen))
+            .replace('-', '+')
+            .replace('_', '/');
+        const sharedKeyBuf = Buffer.from(fixedKeyStr, 'base64');
         this.sharedKeyObj = await subtle.importKey("raw", sharedKeyBuf, "AES-GCM", true, [
             "encrypt",
             "decrypt",
