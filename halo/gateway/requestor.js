@@ -73,7 +73,7 @@ class HaloGateway {
         await this.ws.open();
         let welcomeMsg = await waitPromise;
 
-        let execURL = this.gatewayServerHttp + '/e?id=' + welcomeMsg.sessionId + '/#!/' + sharedKey + '/';
+        let execURL = this.gatewayServerHttp + '/e?id=' + welcomeMsg.sessionId + '#!/' + sharedKey + '/';
         let qrCode = await makeQR(execURL);
 
         return {
