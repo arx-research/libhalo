@@ -19,9 +19,9 @@ const {
     arr2hex, hex2arr, parsePublicKeys, convertSignature, recoverPublicKey
 } = require("../halo/utils");
 const {__runTestSuite} = require("../halo/tests");
-const WebSocketAsPromised = require("websocket-as-promised");
 const {HaloGateway} = require("../halo/gateway/requestor");
 const {haloGateExecutorCreateWs, haloGateExecutorUserConfirm} = require("../halo/gateway/executor");
+const {haloFindBridge, haloCreateWs} = require("./web_utils");
 
 module.exports = {
     // utilities
@@ -33,6 +33,10 @@ module.exports = {
 
     // for web usage
     execHaloCmdWeb,
+    haloFindBridge,
+
+    // for bridge demo
+    haloCreateWs,
 
     // for web usage with gateway
     HaloGateway,

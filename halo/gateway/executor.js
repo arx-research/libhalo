@@ -1,19 +1,9 @@
 const {JWEUtil} = require("../jwe_util");
-const WebSocketAsPromised = require("websocket-as-promised");
 const queryString = require("query-string");
 
 let currentCmd = null;
 let jweUtil = new JWEUtil();
 let wsp;
-
-function createWs(url) {
-    return new WebSocketAsPromised(url, {
-        packMessage: data => JSON.stringify(data),
-        unpackMessage: data => JSON.parse(data),
-        attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
-        extractRequestId: data => data && data.uid
-    });
-}
 
 async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
     let protocol;

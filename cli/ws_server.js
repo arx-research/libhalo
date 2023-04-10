@@ -9,6 +9,7 @@ const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const util = require("util");
 
 let wss = null;
 
@@ -51,7 +52,7 @@ async function validateCSRFToken(token) {
 }
 
 function sendToCurrentWs(ws, data) {
-    console.log('send', data);
+    console.log('send', util.inspect(data, {showHidden: false, depth: null, colors: true}));
 
     if (currentWsClient !== null && (ws === null || currentWsClient === ws)) {
         currentWsClient.send(JSON.stringify(data));
@@ -125,10 +126,10 @@ function readTLSData() {
 
     if (process.platform === "win32") {
         privateKeyPath = path.join(os.homedir(), ".halo-bridge\\private_key.pem");
-        certificatePath = path.join(os.homedir(), ".halo-bridge\\server.pem");
+        certificatePath = path.join(os.homedir(), ".halo-bridge\\server.crt");
     } else {
         privateKeyPath = '/usr/local/etc/halo-bridge/private_key.pem';
-        certificatePath = '/usr/local/etc/halo-bridge/server.pem';
+        certificatePath = '/usr/local/etc/halo-bridge/server.crt';
     }
 
     if (fs.existsSync(privateKeyPath) && fs.existsSync(certificatePath)) {
@@ -148,7 +149,6 @@ function wsCreateServer(args, getReaderNames) {
     const app = express();
     const server = app.listen(args.listenPort, args.listenHost);
 
-    let forceUseTLS = (process.platform === "darwin");
     let displayTLSWarn = (process.platform === "darwin");
 
     if (tlsData) {
@@ -172,11 +172,16 @@ function wsCreateServer(args, getReaderNames) {
 
     app.get('/', (req, res) => {
         res.render('ws_client.html', {
-            forceUseTLS: forceUseTLS,
-            displayTLSWarn: displayTLSWarn,
             wsPort: args.listenPort,
             wssPort: args.listenPortTLS
         });
+    });
+
+    app.get('/health', (req, res) => {
+        res.type('text/plain')
+            .set('Access-Control-Allow-Origin', req.headers.origin)
+            .set('Access-Control-Allow-Methods', 'GET')
+            .send('OK');
     });
 
     app.get('/consent', async (req, res) => {
@@ -229,6 +234,13 @@ function wsCreateServer(args, getReaderNames) {
     }
 
     wss.on('connection', (ws, req) => {
+        let parts = req.url.split('?');
+
+        if (parts.length === 2 && parts[1] === "ping=1") {
+            ws.close(4090, "Pong.");
+            return;
+        }
+
         let permitted = false;
         let originHostname = new URL(req.headers.origin).hostname;
 
@@ -267,7 +279,7 @@ function wsCreateServer(args, getReaderNames) {
             }
 
             let packet = JSON.parse(data);
-            console.log('recv', packet);
+            console.log('recv', util.inspect(packet, {showHidden: false, depth: null, colors: true}));
 
             if (packet.type === "exec_halo") {
                 try {
