@@ -1,8 +1,7 @@
 const QRCode = require("qrcode");
 const WebSocketAsPromised = require("websocket-as-promised");
 const crypto = require("crypto");
-const {JWEUtil} = require("../halo/jwe_util");
-const Buffer = require('buffer/').Buffer;
+const {JWEUtil} = require("../jwe_util");
 
 function makeQR(url) {
     return new Promise((resolve, reject) => {

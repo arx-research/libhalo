@@ -19,9 +19,9 @@ const {
     arr2hex, hex2arr, parsePublicKeys, convertSignature, recoverPublicKey
 } = require("../halo/utils");
 const {__runTestSuite} = require("../halo/tests");
-const {JWEUtil} = require("../halo/jwe_util");
 const WebSocketAsPromised = require("websocket-as-promised");
 const {HaloGateway} = require("../halo/gateway/requestor");
+const {haloGateExecutorCreateWs, haloGateExecutorUserConfirm} = require("../halo/gateway/executor");
 
 function createWs(url) {
     return new WebSocketAsPromised(url, {
@@ -45,8 +45,8 @@ module.exports = {
 
     // for web usage with gateway
     HaloGateway,
-    JWEUtil,
-    createWs,
+    haloGateExecutorCreateWs,
+    haloGateExecutorUserConfirm,
 
     // exceptions
     HaloTagError,
