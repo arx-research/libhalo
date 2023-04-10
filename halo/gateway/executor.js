@@ -1,5 +1,6 @@
 const {JWEUtil} = require("../jwe_util");
 const WebSocketAsPromised = require("websocket-as-promised");
+const querystring = require("querystring");
 
 let currentCmd = null;
 let jweUtil = new JWEUtil();
@@ -17,7 +18,20 @@ function createWs(url) {
 async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
     let protocol;
     let searchParts = window.location.hash.split('/');
-    await jweUtil.loadKey(searchParts[2]);
+
+    if (searchParts.length !== 3 || searchParts[0] !== "" || searchParts[2] !== "") {
+        throw new Error("Malformed executor URL provided - failed to analyse fragment part.");
+    }
+
+    await jweUtil.loadKey(searchParts[1]);
+
+    const qs = querystring.parse(window.location.search);
+
+    if (!qs.id) {
+        throw new Error("Malformed executor URL provided - failed to analyse query part.");
+    }
+
+    const sessionId = qs.id;
 
     if (window.location.protocol === 'https:') {
         protocol = 'wss://';
@@ -25,7 +39,7 @@ async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
         protocol = 'ws://';
     }
 
-    wsp = createWs(protocol + window.location.host + '/ws?side=executor&sessionId=' + searchParts[1]);
+    wsp = createWs(protocol + window.location.host + '/ws?side=executor&sessionId=' + sessionId);
 
     wsp.onUnpackedMessage.addListener(async ev => {
         if (ev.type === "ping") {
