@@ -48,7 +48,7 @@ async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
     });
 
     wsp.onClose.addListener(event => {
-        logCallback('Connection closed: ' + event.code);
+        logCallback('Connection closed. [' + event.code + '] ' + event.reason);
     });
 
     wsp.open();
