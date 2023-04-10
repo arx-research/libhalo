@@ -125,10 +125,10 @@ function readTLSData() {
 
     if (process.platform === "win32") {
         privateKeyPath = path.join(os.homedir(), ".halo-bridge\\private_key.pem");
-        certificatePath = path.join(os.homedir(), ".halo-bridge\\server.pem");
+        certificatePath = path.join(os.homedir(), ".halo-bridge\\server.crt");
     } else {
         privateKeyPath = '/usr/local/etc/halo-bridge/private_key.pem';
-        certificatePath = '/usr/local/etc/halo-bridge/server.pem';
+        certificatePath = '/usr/local/etc/halo-bridge/server.crt';
     }
 
     if (fs.existsSync(privateKeyPath) && fs.existsSync(certificatePath)) {

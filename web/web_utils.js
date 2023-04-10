@@ -1,4 +1,4 @@
-import WebSocketAsPromised from 'websocket-as-promised';
+const WebSocketAsPromised = require('websocket-as-promised');
 
 function runHealthCheck(url) {
     return new Promise((resolve, reject) => {
