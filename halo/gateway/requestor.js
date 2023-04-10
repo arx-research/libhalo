@@ -83,6 +83,20 @@ class HaloGateway {
         };
     }
 
+    waitConnected() {
+        return new Promise((resolve, reject) => {
+            this.ws.onClose.addListener(() => {
+                reject(new Error("WebSocket closed when waiting for the welcome packet."));
+            });
+
+            this.ws.onUnpackedMessage.addListener(data => {
+                if (data.type === "executor_connected") {
+                    resolve(data);
+                }
+            });
+        })
+    }
+
     async execHaloCmd(command) {
         if (this.isRunning) {
             throw new Error("Can not make multiple calls to execHaloCmd() in parallel.");
