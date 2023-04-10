@@ -49,15 +49,15 @@ async function haloGateExecutorUserConfirm(logCallback) {
     let res;
     let nonce = currentCmd.nonce;
 
-    logCallback('Executing command...');
+    logCallback('Please tap HaLo tag to the back of your smartphone and hold it for a while...');
 
     try {
         res = await execHaloCmdWeb(currentCmd.command);
     } catch (e) {
-        return;
+        throw e;
     }
 
-    logCallback('Sending result...');
+    logCallback('Command executed, sending result over the network...');
 
     currentCmd = null;
     wsp.sendPacked({

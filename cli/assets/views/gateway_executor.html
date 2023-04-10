@@ -21,13 +21,20 @@
 
     async function confirmButtonClicked(ev) {
         document.getElementById('click-btn').disabled = true;
-        await haloGateExecutorUserConfirm(log);
+
+        try {
+            await haloGateExecutorUserConfirm(log);
+        } catch (e) {
+            return;
+        }
+
         log("Executed command, result sent.");
+        document.getElementById('click-btn').disabled = false;
     }
 
     async function run() {
         try {
-            await haloGateExecConnectWs(log);
+            await haloGateExecutorCreateWs(log);
         } catch (e) {
             log("Something went wrong any we've failed to initialize.\n" + e.stack);
             return;
