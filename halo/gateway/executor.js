@@ -19,7 +19,7 @@ async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
     let protocol;
     let searchParts = window.location.hash.split('/');
 
-    if (searchParts.length !== 3 || searchParts[0] !== "!" || searchParts[2] !== "") {
+    if (searchParts.length !== 3 || searchParts[0] !== "#!" || searchParts[2] !== "") {
         throw new Error("Malformed executor URL provided - failed to analyse fragment part.");
     }
 
