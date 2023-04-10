@@ -148,7 +148,6 @@ function wsCreateServer(args, getReaderNames) {
     const app = express();
     const server = app.listen(args.listenPort, args.listenHost);
 
-    let forceUseTLS = (process.platform === "darwin");
     let displayTLSWarn = (process.platform === "darwin");
 
     if (tlsData) {
@@ -172,11 +171,16 @@ function wsCreateServer(args, getReaderNames) {
 
     app.get('/', (req, res) => {
         res.render('ws_client.html', {
-            forceUseTLS: forceUseTLS,
-            displayTLSWarn: displayTLSWarn,
             wsPort: args.listenPort,
             wssPort: args.listenPortTLS
         });
+    });
+
+    app.get('/health', (req, res) => {
+        res.type('text/plain')
+            .set('Access-Control-Allow-Origin', req.headers.origin)
+            .set('Access-Control-Allow-Methods', 'GET')
+            .send('OK');
     });
 
     app.get('/consent', async (req, res) => {

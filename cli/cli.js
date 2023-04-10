@@ -149,16 +149,11 @@ function runHalo(entryMode, args) {
 
     if (entryMode === "server") {
         console.log('Launching Web Socket Server...');
-        let serverInfo = wsCreateServer(
-            args, () => Object.keys(nfc.readers).map(r => nfc.readers[r].name));
+        wsCreateServer(args, () => Object.keys(nfc.readers).map(r => nfc.readers[r].name));
         console.log('Web Socket Server is listening...');
 
         if (!args.nonInteractive) {
-            if (serverInfo.hasTLS) {
-                open('https://halo-bridge.local:' + args.listenPortTLS);
-            } else {
-                open('http://127.0.0.1:' + args.listenPort);
-            }
+            open('http://127.0.0.1:' + args.listenPort);
         }
     } else {
         stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);

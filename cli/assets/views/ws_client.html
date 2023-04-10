@@ -16,8 +16,6 @@
 </div>
 <script src="/assets/static/libhalo.js"></script>
 <script>
-    const forceUseTLS = {% if forceUseTLS %}true{% else %}false{% endif %};
-    const displayTLSWarn = {% if displayTLSWarn %}true{% else %}false{% endif %};
     const wsPort = {{ wsPort }};
     const wssPort = {{ wssPort }};
 
@@ -25,18 +23,6 @@
         console.log(data);
         document.getElementById('log').innerText += '\n' + data;
     }
-
-    let wsAddress;
-
-    // TODO always try HTTPS version first, if it doesn't work, try HTTP version
-
-    if (window.location.protocol === 'https:' || forceUseTLS) {
-        wsAddress = 'wss://halo-bridge.local:' + wssPort;
-    } else {
-        wsAddress = 'ws://127.0.0.1:' + wsPort;
-    }
-
-    let wsp = createWs(wsAddress);
 
     async function execHaloCommand(command) {
         log('Executing command: ' + JSON.stringify(command));
@@ -71,48 +57,59 @@
         });
     }
 
-    wsp.onUnpackedMessage.addListener(async ev => {
-        if (ev.event !== "exec_success" && ev.event !== "exec_exception") {
-            switch (ev.event) {
-                case 'ws_connected':
-                    log('Connected to the server.');
-                    break;
-                case 'reader_added':
-                    log('Reader connected: ' + ev.data.reader_name);
-                    break;
-                case 'reader_removed':
-                    log('Reader disconnected: ' + ev.data.reader_name);
-                    break;
-                case 'handle_added':
-                    log('Detected tag: ' + ev.data.reader_name + ' (handle: ' + ev.data.handle + ')');
-                    break;
-                case 'handle_removed':
-                    log('Removed tag: ' + ev.data.reader_name + ' (handle: ' + ev.data.handle + ')');
-                    break;
+    async function run() {
+        let wsAddress = await haloFindBridge({
+            wsPort: wsPort,
+            wssPort: wssPort
+        });
+
+        let wsp = createWs(wsAddress);
+
+        wsp.onUnpackedMessage.addListener(async ev => {
+            if (ev.event !== "exec_success" && ev.event !== "exec_exception") {
+                switch (ev.event) {
+                    case 'ws_connected':
+                        log('Connected to the server.');
+                        break;
+                    case 'reader_added':
+                        log('Reader connected: ' + ev.data.reader_name);
+                        break;
+                    case 'reader_removed':
+                        log('Reader disconnected: ' + ev.data.reader_name);
+                        break;
+                    case 'handle_added':
+                        log('Detected tag: ' + ev.data.reader_name + ' (handle: ' + ev.data.handle + ')');
+                        break;
+                    case 'handle_removed':
+                        log('Removed tag: ' + ev.data.reader_name + ' (handle: ' + ev.data.handle + ')');
+                        break;
+                }
             }
-        }
 
-        if (ev.event === "handle_added") {
-            await processTag(ev.data.handle);
-        }
-    });
+            if (ev.event === "handle_added") {
+                await processTag(ev.data.handle);
+            }
+        });
 
-    wsp.onClose.addListener(event => {
-        if (event.code === 1006 && displayTLSWarn) {
-            log('IMPORTANT: You might be missing a local certificate, which is required for halo-bridge on Safari. ' +
-                'If the halo-bridge doesn\'t work at all, please try to reinstall the entire toolset using the ' +
-                'release PKG file. When the installer will ask you about certificate generation, ' +
-                'please choose "Generate certificate" option.');
-        }
+        wsp.onClose.addListener(event => {
+            if (event.code === 1006) {
+                log('IMPORTANT: You might be missing a local certificate, which is required for halo-bridge on Safari. ' +
+                    'If the halo-bridge doesn\'t work at all, please try to reinstall the entire toolset using the ' +
+                    'release PKG file. When the installer will ask you about certificate generation, ' +
+                    'please choose "Generate certificate" option.');
+            }
 
-        if (event.code === 4001) {
-            log('Connection closed, new client has connected.');
-        } else {
-            log('Connection closed: ' + event.code);
-        }
-    });
+            if (event.code === 4001) {
+                log('Connection closed, new client has connected.');
+            } else {
+                log('Connection closed: ' + event.code);
+            }
+        });
 
-    wsp.open();
+        wsp.open();
+    }
+
+    run();
 </script>
 </body>
 </html>
