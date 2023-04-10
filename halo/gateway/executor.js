@@ -14,7 +14,7 @@ function createWs(url) {
     });
 }
 
-async function haloGateExecutorCreateWs(logCallback) {
+async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
     let protocol;
     let searchParts = window.location.hash.split('/');
     await jweUtil.loadKey(searchParts[2]);
@@ -29,7 +29,7 @@ async function haloGateExecutorCreateWs(logCallback) {
 
     wsp.onUnpackedMessage.addListener(async ev => {
         if (ev.type === "ping") {
-            logCallback("Received welcome from server. Waiting for command");
+            logCallback("Received welcome from server. Waiting for command to be requested.");
         } else if (ev.type === "requested_cmd") {
             let payload;
 
@@ -40,9 +40,8 @@ async function haloGateExecutorCreateWs(logCallback) {
                 return;
             }
 
-            logCallback("Requested to execute the following command:\n" + JSON.stringify(payload.command, null, 4));
             currentCmd = payload;
-            document.getElementById('click-btn').disabled = false;
+            newCommandCallback(payload.command);
         } else {
             logCallback("Unknown packet:\n" + JSON.stringify(ev));
         }

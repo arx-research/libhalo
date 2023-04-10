@@ -25,25 +25,28 @@
         Establishing connection between the PC and smartphone. The commands will be initiated by the PC,
         with the smartphone used solely as the NFC reader. Finally, the command results will arrive back to PC.
     </p>
-    <pre id="statusText"></pre>
-
     <div class="mb-3">
         <label class="form-label">Message to be signed with ECDSA/Keccak (hex-encoded)</label>
         <input type="text" class="form-control" id="message" value="">
     </div>
-    <button class="btn btn-secondary" onclick="btnSignMessageClicked();">Pair and sign</button>
-    <button class="btn btn-secondary" onclick="btnInitiateSessClicked();">Send sign command</button>
+    <button class="btn btn-primary" id="pairSignBtn" onclick="btnSignMessageClicked();">Pair and request to sign with key #1</button>
+    <button class="btn btn-secondary" id="signBtn" onclick="btnInitiateSessClicked();">Request another signature with key #1</button>
 
     <br>
-    <img id="qr">
+    <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
+    <img id="qr" src="data:," alt>
 
     <script type="text/javascript">
         // generate random message on load
+        let gate = null;
+
         let rnd = new Uint8Array(6);
         crypto.getRandomValues(rnd);
         document.getElementById('message').value = arr2hex(rnd);
+        document.getElementById('signBtn').disabled = true;
+        document.getElementById('signBtn').style.display = 'none';
 
-        let cmd = {"name": "sign", "message": "010203", "keyNo": 1};
+        let cmd = {"name": "sign", "message": document.getElementById('message').value, "keyNo": 1};
 
         function log(data) {
             console.log(data);
@@ -51,45 +54,47 @@
         }
 
         async function btnSignMessageClicked() {
-            let gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com/ws', 'https://dev-gate.nfcdeveloper.com');
-            window.gate = gate;
+            document.getElementById('pairSignBtn').disabled = true;
+            gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com/ws', 'https://dev-gate.nfcdeveloper.com');
 
             try {
                 let pairInfo = await gate.startPairing();
-                console.log(pairInfo.execURL);
+                console.log('URL in the QR code:', pairInfo.execURL);
                 document.getElementById('qr').src = pairInfo.qrCode;
+                log('Please scan the QR code presented below with your smartphone.');
             } catch (e) {
-                console.error(e);
-                console.error('fail');
+                document.getElementById('pairSignBtn').disabled = false;
+                log('Failed to start pairing: ' + e.stack);
             }
-
-            console.log('pairing started');
 
             try {
                 await gate.waitConnected();
             } catch (e) {
-                console.error('fail2');
+                document.getElementById('pairSignBtn').disabled = false;
+                log('Failed to see the executor (smartphone) connected: ' + e.stack);
+                return;
             }
 
-            log('Smartphone paired succesfully.');
+            log('Smartphone paired succesfully. Now, click [Confirm] on your smartphone and tap HaLo tag to the smartphone.');
+            document.getElementById('qr').style.display = 'none';
 
-            try {
-                let res = await gate.execHaloCmd(cmd);
-                log('Command completed. ' + JSON.stringify(res));
-            } catch (e) {
-                console.error('fail3');
-                console.error(e);
-            }
+            await btnInitiateSessClicked();
+
+            document.getElementById('pairSignBtn').style.display = 'none';
+            document.getElementById('signBtn').style.display = 'block';
         }
 
         async function btnInitiateSessClicked() {
+            document.getElementById('signBtn').disabled = true;
+
             try {
-                let res = await window.gate.execHaloCmd(cmd);
-                log('Command completed. ' + JSON.stringify(res));
+                let res = await gate.execHaloCmd(cmd);
+                log('Command completed. Result: ' + JSON.stringify(res));
             } catch (e) {
-                console.error('fail4');
-                console.error(e);
+                log('Failed to request command execution: ' + e.stack);
             }
+
+            document.getElementById('signBtn').disabled = false;
         }
     </script>
 </div>
