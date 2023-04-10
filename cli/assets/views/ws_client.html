@@ -12,10 +12,12 @@
         This is the example web application of HaLo Bridge Server.
         Please connect your PC/SC reader and tap the compatible HaLo tag.
     </p>
-    <pre id="log">Connecting to the server...</pre>
+    <pre id="log" style="word-break: break-all; white-space: pre-wrap;">Connecting to the server...</pre>
 </div>
 <script src="/assets/static/libhalo.js"></script>
 <script>
+    let wsp = null;
+
     const wsPort = {{ wsPort }};
     const wssPort = {{ wssPort }};
 
@@ -63,7 +65,7 @@
             wssPort: wssPort
         });
 
-        let wsp = createWs(wsAddress);
+        wsp = haloCreateWs(wsAddress);
 
         wsp.onUnpackedMessage.addListener(async ev => {
             if (ev.event !== "exec_success" && ev.event !== "exec_exception") {

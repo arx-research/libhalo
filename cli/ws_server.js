@@ -9,6 +9,7 @@ const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const util = require("util");
 
 let wss = null;
 
@@ -51,7 +52,7 @@ async function validateCSRFToken(token) {
 }
 
 function sendToCurrentWs(ws, data) {
-    console.log('send', data);
+    console.log('send', util.inspect(data, {showHidden: false, depth: null, colors: true}));
 
     if (currentWsClient !== null && (ws === null || currentWsClient === ws)) {
         currentWsClient.send(JSON.stringify(data));
@@ -233,6 +234,13 @@ function wsCreateServer(args, getReaderNames) {
     }
 
     wss.on('connection', (ws, req) => {
+        let parts = req.url.split('?');
+
+        if (parts.length === 2 && parts[1] === "ping=1") {
+            ws.close(4090, "Pong.");
+            return;
+        }
+
         let permitted = false;
         let originHostname = new URL(req.headers.origin).hostname;
 
@@ -271,7 +279,7 @@ function wsCreateServer(args, getReaderNames) {
             }
 
             let packet = JSON.parse(data);
-            console.log('recv', packet);
+            console.log('recv', util.inspect(packet, {showHidden: false, depth: null, colors: true}));
 
             if (packet.type === "exec_halo") {
                 try {

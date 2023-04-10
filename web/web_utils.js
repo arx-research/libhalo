@@ -1,5 +1,14 @@
 const WebSocketAsPromised = require('websocket-as-promised');
 
+function haloCreateWs(url) {
+    return new WebSocketAsPromised(url, {
+        packMessage: data => JSON.stringify(data),
+        unpackMessage: data => JSON.parse(data),
+        attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
+        extractRequestId: data => data && data.uid
+    });
+}
+
 function runHealthCheck(url) {
     return new Promise((resolve, reject) => {
         let closeTimeout = null;
@@ -76,4 +85,4 @@ async function haloFindBridge(options) {
     }
 }
 
-module.exports = {haloFindBridge};
+module.exports = {haloCreateWs, haloFindBridge};

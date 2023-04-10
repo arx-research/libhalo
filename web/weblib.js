@@ -21,7 +21,7 @@ const {
 const {__runTestSuite} = require("../halo/tests");
 const {HaloGateway} = require("../halo/gateway/requestor");
 const {haloGateExecutorCreateWs, haloGateExecutorUserConfirm} = require("../halo/gateway/executor");
-const {haloFindBridge} = require("./web_utils");
+const {haloFindBridge, haloCreateWs} = require("./web_utils");
 
 module.exports = {
     // utilities
@@ -34,6 +34,9 @@ module.exports = {
     // for web usage
     execHaloCmdWeb,
     haloFindBridge,
+
+    // for bridge demo
+    haloCreateWs,
 
     // for web usage with gateway
     HaloGateway,
