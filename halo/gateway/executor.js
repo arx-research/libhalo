@@ -1,6 +1,6 @@
 const {JWEUtil} = require("../jwe_util");
 const WebSocketAsPromised = require("websocket-as-promised");
-const querystring = require("querystring");
+const queryString = require("query-string");
 
 let currentCmd = null;
 let jweUtil = new JWEUtil();
@@ -25,7 +25,7 @@ async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
 
     await jweUtil.loadKey(searchParts[1]);
 
-    const qs = querystring.parse(window.location.search);
+    const qs = queryString.parse(window.location.search);
 
     if (!qs.id) {
         throw new Error("Malformed executor URL provided - failed to analyse query part.");
