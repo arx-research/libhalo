@@ -1,13 +1,13 @@
-name: Release halocli tool
+name: Release halo-tools
 
 on:
   push:
     tags:
-      - 'halocli-v*'
+      - 'halotools-v*'
 
 jobs:
   create_release:
-    name: Create halocli release
+    name: Create halo-tools release
     runs-on: ubuntu-latest
     steps:
       - name: Prepare version number
@@ -21,16 +21,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: HaLo CLI ${{ steps.parse_version.outputs.version }}
+          release_name: HaLo Tools ${{ steps.parse_version.outputs.version }}
           draft: true
           prerelease: false
           body: |
-            Standalone command line tool for desktop computers with PC/SC readers (USB/NFC readers).
+            Set of standalone HaLo tools (`halocli`, `halo-bridge`) for desktop computers with PC/SC readers (USB/NFC readers).
             
             Release contents:
-            * `halocli-linux-x64.tgz` - Linux x64 build (elf; tar-gzip compressed)
-            * `halocli-win-x64.exe` - Windows 64 build (exe; signed; zipped)
-            * `halocli-macos-x64.pkg` - Mac OS x64 build (installer; signed)
+            * `halo-tools-linux-x64.tgz` - Linux x64 build (elf files; tar-gzip compressed)
+            * `halo-tools-win-x64.exe` - Windows 64 build (exe files; signed; zipped)
+            * `halo-tools-macos-x64.pkg` - Mac OS x64 build (installer; signed)
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
       - name: Store release upload URL
@@ -51,7 +51,7 @@ jobs:
           - os: ubuntu-latest
           - os: windows-latest
           - os: macos-latest
-    name: Build halocli (${{ matrix.os }})
+    name: Build halo-tools (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: create_release
     steps:
@@ -130,6 +130,7 @@ jobs:
           node_modules/.bin/pkg --compress GZip -t node16-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.js
           node_modules/.bin/pkg --compress GZip -t node16-macos-x64 -c package.json -o dist/halo-gateway entry_gateway.js
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
+          mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
           mv "Entitlements.plist" "dist/Entitlements.plist"
       - name: Compress dist files
         shell: bash
@@ -159,12 +160,12 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            out_name: halocli-linux-x64.tgz
+            out_name: halo-tools-linux-x64.tgz
           - os: windows-latest
-            out_name: halocli-win-x64.zip
+            out_name: halo-tools-win-x64.zip
           - os: macos-latest
-            out_name: halocli-macos-x64.pkg
-    name: Sign halocli and release (${{ matrix.os }})
+            out_name: halo-tools-macos-x64.pkg
+    name: Sign halo-tools and release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
     steps:
@@ -186,8 +187,7 @@ jobs:
         run: |
           chmod +x halocli
           chmod +x halo-bridge
-          chmod +x halo-gateway
-          tar -pczf halocli-linux-x64.tgz halocli halo-bridge halo-gateway
+          tar -pczf halo-tools-linux-x64.tgz halocli halo-bridge halo-gateway
       - name: Write certificate file (Windows)
         if: matrix.os == 'windows-latest'
         uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
@@ -247,15 +247,15 @@ jobs:
           chmod +x ./root/usr/local/bin/halo-bridge
           chmod +x ./root/usr/local/bin/halo-gateway
           chmod +x "./root/Applications/HaLo CLI Bridge Server.app/Contents/MacOS/halocli_bridge_launcher"
-          pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halocli-macos-x64.pkg
+          pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --scripts "macos_pkgbuild_scripts/" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halo-tools-macos-x64.pkg
       - name: Notarize application for Mac OS
         if: matrix.os == 'macos-latest'
         run: |
-          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_NOTARIZE_APPLE_ID }}" "--password=${{ secrets.MACOS_NOTARIZE_PASSWORD }}" "--team-id=${{ secrets.MACOS_NOTARIZE_TEAM_ID }}" --progress --wait ./halocli-macos-x64.pkg
+          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_NOTARIZE_APPLE_ID }}" "--password=${{ secrets.MACOS_NOTARIZE_PASSWORD }}" "--team-id=${{ secrets.MACOS_NOTARIZE_TEAM_ID }}" --progress --wait ./halo-tools-macos-x64.pkg
       - name: Staple notarized application (Mac OS)
         if: matrix.os == 'macos-latest'
         run: |
-          xcrun stapler staple ./halocli-macos-x64.pkg
+          xcrun stapler staple ./halo-tools-macos-x64.pkg
           rm -rf ./root/
       - name: Download release upload URL
         uses: actions/download-artifact@v3

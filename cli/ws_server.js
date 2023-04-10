@@ -5,6 +5,10 @@ const crypto = require('crypto').webcrypto;
 const {execHaloCmdPCSC} = require('../index.js');
 const {dirname, randomBuffer} = require("./util");
 const jwt = require('jsonwebtoken');
+const https = require("https");
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
 
 let wss = null;
 
@@ -115,9 +119,46 @@ function wsEventReaderDisconnected(reader) {
     });
 }
 
+function readTLSData() {
+    let privateKeyPath;
+    let certificatePath;
+
+    if (process.platform === "win32") {
+        privateKeyPath = path.join(os.homedir(), ".halo-bridge\\private_key.pem");
+        certificatePath = path.join(os.homedir(), ".halo-bridge\\server.pem");
+    } else {
+        privateKeyPath = '/usr/local/etc/halo-bridge/private_key.pem';
+        certificatePath = '/usr/local/etc/halo-bridge/server.pem';
+    }
+
+    if (fs.existsSync(privateKeyPath) && fs.existsSync(certificatePath)) {
+        const privateKey = fs.readFileSync(privateKeyPath);
+        const certificate = fs.readFileSync(certificatePath);
+
+        return {privateKey, certificate};
+    }
+
+    return null;
+}
+
 function wsCreateServer(args, getReaderNames) {
+    const tlsData = readTLSData();
+    let serverTLS = null;
+
     const app = express();
     const server = app.listen(args.listenPort, args.listenHost);
+
+    let forceUseTLS = (process.platform === "darwin");
+    let displayTLSWarn = (process.platform === "darwin");
+
+    if (tlsData) {
+        serverTLS = https.createServer({
+            key: tlsData.privateKey,
+            cert: tlsData.certificate
+        }, app).listen(args.listenPortTLS, args.listenHost);
+
+        displayTLSWarn = false;
+    }
 
     wss = new WebSocketServer({noServer: true});
 
@@ -130,7 +171,12 @@ function wsCreateServer(args, getReaderNames) {
     });
 
     app.get('/', (req, res) => {
-        res.render('ws_client.html');
+        res.render('ws_client.html', {
+            forceUseTLS: forceUseTLS,
+            displayTLSWarn: displayTLSWarn,
+            wsPort: args.listenPort,
+            wssPort: args.listenPortTLS
+        });
     });
 
     app.get('/consent', async (req, res) => {
@@ -174,6 +220,14 @@ function wsCreateServer(args, getReaderNames) {
         });
     });
 
+    if (serverTLS) {
+        serverTLS.on('upgrade', (request, socket, head) => {
+            wss.handleUpgrade(request, socket, head, socket => {
+                wss.emit('connection', socket, request);
+            });
+        });
+    }
+
     wss.on('connection', (ws, req) => {
         let permitted = false;
         let originHostname = new URL(req.headers.origin).hostname;
@@ -190,7 +244,7 @@ function wsCreateServer(args, getReaderNames) {
             permitted = true;
         }
 
-        if (originHostname === "127.0.0.1" || originHostname === "localhost") {
+        if (originHostname === "127.0.0.1" || originHostname === "localhost" || originHostname === "halo-bridge.local") {
             permitted = true;
         }
 
@@ -273,6 +327,18 @@ function wsCreateServer(args, getReaderNames) {
             });
         }
     });
+
+    const exitSignal = (process.platform === "win32" ? 'SIGINT' : 'SIGTERM');
+
+    process.on(exitSignal, () => {
+        if (currentWsClient) {
+            currentWsClient.close(4070, "The server is shutting down.");
+        }
+
+        process.exit(0);
+    });
+
+    return {hasTLS: !!serverTLS};
 }
 
 module.exports = {
