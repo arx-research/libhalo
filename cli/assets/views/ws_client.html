@@ -28,6 +28,8 @@
 
     let wsAddress;
 
+    // TODO always try HTTPS version first, if it doesn't work, try HTTP version
+
     if (window.location.protocol === 'https:' || forceUseTLS) {
         wsAddress = 'wss://halo-bridge.local:' + wssPort;
     } else {
