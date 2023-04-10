@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>HaLo Gateway Server</title>
+</head>
+<body>
+<div class="container">
+    <h1>HaLo Gateway server</h1>
+    <button id="click-btn" class="btn btn-primary">Confirm</button>
+    <pre id="log">Please wait, connecting...</pre>
+</div>
+<script src="/assets/static/libhalo.js"></script>
+<script>
+    document.getElementById('click-btn').disabled = true;
+
+    function log(data) {
+        console.log(data);
+        document.getElementById('log').innerText = data;
+    }
+
+    async function confirmButtonClicked(ev) {
+        document.getElementById('click-btn').disabled = true;
+
+        try {
+            await haloGateExecutorUserConfirm(log);
+        } catch (e) {
+            log("Something went wrong when running the command.\n" + e.stack);
+            document.getElementById('click-btn').disabled = false;
+            return;
+        }
+
+        log("Executed command, result sent.");
+    }
+
+    async function run() {
+        try {
+            await haloGateExecutorCreateWs(log, (command) => {
+                // callback when a new command arrives
+                log("Requested to execute the following command:\n" + JSON.stringify(command, null, 4));
+                document.getElementById('click-btn').disabled = false;
+            });
+        } catch (e) {
+            log("Something went wrong any we've failed to initialize.\n" + e.stack);
+            return;
+        }
+
+        document.getElementById('click-btn').onclick = confirmButtonClicked;
+    }
+
+    run();
+</script>
+</body>
+</html>

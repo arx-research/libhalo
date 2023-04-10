@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+    Copyright by Arx Research, Inc., a Delaware corporation
+    License: MIT
+    -->
+    <title>LibHaLo Demo</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <script type="text/javascript">
+        // ensure the library is always fully reloaded
+        document.write('<script src="../dist/libhalo.js?_v=' + (Math.random() + '') + '"></scr' + 'ipt>');
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>LibHaLo Demo</h1>
+    <h2>Using gateway</h2>
+    <p class="text-muted">
+        Establishing connection between the PC and smartphone. The commands will be initiated by the PC,
+        with the smartphone used solely as the NFC reader. Finally, the command results will arrive back to PC.
+    </p>
+    <div class="mb-3">
+        <label class="form-label">Message to be signed with ECDSA/Keccak (hex-encoded)</label>
+        <input type="text" class="form-control" id="message" value="">
+    </div>
+    <button class="btn btn-primary" id="pairSignBtn" onclick="btnSignMessageClicked();">Pair and request to sign with key #1</button>
+    <button class="btn btn-secondary" id="signBtn" onclick="btnInitiateSessClicked();">Request another signature with key #1</button>
+
+    <br>
+    <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
+    <img id="qr" src="data:," alt>
+
+    <script type="text/javascript">
+        // generate random message on load
+        let gate = null;
+
+        let rnd = new Uint8Array(6);
+        crypto.getRandomValues(rnd);
+        document.getElementById('message').value = arr2hex(rnd);
+        document.getElementById('signBtn').disabled = true;
+        document.getElementById('signBtn').style.display = 'none';
+
+        let cmd = {"name": "sign", "message": document.getElementById('message').value, "keyNo": 1};
+
+        function log(data) {
+            console.log(data);
+            document.getElementById('statusText').innerText += '\n' + data;
+        }
+
+        async function btnSignMessageClicked() {
+            document.getElementById('pairSignBtn').disabled = true;
+            gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com/ws', 'https://dev-gate.nfcdeveloper.com');
+
+            try {
+                let pairInfo = await gate.startPairing();
+                console.log('URL in the QR code:', pairInfo.execURL);
+                document.getElementById('qr').src = pairInfo.qrCode;
+                log('Please scan the QR code presented below with your smartphone.');
+            } catch (e) {
+                document.getElementById('pairSignBtn').disabled = false;
+                log('Failed to start pairing: ' + e.stack);
+            }
+
+            try {
+                await gate.waitConnected();
+            } catch (e) {
+                document.getElementById('pairSignBtn').disabled = false;
+                log('Failed to see the executor (smartphone) connected: ' + e.stack);
+                return;
+            }
+
+            log('Smartphone paired succesfully.');
+            document.getElementById('qr').style.display = 'none';
+
+            await btnInitiateSessClicked();
+
+            document.getElementById('pairSignBtn').style.display = 'none';
+            document.getElementById('signBtn').style.display = 'block';
+        }
+
+        async function btnInitiateSessClicked() {
+            document.getElementById('signBtn').disabled = true;
+            log('Requested to execute a command. Please click [Confirm] on your smartphone and tap your HaLo tag.');
+
+            try {
+                let res = await gate.execHaloCmd(cmd);
+                log('Command completed. Result: ' + JSON.stringify(res));
+            } catch (e) {
+                log('Failed to request command execution: ' + e.stack);
+            }
+
+            document.getElementById('signBtn').disabled = false;
+        }
+    </script>
+</div>
+</body>
+</html>

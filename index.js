@@ -18,6 +18,7 @@ const {
     NFCOperationError
 } = require("./halo/exceptions");
 const {parsePublicKeys, convertSignature, recoverPublicKey} = require("./halo/utils");
+const {HaloGateway} = require("./halo/gateway/requestor");
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
@@ -29,6 +30,9 @@ module.exports = {
 
     // for web usage
     execHaloCmdWeb,
+
+    // for web usage with gateway
+    HaloGateway,
 
     // for usage with react-native-nfc-manager
     execHaloCmdRN,

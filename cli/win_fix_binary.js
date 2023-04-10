@@ -102,6 +102,9 @@ if (process.argv.length < 3) {
 } else if (process.argv[2] === "bridge") {
     name = 'HaLo Bridge Server';
     binName = 'halo-bridge.exe';
+} else if (process.argv[2] === "gateway") {
+    name = 'HaLo Gateway Server';
+    binName = 'halo-gateway.exe';
 } else {
     throw Error("Unknown binary type specified.");
 }

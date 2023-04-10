@@ -134,4 +134,8 @@ async function execHaloCmdWeb(command, options) {
     }
 }
 
-module.exports = {execHaloCmdWeb, execHaloCmd, checkErrors};
+module.exports = {
+    execHaloCmdWeb,
+    execHaloCmd,
+    checkErrors
+};
