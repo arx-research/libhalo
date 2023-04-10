@@ -47,15 +47,33 @@ class HaloGateway {
         });
     }
 
-    async startPairing() {
-        // TODO this doesn't throw when websocket is closed while waiting
+    waitForWelcomePacket() {
+        return new Promise((resolve, reject) => {
+            let welcomeWaitTimeout = setTimeout(() => {
+                reject(new Error("Server doesn't send welcome packet for 6 seconds after accepting the connection."));
+            }, 6000);
 
+            this.ws.onClose.addListener(() => {
+                reject(new Error("WebSocket closed when waiting for the welcome packet."));
+            });
+
+            this.ws.onUnpackedMessage.addListener(data => {
+                if (data.type === "welcome") {
+                    clearTimeout(welcomeWaitTimeout);
+                    resolve();
+                }
+            });
+        })
+    }
+
+    async startPairing() {
         let sharedKey = await this.jweUtil.generateKey();
         let randomQs = crypto.randomBytes(4).toString('hex');
 
+        let waitPromise = this.waitForWelcomePacket();
         await this.ws.open();
-        // TODO this is not guaranteed to hit if the code executes really fast
-        let welcomeMsg = await this.ws.waitUnpackedMessage(ev => ev && ev.type === "welcome");
+        await waitPromise;
+
         let execURL = this.gatewayServerHttp + '/e?_=' + randomQs + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
         let qrCode = await makeQR(execURL);
 
@@ -63,11 +81,6 @@ class HaloGateway {
             execURL: execURL,
             qrCode: qrCode
         };
-    }
-
-    async waitConnected() {
-        // TODO this doesn't throw when websocket is closed while waiting
-        await this.ws.waitUnpackedMessage(ev => ev && ev.type === "executor_connected");
     }
 
     async execHaloCmd(command) {
