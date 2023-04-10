@@ -60,7 +60,7 @@ class HaloGateway {
             this.ws.onUnpackedMessage.addListener(data => {
                 if (data.type === "welcome") {
                     clearTimeout(welcomeWaitTimeout);
-                    resolve();
+                    resolve(data);
                 }
             });
         })
@@ -72,7 +72,7 @@ class HaloGateway {
 
         let waitPromise = this.waitForWelcomePacket();
         await this.ws.open();
-        await waitPromise;
+        let welcomeMsg = await waitPromise;
 
         let execURL = this.gatewayServerHttp + '/e?_=' + randomQs + '/#/' + welcomeMsg.sessionId + '/' + sharedKey + '/';
         let qrCode = await makeQR(execURL);
