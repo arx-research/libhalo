@@ -59,6 +59,9 @@ async function haloFindBridge(options) {
         options.wssPort = 32869;
     }
 
+    const wsPort = options.wsPort;
+    const wssPort = options.wssPort;
+
     if (options.diagnose) {
         let res = await Promise.allSettled(createChecks(wsPort, wssPort));
         let urls = [];
