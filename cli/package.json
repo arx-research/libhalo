@@ -29,7 +29,7 @@
   "bin": "entry_cli.js",
   "pkg": {
     "targets": [
-      "node16"
+      "node18"
     ],
     "outputPath": "dist",
     "assets": [

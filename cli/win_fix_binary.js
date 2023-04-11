@@ -112,7 +112,7 @@ if (process.argv.length < 3) {
 let tagName = process.env.GITHUB_REF_NAME;
 let version = null;
 
-if (tagName && tagName.startsWith('halocli-v')) {
+if (tagName && tagName.startsWith('halotools-v')) {
     let vStr = tagName.split('-v')[1];
     let vStr2 = vStr.split('.');
     version = [parseInt(vStr2[0]), parseInt(vStr2[1]), parseInt(vStr2[2]), 0];

@@ -68,7 +68,7 @@ jobs:
       - name: Install Node.JS
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Install dependencies (root)
         shell: bash
         run: |
@@ -88,9 +88,9 @@ jobs:
         shell: bash
         run: |
           cd cli
-          node_modules/.bin/pkg --compress GZip -t node16-linux-x64 -c package.json -o dist/halocli entry_cli.js
-          node_modules/.bin/pkg --compress GZip -t node16-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.js
-          node_modules/.bin/pkg --compress GZip -t node16-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.js
+          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halocli entry_cli.js
+          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.js
+          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.js
       - name: Package HaLo CLI tool (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
@@ -100,7 +100,7 @@ jobs:
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halocli.exe entry_cli.js
+          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halocli.exe entry_cli.js
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
@@ -110,7 +110,7 @@ jobs:
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.js
+          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.js
       - name: Package HaLo Gateway tool (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
@@ -120,15 +120,15 @@ jobs:
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node16-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.js
+          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.js
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
           cd cli
-          node_modules/.bin/pkg --compress GZip -t node16-macos-x64 -c package.json -o dist/halocli entry_cli.js
-          node_modules/.bin/pkg --compress GZip -t node16-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.js
-          node_modules/.bin/pkg --compress GZip -t node16-macos-x64 -c package.json -o dist/halo-gateway entry_gateway.js
+          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halocli entry_cli.js
+          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.js
+          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halo-gateway entry_gateway.js
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
           mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
           mv "Entitlements.plist" "dist/Entitlements.plist"
