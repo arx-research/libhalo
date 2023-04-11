@@ -37,4 +37,4 @@ jobs:
       - name: Package HaLo CLI tool (Linux)
         run: |
           cd cli
-          node_modules/.bin/pkg -t node16-linux-x64 package.json
+          node_modules/.bin/pkg -t node18-linux-x64 package.json
