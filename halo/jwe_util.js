@@ -1,6 +1,6 @@
 const Buffer = require('buffer/').Buffer;
 const crypto = require('crypto');
-const subtle = crypto.webcrypto.subtle;
+const subtle = crypto.webcrypto && crypto.webcrypto.subtle ? crypto.webcrypto.subtle : globalThis.crypto.subtle;
 const jose = require('jose');
 
 class JWEUtil {
