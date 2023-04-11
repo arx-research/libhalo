@@ -19,6 +19,7 @@ const {
 } = require("./halo/exceptions");
 const {parsePublicKeys, convertSignature, recoverPublicKey} = require("./halo/utils");
 const {HaloGateway} = require("./halo/gateway/requestor");
+const {haloFindBridge} = require("./web/web_utils");
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
@@ -30,6 +31,7 @@ module.exports = {
 
     // for web usage
     execHaloCmdWeb,
+    haloFindBridge,
 
     // for web usage with gateway
     HaloGateway,
