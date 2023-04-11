@@ -218,6 +218,8 @@ function createServer(args) {
             ws.close(4061, "Unhandled exception.");
         }
     });
+
+    console.log('HaLo Gateway server is listening...');
 }
 
 createServer(args);
