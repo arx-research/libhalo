@@ -148,9 +148,9 @@ function runHalo(entryMode, args) {
     }
 
     if (entryMode === "server") {
-        console.log('Launching Web Socket Server...');
+        console.log('Launching HaLo Bridge Server...');
         wsCreateServer(args, () => Object.keys(nfc.readers).map(r => nfc.readers[r].name));
-        console.log('Web Socket Server is listening...');
+        console.log('HaLo Bridge Server is listening...');
 
         if (!args.nonInteractive) {
             open('http://127.0.0.1:' + args.listenPort);

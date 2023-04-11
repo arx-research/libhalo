@@ -25,7 +25,7 @@ jobs:
           draft: true
           prerelease: false
           body: |
-            Set of standalone HaLo tools (`halocli`, `halo-bridge`) for desktop computers with PC/SC readers (USB/NFC readers).
+            Set of standalone HaLo tools: [halocli](https://github.com/arx-research/libhalo/blob/master/docs/desktop-cli.md), [halo-bridge](https://github.com/arx-research/libhalo/blob/master/docs/halo-bridge.md), [halo-gateway](https://github.com/arx-research/libhalo/blob/master/docs/halo-gateway.md).
             
             Release contents:
             * `halo-tools-linux-x64.tgz` - Linux x64 build (elf files; tar-gzip compressed)
@@ -187,6 +187,7 @@ jobs:
         run: |
           chmod +x halocli
           chmod +x halo-bridge
+          chmod +x halo-gateway
           tar -pczf halo-tools-linux-x64.tgz halocli halo-bridge halo-gateway
       - name: Write certificate file (Windows)
         if: matrix.os == 'windows-latest'
