@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs");
 const { readFileSync, writeFileSync } = require('fs');
+// purposely not declared in package.json, the "pkg-fetch" will be
+// implicitly installed by "pkg" dev dependency in correct version
 const { need, system } = require('pkg-fetch');
 const package_json = require('./package.json');
 const crypto = require("crypto");
@@ -30,6 +32,8 @@ async function fixBinary(name, bin_name, version) {
     if (package_json['pkg']['targets'].length !== 1) {
         throw Error("Only one pkg target is supported");
     }
+
+    console.log('Fetching node js binary...');
 
     const nodeBinPath = await need({
         dryRun: false,
