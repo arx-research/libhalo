@@ -78,3 +78,19 @@ This library supports the following HaLo tag commands:
 Full articles:
 * [Documentation of the available commands (HaLo Command Set)](https://github.com/arx-research/libhalo/blob/master/docs/halo-command-set.md)
 * [HaLo Firmware Versions - command compatibility table](https://github.com/arx-research/libhalo/blob/master/docs/firmware-versions.md)
+
+## Additional tools
+
+This project also features additional tools which could increase interoperability.
+
+### HaLo Bridge
+The Bridge could be used to locally interconnect the USB NFC reader directly with a web application. This allows to execute multiple HaLo commands against multiple tags very quickly.
+
+Guides:
+* [Using HaLo Bridge](https://github.com/arx-research/libhalo/blob/master/docs/halo-bridge.md)
+
+### HaLo Gateway
+The Gateway could allow to use a compatible web application on the desktop computer, but with your own smartphone instead of the card reader.
+
+Guides:
+* [Using HaLo Gateway](https://github.com/arx-research/libhalo/blob/master/docs/halo-gateway.md)
