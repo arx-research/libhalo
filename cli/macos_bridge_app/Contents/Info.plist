@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>HaLo CLI Bridge Server</string>
+	<string>HaLo Bridge Server</string>
 	<key>CFBundleExecutable</key>
 	<string>halocli_bridge_launcher</string>
 	<key>CFBundleIconFile</key>
