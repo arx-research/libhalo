@@ -1,9 +1,19 @@
 const {JWEUtil} = require("../jwe_util");
 const queryString = require("query-string");
+const WebSocketAsPromised = require("websocket-as-promised");
 
 let currentCmd = null;
 let jweUtil = new JWEUtil();
 let wsp;
+
+function createWs(url) {
+    return new WebSocketAsPromised(url, {
+        packMessage: data => JSON.stringify(data),
+        unpackMessage: data => JSON.parse(data),
+        attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
+        extractRequestId: data => data && data.uid
+    });
+}
 
 async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
     let protocol;
@@ -55,7 +65,7 @@ async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
         logCallback('Connection closed. [' + event.code + '] ' + event.reason);
     });
 
-    wsp.open();
+    await wsp.open();
 }
 
 async function haloGateExecutorUserConfirm(logCallback) {
