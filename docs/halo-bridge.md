@@ -37,6 +37,8 @@ import {haloFindBridge} from '@arx-research/libhalo';
 let wsAddress = await haloFindBridge();
 ```
 
+You shouldn't hardcode HaLo Bridge address, as it might slightly differ depending on the user's browser and platform where HaLo Bridge is running. The abovementioned function call should always return the correct, operational address.
+
 Please note that this function would throw an exception if the user doesn't have `halo-bridge` up and running,
 or for any reason it's not possible to connect with the HaLo Bridge. In case this call throws an exception,
 you should ask the user to check if `halo-bridge` is running on their computer.
@@ -44,6 +46,24 @@ you should ask the user to check if `halo-bridge` is running on their computer.
 #### 2. Connect with WebSocket
 
 Use whatever WebSocket Client suits you and connect to the `wsAddress` obtained from the previous step.
+
+**Important:** The HaLo Bridge WebSocket Server might immediately close the connection with 4002 reason code. In such a case, it means that your website needs to obtain user's consent in order to use HaLo Bridge. You should detect the close code 4002 and redirect the user to the consent page.
+
+*Example:*
+```javascript
+    wsp.onClose.addListener(event => {
+        if (event.code === 4002) {
+            // we need to obtain user's consent in order to use HaLo Bridge
+            window.location.href = 'http://127.0.0.1:32868/consent?website=https://your-website.com/path';
+        } else {
+            console.log('Connection closed due to: [' + event.code + '] ' + event.reason);
+        }
+    });
+```
+
+Where `https://your-website.com/path` is the address where the user should be redirected after providing a consent. The origin corresponding to the provided URL will be authorized to use HaLo Bridge for this session. Namely, any web page hosted under `https://your-website.com` will be then able to use HaLo Bridge, no matter of the exact URL path, query string or fragment.
+
+The exact way of detecting the reason of WebSocket connection close event depends on the WebSocket library you are using on the client side. When in doubt, please review the documentation of your WebSocket library.
 
 #### 3. Handle incoming events
 
@@ -94,3 +114,27 @@ in `exec_success` or `exec_exception` events will correspond to the `uid` that y
 
 An example HaLo command is provided in the `command` object of the request. Please check [HaLo Command Set](https://github.com/arx-research/libhalo/blob/master/docs/halo-command-set.md)
 for the detailed description of commands that may be requested.
+
+## Self-signed TLS certificate
+
+In case of Mac OS platform, the HaLo Tools installer needs to generate a self-signed TLS certificate and mark it as trusted in the system. This is due to the fact that Safari would raise a mixed-content error if a secure external website would attempt to connect to an unsecured WebSocket on localhost, which is not the case for other browsers.
+
+Due to that limitation, the installer will ask if you agree to generate a TLS certificate. The certificate will be stored at `/usr/local/etc/halo-bridge/` location. The generated certificate would only cover the `halo-bridge.local` domain. It will be also clearly marked that it's not a Certificate Authority (to prevent issuing any additional trusted certificates on top of this one) and that it's purposed only for TLS Web Server authentication.
+
+### Manually generating a certificate
+If you wish, it is possible to manually generate a certificate and mark it as trusted in the system.
+
+```bash
+# generate new local certificate
+openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
+openssl req -new -sha256 -key /usr/local/etc/halo-bridge/private_key.pem -out /usr/local/etc/halo-bridge/server.csr -subj '/CN=halo-tools (Local Certificate)/'
+openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.crt
+
+# add certificate to the trust list
+security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /usr/local/etc/halo-bridge/server.crt
+
+# add halo-bridge.local domain to /etc/hosts if it doesn't exist yet
+grep -v -q "halo-bridge.local" /etc/hosts && echo "" >> /etc/hosts && echo "127.0.0.1  halo-bridge.local" >> /etc/hosts
+```
+
+The HaLo Bridge would automatically detect the certificate upon the next startup and start the Secure WebSocket server at `wss://halo-bridge.local:32869`, in addition to the normal (unsecured) WebSocket endpoint at `ws://127.0.0.1:32868`.
