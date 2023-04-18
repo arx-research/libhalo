@@ -16,15 +16,26 @@ function makeQR(url) {
 }
 
 class HaloGateway {
-    constructor(gatewayServer, gatewayServerHttp) {
+    constructor(gatewayServer) {
         this.jweUtil = new JWEUtil();
         this.isRunning = false;
 
-        this.gatewayServer = gatewayServer;
-        this.gatewayServerHttp = gatewayServerHttp;
         this.lastCommand = null;
+        this.gatewayServer = gatewayServer;
 
-        this.ws = new WebSocketAsPromised(this.gatewayServer + '?side=requestor', {
+        let urlObj = new URL(gatewayServer);
+
+        if (urlObj.protocol === 'wss:') {
+            urlObj.protocol = 'https:';
+        } else if (urlObj.protocol === 'ws:') {
+            urlObj.protocol = 'http:';
+        } else {
+            throw new Error("Unexpected protocol provided, expected ws:// or wss:// only.");
+        }
+
+        this.gatewayServerHttp = urlObj.toString();
+
+        this.ws = new WebSocketAsPromised(this.gatewayServer + '/ws?side=requestor', {
             packMessage: data => JSON.stringify(data),
             unpackMessage: data => JSON.parse(data),
             attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
