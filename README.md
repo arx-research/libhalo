@@ -35,6 +35,7 @@ Installation of additional software is not required on the user's side.
 * [Using libhalo within a React.js web application](https://github.com/arx-research/libhalo/blob/master/docs/web-reactjs.md)
 * [Documentation of the execHaloCmdWeb API](https://github.com/arx-research/libhalo/blob/master/docs/api-web.md)
 * [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
+* [Interactive examples of using LibHaLo on web](https://halo-demos.arx.org/examples/)
 
 ### (React Native) execHaloCmdRN
 ```
@@ -47,6 +48,7 @@ For React Native mobile applications (Android/iOS) based on `react-native-nfc-ma
 * [Using libhalo within a React Native mobile application for Android/iOS](https://github.com/arx-research/libhalo/blob/master/docs/mobile-react-native.md)
 * [Documentation of the execHaloCmdRN API](https://github.com/arx-research/libhalo/blob/master/docs/api-react-native.md)
 * [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
+* [Interactive examples of using LibHaLo on web](https://halo-demos.arx.org/examples/)
 
 ### (Desktop) execHaloCmdPCSC
 ```
