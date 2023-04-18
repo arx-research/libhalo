@@ -55,7 +55,7 @@
 
         async function btnSignMessageClicked() {
             document.getElementById('pairSignBtn').disabled = true;
-            gate = new HaloGateway('wss://dev-gate.nfcdeveloper.com/ws', 'https://dev-gate.nfcdeveloper.com');
+            gate = new HaloGateway('wss://s1.halo-gateway.arx.org/ws', 'https://s1.halo-gateway.arx.org');
 
             try {
                 let pairInfo = await gate.startPairing();
