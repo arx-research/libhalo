@@ -33,6 +33,12 @@ class HaloGateway {
             throw new Error("Unexpected protocol provided, expected ws:// or wss:// only.");
         }
 
+        if (!urlObj.pathname.endsWith('/')) {
+            urlObj.pathname += '/';
+        }
+
+        urlObj.pathname += 'e';
+
         this.gatewayServerHttp = urlObj.toString();
 
         this.ws = new WebSocketAsPromised(this.gatewayServer + '/ws?side=requestor', {
@@ -64,8 +70,8 @@ class HaloGateway {
                 reject(new Error("Server doesn't send welcome packet for 6 seconds after accepting the connection."));
             }, 6000);
 
-            this.ws.onClose.addListener(() => {
-                reject(new Error("WebSocket closed when waiting for the welcome packet."));
+            this.ws.onClose.addListener((event) => {
+                reject(new Error("WebSocket closed when waiting for welcome packet. Reason: [" + event.code + "] " + event.reason));
             });
 
             this.ws.onUnpackedMessage.addListener(data => {
@@ -100,7 +106,7 @@ class HaloGateway {
          * example:
          * https://dev-gate.example.com/e?id=-l6QxdU3xLyDTR2oT7bjnw#!/3LKNuIJV0Ltp0dhNw09tCQ/
          */
-        let execURL = this.gatewayServerHttp + '/e?id=' + welcomeMsg.sessionId + '#!/' + sharedKey + '/';
+        let execURL = this.gatewayServerHttp + '?id=' + welcomeMsg.sessionId + '#!/' + sharedKey + '/';
         let qrCode = await makeQR(execURL);
 
         return {
@@ -111,8 +117,8 @@ class HaloGateway {
 
     waitConnected() {
         return new Promise((resolve, reject) => {
-            this.ws.onClose.addListener(() => {
-                reject(new Error("WebSocket closed when waiting for the welcome packet."));
+            this.ws.onClose.addListener((event) => {
+                reject(new Error("WebSocket closed when waiting for executor to connect. Reason: [" + event.code + "] " + event.reason));
             });
 
             this.ws.onUnpackedMessage.addListener(data => {
