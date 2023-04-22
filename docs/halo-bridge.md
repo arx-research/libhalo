@@ -87,6 +87,7 @@ Possible incoming events are the following:
 * `reader_removed` - the existing NFC reader was disconnected, the reader's name will be provided as `data.reader_name`;
 * `handle_added` - a reader has detected new HaLo tag (`data.reader_name` - reader's name, `data.handle` - random value, a handle to the connected tag);
 * `handle_removed` - a reader has detected that HaLo tag was un-tapped (`data.reader_name` - reader's name, `data.handle` - random value, a handle to the connected tag);
+* `handle_not_compatible` - a reader has detected a tag, but it's not compatible with HaLo and thus any interaction will be impossible (`data.reader_name` - reader's name, `data.message` - description why the tag is not compatible);
 * `exec_success` - HaLo command execution has succeeded, (`uid` - identifier of the command request; `data.*` - command execution result);
 * `exec_exception` - HaLo command failed to execute (`data.exception.message` - exception message, `data.exception.stack` - full call stack of the exception);
 

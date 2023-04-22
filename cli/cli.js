@@ -16,6 +16,7 @@ const {
     wsCreateServer,
     wsEventCardConnected,
     wsEventReaderConnected,
+    wsEventCardIncompatible,
     wsEventReaderDisconnected
 } = require("./ws_server");
 
@@ -26,8 +27,13 @@ let isClosing = false;
 
 async function checkCard(reader) {
     // try to select Halo ETH Core Layer
-    let resSelect = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
-    return resSelect.compare(Buffer.from([0x90, 0x00])) === 0;
+    try {
+        let resSelect = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
+        return resSelect.compare(Buffer.from([0x90, 0x00])) === 0;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
 }
 
 function runHalo(entryMode, args) {
@@ -43,7 +49,13 @@ function runHalo(entryMode, args) {
 
         reader.on('card', card => {
             if (entryMode === "server") {
-                wsEventCardConnected(reader);
+                (async () => {
+                    if (await checkCard(reader)) {
+                        wsEventCardConnected(reader);
+                    } else {
+                        wsEventCardIncompatible(reader);
+                    }
+                })();
                 return;
             }
 
