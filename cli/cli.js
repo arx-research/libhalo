@@ -43,7 +43,13 @@ function runHalo(entryMode, args) {
 
         reader.on('card', card => {
             if (entryMode === "server") {
-                wsEventCardConnected(reader);
+                (async () => {
+                    if (await checkCard(reader)) {
+                        wsEventCardConnected(reader);
+                    } else {
+                        console.log("Tag ignored:", reader.reader.name, "Not a HaLo tag.");
+                    }
+                })();
                 return;
             }
 
