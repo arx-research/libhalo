@@ -86,6 +86,17 @@ function wsEventCardConnected(reader) {
     });
 }
 
+function wsEventCardIncompatible(reader) {
+    sendToCurrentWs(null, {
+        "event": "handle_not_compatible",
+        "uid": null,
+        "data": {
+            "reader_name": reader.reader.name,
+            "message": "Denying access to the resource since it's not a HaLo tag."
+        }
+    });
+}
+
 function wsEventCardDisconnected(reader) {
     if (currentState !== null && currentState.reader === reader) {
         sendToCurrentWs(null, {
@@ -356,6 +367,7 @@ function wsCreateServer(args, getReaderNames) {
 module.exports = {
     wsCreateServer,
     wsEventCardConnected,
+    wsEventCardIncompatible,
     wsEventCardDisconnected,
     wsEventReaderConnected,
     wsEventReaderDisconnected

@@ -85,6 +85,9 @@
                     case 'handle_removed':
                         log('Removed tag: ' + ev.data.reader_name + ' (handle: ' + ev.data.handle + ')');
                         break;
+                    case 'handle_not_compatible':
+                        log('Detected incompatible tag: ' + ev.data.reader_name + ' (message: ' + ev.data.message + ')');
+                        break;
                 }
             }
 
