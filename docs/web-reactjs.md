@@ -8,7 +8,7 @@ Install the library:
 
 **Using NPM:**
 ```bash
-npm install --save libhalo
+npm install --save @arx-research/libhalo
 ```
 **Using Yarn:**
 ```bash
