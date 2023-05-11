@@ -43,8 +43,14 @@ function runHealthCheck(url) {
 
 function createChecks(wsPort, wssPort) {
     return [
-        runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws'),
-        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws')
+        /**
+         Please note that this order of operations is important.
+         The ws:// request would always fail fast if the browser's policy doesn't allow such connection.
+         Certain browsers would process WebSocket connect orders sequentially (not in parallel!),
+         and the TLS error might block the connection for many seconds until it actually fails.
+         **/
+        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws'),
+        runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws')
     ];
 }
 
