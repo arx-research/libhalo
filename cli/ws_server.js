@@ -267,7 +267,7 @@ function wsCreateServer(args, getReaderNames) {
             permitted = true;
         }
 
-        if (originHostname === "127.0.0.1" || originHostname === "localhost" || originHostname === "halo-bridge.local") {
+        if (originHostname === "127.0.0.1" || originHostname === "localhost" || originHostname === "halo-bridge.internal") {
             permitted = true;
         }
 

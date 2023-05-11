@@ -9,12 +9,12 @@ function haloCreateWs(url) {
     });
 }
 
-function runHealthCheck(url) {
+function runHealthCheck(url, openTimeout) {
     return new Promise((resolve, reject) => {
         let closeTimeout = null;
 
         const pingUrl = url.includes('?') ? (url + '&ping=1') : (url + '?ping=1');
-        const wsp = new WebSocketAsPromised(pingUrl, {timeout: 5000});
+        const wsp = new WebSocketAsPromised(pingUrl, {timeout: openTimeout});
 
         wsp.onClose.addListener(event => {
             if (event.code === 4090) {
@@ -44,9 +44,10 @@ function runHealthCheck(url) {
 function createChecks(wsPort, wssPort) {
     // detect Firefox
     const isFirefox = window.hasOwnProperty("InternalError");
+    const openTimeout = isFirefox ? 10000 : 5000;
 
     let checks = [
-        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws')
+        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws', openTimeout)
     ];
 
     if (!isFirefox) {
@@ -54,7 +55,7 @@ function createChecks(wsPort, wssPort) {
         // A call to wss:// endpoint with incorrect certificate could hang the request
         // for many seconds until it actually fails, and this would hang all remaining WS requests too.
         // We need to skip this check on Firefox to avoid race conditions and have reasonable performance.
-        checks.push(runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws'));
+        checks.push(runHealthCheck('wss://halo-bridge.internal:' + wssPort + '/ws', openTimeout));
     }
 
     return checks;
