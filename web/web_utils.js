@@ -42,16 +42,22 @@ function runHealthCheck(url) {
 }
 
 function createChecks(wsPort, wssPort) {
-    return [
-        /**
-         Please note that this order of operations is important.
-         The ws:// request would always fail fast if the browser's policy doesn't allow such connection.
-         Certain browsers would process WebSocket connect orders sequentially (not in parallel!),
-         and the TLS error might block the connection for many seconds until it actually fails.
-         **/
-        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws'),
-        runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws')
+    // detect Firefox
+    const isFirefox = window.hasOwnProperty("InternalError");
+
+    let checks = [
+        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws')
     ];
+
+    if (!isFirefox) {
+        // It seems like Firefox is processing one WebSocket request at time.
+        // A call to wss:// endpoint with incorrect certificate could hang the request
+        // for many seconds until it actually fails, and this would hang all remaining WS requests too.
+        // We need to skip this check on Firefox to avoid race conditions and have reasonable performance.
+        checks.push(runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws'));
+    }
+
+    return checks;
 }
 
 async function haloFindBridge(options) {
