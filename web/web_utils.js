@@ -43,8 +43,8 @@ function runHealthCheck(url) {
 
 function createChecks(wsPort, wssPort) {
     return [
-        runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws'),
-        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws')
+        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws'),
+        runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws')
     ];
 }
 
