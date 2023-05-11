@@ -54,7 +54,7 @@ function createChecks(wsPort, wssPort) {
         // A call to wss:// endpoint with incorrect certificate could hang the request
         // for many seconds until it actually fails, and this would hang all remaining WS requests too.
         // We need to skip this check on Firefox to avoid race conditions and have reasonable performance.
-        checks.push(runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws'));
+        checks.push(runHealthCheck('wss://halo-bridge.internal:' + wssPort + '/ws'));
     }
 
     return checks;
