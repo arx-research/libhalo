@@ -24,7 +24,7 @@ function runHealthCheck(url, openTimeout) {
 
                 resolve(url);
             } else {
-                throw new Error("Unexpected WebSocket close code: " + event.code);
+                reject(new Error("Unexpected WebSocket close code: " + event.code));
             }
         });
 
