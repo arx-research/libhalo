@@ -11,7 +11,7 @@ const {
     NFCPermissionRequestDenied,
     NFCAbortedError
 } = require("../halo/exceptions");
-const {arr2hex} = require("../halo/utils");
+const {arr2hex, hex2arr} = require("../halo/utils");
 
 let ndef = null;
 let ctrl = null;
