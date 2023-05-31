@@ -58,9 +58,9 @@ async function execWebNFC(request, options) {
             options.debugCallback(writeStatus);
 
             if (writeStatus === "nfc-write") {
-                options.statusCallback("init", "nfc-write");
+                options.statusCallback("init", "webnfc", "nfc-write");
             } else if (writeStatus === "nfc-write-error") {
-                options.statusCallback("retry", "nfc-write-error");
+                options.statusCallback("retry", "webnfc", "nfc-write-error");
             }
 
             await ndef.write({records: [{recordType: "unknown", data: request}]});
@@ -83,7 +83,7 @@ async function execWebNFC(request, options) {
     return new Promise((resolve, reject) => {
         ndef.onreadingerror = (event) => {
             options.debugCallback("nfc-read-error");
-            options.statusCallback("retry", "nfc-read-error");
+            options.statusCallback("retry", "webnfc", "nfc-read-error");
         };
 
         ndef.onreading = (event) => {
@@ -114,7 +114,7 @@ async function execWebNFC(request, options) {
                 }
 
                 options.debugCallback("nfc-success");
-                options.statusCallback("scanned", "nfc-success");
+                options.statusCallback("scanned", "webnfc", "nfc-success");
 
                 ndef.onreading = () => null;
                 ndef.onreadingerror = () => null;
@@ -129,7 +129,7 @@ async function execWebNFC(request, options) {
                 }, 1);
             } catch (e) {
                 options.debugCallback("nfc-parse-error");
-                options.statusCallback("retry", "nfc-parse-error");
+                options.statusCallback("retry", "webnfc", "nfc-parse-error");
             }
         };
     });

@@ -53,7 +53,7 @@ async function execCredential(request, options) {
 
     let u2fRes;
 
-    options.statusCallback("init", "get-credential");
+    options.statusCallback("init", "credential", "get-credential");
     options.debugCallback("get-credential");
 
     try {
@@ -66,7 +66,7 @@ async function execCredential(request, options) {
         }
     }
 
-    options.statusCallback("scanned", "get-credential-done");
+    options.statusCallback("scanned", "credential", "get-credential-done");
     options.debugCallback("get-credential-done");
 
     let res = u2fRes.response.signature;

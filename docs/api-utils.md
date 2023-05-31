@@ -45,7 +45,7 @@ haloConvertSignature(digest, derSignature, publicKey);
 
 **Example usage:**
 ```javascript
-import {haloConvertSignature} from '@arx-research/libhalo';
+import {execHaloCmdWeb, haloConvertSignature} from '@arx-research/libhalo';
 
 const KEY_NO = 1;
 
@@ -101,7 +101,7 @@ haloRecoverPublicKey(digest, derSignature);
 
 **Example usage:**
 ```javascript
-import {haloRecoverPublicKey} from '@arx-research/libhalo';
+import {execHaloCmdWeb, haloRecoverPublicKey} from '@arx-research/libhalo';
 
 const KEY_NO = 1;
 
@@ -131,4 +131,27 @@ haloRecoverPublicKey(
   '04c057b11fd0ecaad8decc4df64de9b95d1b41fad96017c82d809eabc5240fa7d9cac3d65e1412d5f103598f1541eaeb6e27dc401b6a873576322cfd73074aebd8',
   '04e2b8ec92be2ed99962470555b31f094a1862d7fa3fb8a5de1f4d7f475bd93ffb27d7295e94ac11e8fa67b70582df375fc660c5e36078e83f7a1e9f7e6ae08142' 
 ]
+```
+
+## haloGetDefaultMethod
+
+For websites: detect the best command execution method for the current device.
+Returns a string that could be passed directly as `options.method` key for `execHaloCmdWeb()` function.
+
+```javascript
+haloGetDefaultMethod();
+```
+
+**Example usage:**
+```
+import {execHaloCmdWeb, haloGetDefaultMethod} from '@arx-research/libhalo';
+
+let signRes = await execHaloCmdWeb({
+    "name": "sign",
+    "message": "010203",
+    "keyNo": 1,
+    "legacySignCommand": true
+}, {
+    "method": haloGetDefaultMethod()
+});
 ```

@@ -76,10 +76,12 @@
             // all options are optional, you can use them to increase user's experience
             let options = {
                 method: method,
-                statusCallback: (cause) => {
+                statusCallback: (cause, execMethod) => {
                     if (cause === "init") {
                         // explicitly ask the user to tap the tag
-                        document.getElementById('statusText').innerText = 'Tap the tag to the back of your smartphone and hold it for a while.';
+                        document.getElementById('statusText').innerText =
+                            'Tap the tag to the back of your smartphone and hold it for a while. ' +
+                            'Using execution method: ' + execMethod;
                     } else if (cause === "retry") {
                         // this callback is invoked when there is a communication error
                         // the executeNFCCommand() call will be still running and the frontend

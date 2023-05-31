@@ -5,7 +5,7 @@
  */
 
 const {
-    execHaloCmdWeb
+    execHaloCmdWeb, detectMethod
 } = require("../drivers/common");
 const {
     HaloTagError,
@@ -34,6 +34,7 @@ module.exports = {
     // for web usage
     execHaloCmdWeb,
     haloFindBridge,
+    haloGetDefaultMethod: detectMethod,
 
     // for bridge demo
     haloCreateWs,
