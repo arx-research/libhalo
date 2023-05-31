@@ -20,6 +20,10 @@ const {ERROR_CODES} = require("../halo/errors");
 
 let isCallRunning = null;
 
+/**
+ * Detect the best command execution method for the current device.
+ * @returns {string} Either "credential" or "webnfc".
+ */
 function detectMethod() {
     try {
         new NDEFReader();
@@ -137,5 +141,6 @@ async function execHaloCmdWeb(command, options) {
 module.exports = {
     execHaloCmdWeb,
     execHaloCmd,
-    checkErrors
+    checkErrors,
+    detectMethod
 };

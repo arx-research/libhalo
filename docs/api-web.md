@@ -67,7 +67,7 @@ the command execution process is ongoing. This could be used to increase user's 
 
 Example callback:
 ```
-statusCallback: (cause) => console.log(cause)
+statusCallback: (cause, execMethod) => console.log(cause, execMethod)
 ```
 
 The callback could be called with the following `cause` as a first argument:
@@ -79,6 +79,14 @@ The callback could be called with the following `cause` as a first argument:
 * `scanned` - the tag was scanned successfully, but the operation is not yet completed since
   the library is postprocessing the result, the frontend should ask the user to untap the tag
   and wait a moment until the operation is completed;
+
+The `execMethod` will be either:
+
+* `credential` - if the credential prompt method is being used in order to scan the tag (mostly on iOS/Windows);
+* `webnfc` - if the WebNFC method is used in order to scan the tag (mostly on Android);
+
+The application's frontend could differentiate the UI behavior depending on the `execMethod` that is being used
+by the library in order to provide better user experience.
 
 #### options.debugCallback
 ```
