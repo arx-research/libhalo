@@ -95,9 +95,10 @@
             };
 
             let command = {
-                name: "write_latch",
-                latchNo: 2,
-                data: digest
+                name: "sign",
+                keyNo: keyNo,
+                digest: digest,
+                legacySignCommand: legacySignCommand
             };
 
             execHaloCmdWeb(command, options)
