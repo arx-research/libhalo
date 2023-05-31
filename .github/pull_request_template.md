@@ -21,7 +21,8 @@
 ### Changes to web library
 
 <!-- If web/ subdirectory or credential/webnfc driver was modified. -->
-* [ ] (PR Author) The change was manually tested with the web library in either standalone mode or with React.js
+* [ ] (PR Author) The change was manually tested with the web library included within a classic HTML application (flat `libhalo.js`)
+* [ ] (PR Author) The change was manually tested with the web library included within an app based on frontend framework (React.js or similar based on webpack)
 * [ ] (Checked by maintainer) The web test suite was run by the project's maintainer
 
 ### Changes to nfc-manager driver
