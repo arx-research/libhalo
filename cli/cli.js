@@ -8,7 +8,6 @@ const Buffer = require('buffer/').Buffer;
 const {NFC} = require('nfc-pcsc');
 const open = require('open');
 
-const {execHaloCmdPCSC} = require('../index.js');
 const {__runTestSuite} = require("../halo/tests");
 const util = require("util");
 const {
@@ -19,6 +18,7 @@ const {
     wsEventCardIncompatible,
     wsEventReaderDisconnected
 } = require("./ws_server");
+const {execHaloCmdPCSC} = require("../api/desktop");
 
 const nfc = new NFC();
 let stopPCSCTimeout = null;
