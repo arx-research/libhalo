@@ -2,7 +2,6 @@ const express = require('express');
 const nunjucks = require("nunjucks");
 const {WebSocketServer} = require('ws');
 const crypto = require('crypto').webcrypto;
-const {execHaloCmdPCSC} = require('../index.js');
 const {dirname, randomBuffer} = require("./util");
 const jwt = require('jsonwebtoken');
 const https = require("https");
@@ -10,6 +9,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const util = require("util");
+const {execHaloCmdPCSC} = require("../api/desktop");
 
 let wss = null;
 

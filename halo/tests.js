@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-const {HaloLogicError, HaloTagError} = require("../index");
+const {HaloLogicError, HaloTagError} = require("../api/common");
 const EC = require('elliptic').ec;
 
 const ec = new EC('secp256k1');

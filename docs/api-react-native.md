@@ -2,7 +2,7 @@
 
 ## Importing the method
 ```javascript
-import {execHaloCmdRN} from '@arx-research/libhalo';
+import {execHaloCmdRN} from '@arx-research/libhalo/api/react-native.js';
 ```
 
 ## Call specification

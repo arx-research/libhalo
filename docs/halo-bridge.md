@@ -32,7 +32,7 @@ Example website: [https://bulk.vrfy.ch/](https://bulk.vrfy.ch/).
 Use `haloFindBridge()` library function in order to obtain the HaLo Bridge address:
 
 ```javascript
-import {haloFindBridge} from '@arx-research/libhalo';
+import {haloFindBridge} from '@arx-research/libhalo/api/web.js';
    
 let wsAddress = await haloFindBridge();
 ```

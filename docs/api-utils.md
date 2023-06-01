@@ -13,7 +13,7 @@ haloParsePublicKeys(queryParamStatic);
 
 **Example function call:**
 ```javascript
-import {haloParsePublicKeys} from '@arx-research/libhalo';
+import {haloParsePublicKeys} from '@arx-research/libhalo/api/common.js';
 
 let pkeys = haloParsePublicKeys(
     "4104453D40D28E0BAA4D98AC86549DDC5FFFF5F674481A47141137F8A82CB666937A67AECE33B96E" +
@@ -45,7 +45,8 @@ haloConvertSignature(digest, derSignature, publicKey);
 
 **Example usage:**
 ```javascript
-import {execHaloCmdWeb, haloConvertSignature} from '@arx-research/libhalo';
+import {execHaloCmdWeb} from '@arx-research/libhalo/api/web.js';
+import {haloConvertSignature} from '@arx-research/libhalo/api/common.js';
 
 const KEY_NO = 1;
 
@@ -101,7 +102,8 @@ haloRecoverPublicKey(digest, derSignature);
 
 **Example usage:**
 ```javascript
-import {execHaloCmdWeb, haloRecoverPublicKey} from '@arx-research/libhalo';
+import {execHaloCmdWeb} from '@arx-research/libhalo/api/web.js';
+import {haloRecoverPublicKey} from '@arx-research/libhalo/api/common.js';
 
 const KEY_NO = 1;
 
@@ -144,7 +146,8 @@ haloGetDefaultMethod();
 
 **Example usage:**
 ```
-import {execHaloCmdWeb, haloGetDefaultMethod} from '@arx-research/libhalo';
+import {execHaloCmdWeb} from '@arx-research/libhalo/api/web.js';
+import {haloGetDefaultMethod} from '@arx-research/libhalo/api/common.js';
 
 let signRes = await execHaloCmdWeb({
     "name": "sign",
