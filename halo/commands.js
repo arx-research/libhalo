@@ -38,7 +38,7 @@ function extractPublicKeyWebNFC(keyNo, resp) {
         publicKey = Buffer.from(resp.extra[pkKey], "hex");
     } else if (resp.extra.hasOwnProperty("static")) {
         let pkeys = parsePublicKeys(Buffer.from(resp.extra["static"], "hex"));
-        publicKey = pkeys[pkKey];
+        publicKey = pkeys[keyNo];
     }
 
     return publicKey;
