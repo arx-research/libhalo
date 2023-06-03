@@ -16,6 +16,30 @@ const {arr2hex, hex2arr} = require("../halo/utils");
 let ndef = null;
 let ctrl = null;
 
+/**
+ * Check if user has granted us permission to use WebNFC interface.
+ * @returns {Promise<boolean>}
+ */
+async function checkWebNFCPermission() {
+    if (!window.isSecureContext) {
+        throw new NFCMethodNotSupported("This method can be invoked only in the secure context (HTTPS).");
+    }
+
+    try {
+        const controller = new AbortController();
+        const ndef = new NDEFReader();
+        await ndef.scan({ signal: controller.signal });
+        controller.abort();
+        return true;
+    } catch (e) {
+        if (e.name === "NotAllowedError") {
+            return false;
+        }
+
+        throw e;
+    }
+}
+
 async function execWebNFC(request, options) {
     if (!window.isSecureContext) {
         throw new NFCMethodNotSupported("This method can be invoked only in the secure context (HTTPS).");
@@ -136,5 +160,6 @@ async function execWebNFC(request, options) {
 }
 
 module.exports = {
+    checkWebNFCPermission,
     execWebNFC
 };
