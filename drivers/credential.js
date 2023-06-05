@@ -17,10 +17,6 @@ async function execCredential(request, options) {
 
     options = Object.assign({}, options) || {};
 
-    if (!options.debugCallback) {
-        options.debugCallback = () => null;
-    }
-
     if (!options.statusCallback) {
         options.statusCallback = () => null;
     }
@@ -54,7 +50,6 @@ async function execCredential(request, options) {
     let u2fRes;
 
     options.statusCallback("init", "credential", "get-credential");
-    options.debugCallback("get-credential");
 
     try {
         u2fRes = await navigator.credentials.get(u2fReq);
@@ -67,7 +62,6 @@ async function execCredential(request, options) {
     }
 
     options.statusCallback("scanned", "credential", "get-credential-done");
-    options.debugCallback("get-credential-done");
 
     let res = u2fRes.response.signature;
     let resBuf = new Uint8Array(res);
