@@ -74,6 +74,8 @@ The callback could be called with the following `cause` as a first argument:
 
 * `init` - the tag scanning process was initiated, the frontend should ask the user to tap the tag
   to the back of the smartphone;
+* `again` - another tap is needed to complete this operation, the frontend should ask the user to
+  keep holding the tag to the back of the smartphone;
 * `retry` - the tag was scanned but there was an error, the operation is still running,
   the frontend should ask the user to try to tap the tag once again;
 * `scanned` - the tag was scanned successfully, but the operation is not yet completed since
@@ -87,21 +89,6 @@ The `execMethod` will be either:
 
 The application's frontend could differentiate the UI behavior depending on the `execMethod` that is being used
 by the library in order to provide better user experience.
-
-#### options.debugCallback
-```
-options.debugCallback: null/function
-```
-
-Optionally, you can provide a callback which will provide more detailed information
-while the command execution process is ongoing. Not recommended.
-
-This option is dedicated only for debugging.
-
-Example callback:
-```
-debugCallback: (cause) => console.log(cause)
-```
 
 ### Return value
 

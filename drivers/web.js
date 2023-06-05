@@ -59,7 +59,6 @@ async function execHaloCmdWeb(command, options) {
             cmdOpts = {
                 method: "credential",
                 exec: async (command) => await execCredential(command, {
-                    debugCallback: options.debugCallback,
                     statusCallback: options.statusCallback,
                     compatibleCallMode: options.compatibleCallMode
                 })
@@ -68,7 +67,6 @@ async function execHaloCmdWeb(command, options) {
             cmdOpts = {
                 method: "webnfc",
                 exec: async (command) => await execWebNFC(command, {
-                    debugCallback: options.debugCallback,
                     statusCallback: options.statusCallback
                 })
             };

@@ -59,15 +59,9 @@ async function execWebNFC(request, options) {
 
     options = Object.assign({}, options) || {};
 
-    if (!options.debugCallback) {
-        options.debugCallback = () => null;
-    }
-
     if (!options.statusCallback) {
         options.statusCallback = () => null;
     }
-
-    options.debugCallback("nfc-init");
 
     if (!ndef) {
         try {
@@ -96,8 +90,6 @@ async function execWebNFC(request, options) {
         ctrl = new AbortController();
 
         try {
-            options.debugCallback(writeStatus);
-
             if (writeStatus === "nfc-write") {
                 options.statusCallback("init", "webnfc", "nfc-write");
             } else if (writeStatus === "nfc-write-error") {
@@ -123,7 +115,7 @@ async function execWebNFC(request, options) {
 
     await ndef.scan({signal: ctrl.signal});
 
-    options.debugCallback("nfc-read");
+    options.statusCallback("again", "webnfc", "nfc-read");
 
     return new Promise((resolve, reject) => {
         ctrl.signal.addEventListener('abort', () => {
@@ -135,7 +127,6 @@ async function execWebNFC(request, options) {
         }
 
         ndef.onreadingerror = (event) => {
-            options.debugCallback("nfc-read-error");
             options.statusCallback("retry", "webnfc", "nfc-read-error");
         };
 
@@ -166,7 +157,6 @@ async function execWebNFC(request, options) {
                     return;
                 }
 
-                options.debugCallback("nfc-success");
                 options.statusCallback("scanned", "webnfc", "nfc-success");
 
                 ndef.onreading = () => null;
@@ -181,7 +171,6 @@ async function execWebNFC(request, options) {
                     });
                 }, 1);
             } catch (e) {
-                options.debugCallback("nfc-parse-error");
                 options.statusCallback("retry", "webnfc", "nfc-parse-error");
             }
         };

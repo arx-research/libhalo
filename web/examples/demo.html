@@ -82,6 +82,11 @@
                         document.getElementById('statusText').innerText =
                             'Tap the tag to the back of your smartphone and hold it for a while. ' +
                             'Using execution method: ' + execMethod;
+                    } else if (cause === "again") {
+                        // another tap is needed to complete the operation
+                        document.getElementById('statusText').innerText =
+                            'Keep holding the tag to the back of your smartphone. ' +
+                            'Using execution method: ' + execMethod;
                     } else if (cause === "retry") {
                         // this callback is invoked when there is a communication error
                         // the executeNFCCommand() call will be still running and the frontend
