@@ -18,11 +18,11 @@ let ctrl = null;
 let blurEventInstalled = false;
 
 function detectWindowMinimized() {
-    if (ctrl) {
+    if (document.hidden && ctrl) {
         /*
         Once the web page gets minimized, the call to NFCReader.scan() or NFCReader.write() might still appear
         to be running, although the NFC scanning feature will be glitched. We need to detect that the page
-        was minimized and abort the call in order to work-around the bug.
+        was minimized and abort the call in order to work around the bug.
          */
         ctrl.abort();
     }
