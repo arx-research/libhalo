@@ -15,6 +15,42 @@ const {arr2hex, hex2arr} = require("../halo/utils");
 
 let ndef = null;
 let ctrl = null;
+let blurEventInstalled = false;
+
+function detectWindowMinimized() {
+    if (ctrl) {
+        /*
+        Once the web page gets minimized, the call to NFCReader.scan() or NFCReader.write() might still appear
+        to be running, although the NFC scanning feature will be glitched. We need to detect that the page
+        was minimized and abort the call in order to work-around the bug.
+         */
+        ctrl.abort();
+    }
+}
+
+/**
+ * Check if user has granted us permission to use WebNFC interface.
+ * @returns {Promise<boolean>}
+ */
+async function checkWebNFCPermission() {
+    if (!window.isSecureContext) {
+        throw new NFCMethodNotSupported("This method can be invoked only in the secure context (HTTPS).");
+    }
+
+    try {
+        const controller = new AbortController();
+        const ndef = new NDEFReader();
+        await ndef.scan({ signal: controller.signal });
+        controller.abort();
+        return true;
+    } catch (e) {
+        if (e.name === "NotAllowedError") {
+            return false;
+        }
+
+        throw e;
+    }
+}
 
 async function execWebNFC(request, options) {
     if (!window.isSecureContext) {
@@ -45,6 +81,11 @@ async function execWebNFC(request, options) {
         }
     }
 
+    if (!blurEventInstalled) {
+        window.addEventListener('visibilitychange', detectWindowMinimized);
+        blurEventInstalled = true;
+    }
+
     let writeStatus = "nfc-write";
 
     while (true) {
@@ -63,13 +104,17 @@ async function execWebNFC(request, options) {
                 options.statusCallback("retry", "webnfc", "nfc-write-error");
             }
 
-            await ndef.write({records: [{recordType: "unknown", data: request}]});
+            await ndef.write({
+                records: [{recordType: "unknown", data: request}]
+            }, {
+                signal: ctrl.signal
+            });
             break;
         } catch (e) {
             if (e.name === "NotAllowedError") {
                 throw new NFCPermissionRequestDenied("NFC permission request denied by the user.");
             } else if (e.name === "AbortError") {
-                throw new NFCAbortedError("Operation restarted by the user.");
+                throw new NFCAbortedError("Operation restarted by the user or webpage minimized (during write).");
             } else {
                 writeStatus = "nfc-write-error";
             }
@@ -81,6 +126,14 @@ async function execWebNFC(request, options) {
     options.debugCallback("nfc-read");
 
     return new Promise((resolve, reject) => {
+        ctrl.signal.addEventListener('abort', () => {
+            reject(new NFCAbortedError("Operation restarted by the user or webpage minimized (during read)."));
+        });
+
+        if (ctrl.signal.aborted) {
+            reject(new NFCAbortedError("Operation restarted by the user or webpage minimized (during read)."));
+        }
+
         ndef.onreadingerror = (event) => {
             options.debugCallback("nfc-read-error");
             options.statusCallback("retry", "webnfc", "nfc-read-error");
@@ -136,5 +189,6 @@ async function execWebNFC(request, options) {
 }
 
 module.exports = {
+    checkWebNFCPermission,
     execWebNFC
 };
