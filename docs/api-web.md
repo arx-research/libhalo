@@ -121,3 +121,34 @@ Please check [documentation of the available commands (HaLo Command Set)](/docs/
 * **NFCAbortedError**: Detected multiple concurrent calls to `execHaloCmdWeb` method. Excess concurrent calls except for one
   will be rejected with this exception. The frontend should gracefully ignore that exception.
 * **NFCOperationError**: There was a low-level failure during NFC interaction. Check `ex.message` for more details.
+
+
+# Helper methods exclusive to the web environment
+
+## haloGetDefaultMethod()
+Check which NFC command execution method will be used on the current device. This call would return either
+`"credential"` or `"webnfc"`.
+
+## haloCheckWebNFCPermission()
+Check if the user has granted us the permission to use WebNFC interface. This is relevant only if the call to
+`haloGetDefaultMethod()` has returned `"webnfc"`.
+
+This function behaves differently depending on whether it was called with or without the user's interaction.
+
+### Function behavior without user's interaction
+When this function is called early after web page load (and without any explicit user's interaction), it will
+immediately return a boolean with the following meaning:
+
+* `true` - user has already granted us the WebNFC usage permission in the past, the `execHaloCmdWeb()` function may
+  be called immediately;
+* `false` - we don't have permission to use WebNFC on that device, the user needs to be interactively asked
+  to grant us the permission;
+
+### Function behavior with user's interaction
+When this function is called within the button onClick handler, it will either:
+
+1. Return `true` immediately if the user has already granted us the WebNFC usage permission in the past;
+2. Return `false` immediately if the user has already explicitly denied us the permission to WebNFC in the past;
+3. Display WebNFC permission prompt to the user and hang until the user decides whether to allow for
+   the usage of WebNFC or not. After the user makes the decision, the function will either return `true`
+   (the permission is now granted) or `false` (user has denied).
