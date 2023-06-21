@@ -321,6 +321,19 @@ async function cmdGenKeyFinalize(options, args) {
     return {"status": "ok"};
 }
 
+async function cmdSetURLSubdomain(options, args) {
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_SET_URL_SUBDOMAIN]),
+        Buffer.from([args.subdomain.length]),
+        Buffer.from(args.subdomain),
+        Buffer.from(args.allowSignatureDER, 'hex')
+    ]);
+
+    await options.exec(payload);
+
+    return {"status": "ok"};
+}
+
 module.exports = {
     cmdSign,
     cmdSignRandom,
@@ -330,5 +343,6 @@ module.exports = {
     cmdGenKeyConfirm,
     cmdGetPkeys,
     cmdGenKeyFinalize,
-    cmdSignChallenge
+    cmdSignChallenge,
+    cmdSetURLSubdomain
 };
