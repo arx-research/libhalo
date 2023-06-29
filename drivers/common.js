@@ -10,7 +10,7 @@ const {
 } = require("../halo/exceptions");
 const {
     cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm, cmdGenKeyFinalize,
-    cmdSignChallenge, cmdSetURLSubdomain
+    cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword
 } = require("../halo/commands");
 const {ERROR_CODES} = require("../halo/errors");
 
@@ -41,6 +41,10 @@ async function execHaloCmd(command, options) {
             return await cmdGenKeyFinalize(options, command);
         case 'set_url_subdomain':
             return await cmdSetURLSubdomain(options, command);
+        case 'set_password':
+            return await cmdSetPassword(options, command);
+        case 'unset_password':
+            return await cmdUnsetPassword(options, command);
         default:
             throw new HaloLogicError("Unsupported command.name parameter specified.");
     }

@@ -10,6 +10,8 @@
 * [Command: gen_key](#command-gen_key)
 * [Command: gen_key_confirm](#command-gen_key_confirm)
 * [Command: get_pkeys](#command-get_pkeys)
+* [Command: set_password](#command-set_password)
+* [Command: unset_password](#command-unset_password)
 * [Command: version (only for PCSC/React Native)](#command-version)
 * [Command: read_ndef (only for PCSC/React Native)](#command-read_ndef)
 * [Command: pcsc_detect (only with CLI tool)](#command-pcsc_detect)
@@ -29,6 +31,8 @@ Sign an arbitrary message using ERC-191 (version 0x45) algorithm, typed data (EI
 * `digest` (str) - the raw hex-encoded 32 byte digest to be signed using plain ECDSA;
 * `typedData` (object) - EIP-712 typed data to be signed, should contain sub-keys: `domain`, `types`, `value`;
 * `keyNo` (int) - number of the key slot to use;
+* `password` (str) - optional; password for the target key slot as utf-8 string;
+* `publicKeyHex` (str) - optional; the public key of the target key slot, only required when providing `password`, uncompressed, hex encoded;
 * `legacySignCommand` (bool) - optional; whether to use legacy command for signing, see the note below;
 
 **Note:** You should specify exactly one of the following keys: `message`, `digest` or `typedData`.
@@ -229,10 +233,44 @@ Response:
 }
 ```
 
+#### Raw digest signing using password-protected key #3 slot
+Command:
+```json
+{
+    "name": "sign",
+    "keyNo": 3,
+    "digest": "0102030401020304010203040102030401020304010203040102030401020304",
+    "publicKeyHex": "049d1e9cd828fcea59cfee261c705ed84023103537aea7069fe001129cdf69e60bc0c6de184cc0e6a5b396c19a4450e94dafa9dc87b6a527e60aa2104bb253933e",
+    "password": "abc123"
+}
+```
+
+Response:
+```json
+{
+    "input": {
+        "keyNo": 3,
+        "digest": "0102030401020304010203040102030401020304010203040102030401020304"
+    },
+    "signature": {
+        "raw": {
+            "r": "9ffb5e0c4c0e97b36af5e62bb7ca8641862e883cc50668b42017c6b42d536b41",
+            "s": "30386182eedf45e7887cc7710c657475d8bcdbb9cf77c69950313d8ccfb76484",
+            "v": 28
+        },
+        "der": "30460221009ffb5e0c4c0e97b36af5e62bb7ca8641862e883cc50668b42017c6b42d536b41022100cfc79e7d1120ba187783388ef39a8b88e1f2012cdfd0d9a26fa12100007edcbd",
+        "ether": "0x9ffb5e0c4c0e97b36af5e62bb7ca8641862e883cc50668b42017c6b42d536b4130386182eedf45e7887cc7710c657475d8bcdbb9cf77c69950313d8ccfb764841c"
+    },
+    "publicKey": "049d1e9cd828fcea59cfee261c705ed84023103537aea7069fe001129cdf69e60bc0c6de184cc0e6a5b396c19a4450e94dafa9dc87b6a527e60aa2104bb253933e"
+}
+```
+
 ### Errors
 * `ERROR_CODE_INVALID_KEY_NO` - invalid key number provided or the key slot doesn't support this operation;
 * `ERROR_CODE_KEY_NOT_INITIALIZED` - targeted key is not initialized yet;
 * `ERROR_CODE_INVALID_LENGTH` - trying to sign a digest which is not 32 bytes long;
+* `ERROR_CODE_INVALID_DATA` - trying to use the standard sign command (without password) against the password-protected slot;
+* `ERROR_CODE_WRONG_PWD` - wrong password provided for the target key slot;
 
 ### Note on message hashing
 
@@ -511,6 +549,82 @@ Response:
 
 ### Errors
 This command doesn't throw expected errors.
+
+## Command: set_password
+
+Set password protection for the key slot #3. After the password is set, it would not be possible to
+sign anything using key slot #3 without providing the correct password. The key in slot #3 must be
+already generated on the card.
+
+### Arguments
+
+* `keyNo` (int) - target key slot number, must be set to 3;
+* `password` (str) - target password (utf-8 string, must be between 6-32 bytes);
+
+### Return value
+
+* `status` (str) - value `ok` when the password was successfully set; 
+
+### Examples
+Command:
+```json
+{
+    "name": "set_password",
+    "keyNo": 3,
+    "password": "abc123"
+}
+```
+
+Response:
+```json
+{
+    "status": "ok"
+}
+```
+
+### Errors
+* `ERROR_CODE_INVALID_LENGTH` - unacceptable password length or general command length error;
+* `ERROR_CODE_INVALID_KEY_NO` - the target key number is not #3;
+* `ERROR_CODE_KEY_NOT_INITIALIZED` - key slot is not yet initialized;
+* `ERROR_CODE_PWD_ALREADY_SET` - password for that key slot is already set;
+
+## Command: unset_password
+
+Remove password protection from the key slot #3
+
+### Arguments
+
+* `keyNo` (int) - target key slot number, must be set to 3;
+* `password` (str) - target password (utf-8 string, must be between 6-32 bytes);
+* `publicKeyHex` (str) - the public key of the target slot (hex encoded, uncompressed);
+
+### Return value
+
+* `status` (str) - value `ok` when the password was successfully set;
+
+### Examples
+Command:
+```json
+{
+    "name": "unset_password",
+    "keyNo": 3,
+    "password": "abc123",
+    "publicKeyHex": "049d1e9cd828fcea59cfee261c705ed84023103537aea7069fe001129cdf69e60bc0c6de184cc0e6a5b396c19a4450e94dafa9dc87b6a527e60aa2104bb253933e"
+}
+```
+
+Response:
+```json
+{
+  "status": "ok"
+}
+```
+
+### Errors
+* `ERROR_CODE_INVALID_LENGTH` - unacceptable password length or general command length error;
+* `ERROR_CODE_INVALID_KEY_NO` - the target key number is not #3;
+* `ERROR_CODE_PWD_NOT_SET` - password for that key slot is not set or the slot is not yet initialized;
+* `ERROR_CODE_WRONG_PWD` - wrong password (or target public key) provided by the user;
 
 ## Command: version
 
