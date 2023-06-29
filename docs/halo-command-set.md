@@ -233,6 +233,38 @@ Response:
 }
 ```
 
+#### Raw digest signing using password-protected key #3 slot
+Command:
+```json
+{
+    "name": "sign",
+    "keyNo": 3,
+    "digest": "0102030401020304010203040102030401020304010203040102030401020304",
+    "publicKeyHex": "049d1e9cd828fcea59cfee261c705ed84023103537aea7069fe001129cdf69e60bc0c6de184cc0e6a5b396c19a4450e94dafa9dc87b6a527e60aa2104bb253933e",
+    "password": "abc123"
+}
+```
+
+Response:
+```json
+{
+    "input": {
+        "keyNo": 3,
+        "digest": "0102030401020304010203040102030401020304010203040102030401020304"
+    },
+    "signature": {
+        "raw": {
+            "r": "9ffb5e0c4c0e97b36af5e62bb7ca8641862e883cc50668b42017c6b42d536b41",
+            "s": "30386182eedf45e7887cc7710c657475d8bcdbb9cf77c69950313d8ccfb76484",
+            "v": 28
+        },
+        "der": "30460221009ffb5e0c4c0e97b36af5e62bb7ca8641862e883cc50668b42017c6b42d536b41022100cfc79e7d1120ba187783388ef39a8b88e1f2012cdfd0d9a26fa12100007edcbd",
+        "ether": "0x9ffb5e0c4c0e97b36af5e62bb7ca8641862e883cc50668b42017c6b42d536b4130386182eedf45e7887cc7710c657475d8bcdbb9cf77c69950313d8ccfb764841c"
+    },
+    "publicKey": "049d1e9cd828fcea59cfee261c705ed84023103537aea7069fe001129cdf69e60bc0c6de184cc0e6a5b396c19a4450e94dafa9dc87b6a527e60aa2104bb253933e"
+}
+```
+
 ### Errors
 * `ERROR_CODE_INVALID_KEY_NO` - invalid key number provided or the key slot doesn't support this operation;
 * `ERROR_CODE_KEY_NOT_INITIALIZED` - targeted key is not initialized yet;
@@ -538,6 +570,7 @@ Command:
 ```json
 {
     "name": "set_password",
+    "keyNo": 3,
     "password": "abc123"
 }
 ```
@@ -574,6 +607,7 @@ Command:
 ```json
 {
     "name": "unset_password",
+    "keyNo": 3,
     "password": "abc123",
     "publicKeyHex": "049d1e9cd828fcea59cfee261c705ed84023103537aea7069fe001129cdf69e60bc0c6de184cc0e6a5b396c19a4450e94dafa9dc87b6a527e60aa2104bb253933e"
 }
