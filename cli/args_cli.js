@@ -46,6 +46,16 @@ signParser.add_argument("--typed-data", {
     action: JSONParseAction
 });
 signParser.add_argument("-f", "--format", {help: "Message format: text, hex.", "default": "hex"});
+signParser.add_argument("--public-key", {
+    dest: 'publicKeyHex',
+    help: "Target public key (hex encoded; only required when using password).",
+    required: false
+});
+signParser.add_argument("--password", {
+    dest: 'password',
+    help: "Slot password (utf-8 string; only required when using password).",
+    required: false
+});
 signParser.add_argument("--legacy-sign-command", {
     help: "Use legacy signing command (more compatible).",
     action: "store_true",
@@ -166,6 +176,37 @@ let genKeyConfirmParser = subparsers.add_parser("gen_key_confirm", {help: "Confi
 genKeyConfirmParser.add_argument("--public-key", {dest: 'publicKey', help: "Key slot #3 public key", required: true});
 
 subparsers.add_parser("gen_key_finalize", {help: "Finalize key generation in slot #3."});
+
+let setPasswordParser = subparsers.add_parser("set_password", {help: "Set password for slot #3."});
+setPasswordParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    'default': 3,
+    type: 'int',
+    help: "Target key slot number (default: 3)."
+});
+setPasswordParser.add_argument("--password", {
+    dest: 'password',
+    help: "Slot password (utf-8 string).",
+    required: true
+});
+
+let unsetPasswordParser = subparsers.add_parser("unset_password", {help: "Unset password for slot #3."});
+unsetPasswordParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    'default': 3,
+    type: 'int',
+    help: "Target key slot number (default: 3)."
+});
+unsetPasswordParser.add_argument("--public-key", {
+    dest: 'publicKeyHex',
+    help: "Target public key (hex encoded).",
+    required: true
+});
+unsetPasswordParser.add_argument("--password", {
+    dest: 'password',
+    help: "Slot password (utf-8 string).",
+    required: true
+});
 
 subparsers.add_parser("get_pkeys", {help: "Get tag's public keys #1, #2 and #3."});
 

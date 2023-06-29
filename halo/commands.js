@@ -98,20 +98,47 @@ async function cmdSign(options, args) {
     }
 
     let payload;
+    let pwdHash = null;
+
+    if (args.password) {
+        if (!args.publicKeyHex) {
+            throw new HaloLogicError("Target public key must be provided when using password.");
+        }
+
+        let pwdBuf = Buffer.from(args.password, "utf-8");
+        let publicKeyBuf = Buffer.from(args.publicKeyHex, "hex");
+        pwdHash = Buffer.from(sha256(Buffer.concat([publicKeyBuf, pwdBuf])), "hex");
+    }
 
     if (args.legacySignCommand || options.method === "webnfc") {
         // the public key will be available through URL parameters
         // we only need to sign the digest
-        payload = Buffer.concat([
-            Buffer.from([CMD.SHARED_CMD_SIGN, args.keyNo]),
-            digestBuf
-        ]);
+        if (!pwdHash) {
+            payload = Buffer.concat([
+                Buffer.from([CMD.SHARED_CMD_SIGN, args.keyNo]),
+                digestBuf
+            ]);
+        } else {
+            payload = Buffer.concat([
+                Buffer.from([CMD.SHARED_CMD_SIGN_PWD, args.keyNo]),
+                digestBuf,
+                pwdHash
+            ]);
+        }
     } else {
         // sign the digest and also fetch the public key
-        payload = Buffer.concat([
-            Buffer.from([CMD.SHARED_CMD_FETCH_SIGN, args.keyNo]),
-            digestBuf
-        ]);
+        if (!pwdHash) {
+            payload = Buffer.concat([
+                Buffer.from([CMD.SHARED_CMD_FETCH_SIGN, args.keyNo]),
+                digestBuf
+            ]);
+        } else {
+            payload = Buffer.concat([
+                Buffer.from([CMD.SHARED_CMD_FETCH_SIGN_PWD, args.keyNo]),
+                digestBuf,
+                pwdHash
+            ]);
+        }
     }
 
     let resp;
@@ -334,6 +361,37 @@ async function cmdSetURLSubdomain(options, args) {
     return {"status": "ok"};
 }
 
+async function cmdSetPassword(options, args) {
+    let pwdBuf = Buffer.from(args.password, "utf-8");
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_SET_PASSWORD]),
+        Buffer.from([args.keyNo]),
+        Buffer.from([pwdBuf.length]),
+        pwdBuf
+    ]);
+
+    await options.exec(payload);
+
+    return {"status": "ok"};
+}
+
+async function cmdUnsetPassword(options, args) {
+    let pwdBuf = Buffer.from(args.password, "utf-8");
+    let publicKeyBuf = Buffer.from(args.publicKeyHex, "hex");
+    let pwdHash = Buffer.from(sha256(Buffer.concat([publicKeyBuf, pwdBuf])), "hex");
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_UNSET_PASSWORD]),
+        Buffer.from([args.keyNo]),
+        pwdHash
+    ]);
+
+    await options.exec(payload);
+
+    return {"status": "ok"};
+}
+
 module.exports = {
     cmdSign,
     cmdSignRandom,
@@ -344,5 +402,7 @@ module.exports = {
     cmdGetPkeys,
     cmdGenKeyFinalize,
     cmdSignChallenge,
-    cmdSetURLSubdomain
+    cmdSetURLSubdomain,
+    cmdSetPassword,
+    cmdUnsetPassword
 };
