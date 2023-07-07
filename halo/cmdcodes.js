@@ -8,9 +8,9 @@ const CMD_CODES = {
     // user commands, can be executed through any interface
     "SHARED_CMD_SIGN": 0x01,
     "SHARED_CMD_GET_PKEYS": 0x02,
-    "SHARED_CMD_GENERATE_3RD_KEY": 0x03,
-    "SHARED_CMD_GENERATE_3RD_KEY_CONT": 0x09,
-    "SHARED_CMD_GENERATE_3RD_KEY_FINALIZE": 0x12,
+    "SHARED_CMD_GENERATE_KEY_INIT": 0xB1,
+    "SHARED_CMD_GENERATE_KEY_CONT": 0xB2,
+    "SHARED_CMD_GENERATE_KEY_FINALIZE": 0xB3,
     "SHARED_CMD_GET_ATTEST": 0x04,
     // reserved, do not use
     "SHARED_CMD_RESERVED_1": 0x05,

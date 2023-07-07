@@ -12,6 +12,7 @@ const {FLAGS} = require("./flags");
 const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
 const CMD = require('./cmdcodes').CMD_CODES;
+const pbkdf2 = require('pbkdf2');
 
 const ec = new EC('secp256k1');
 
@@ -101,13 +102,15 @@ async function cmdSign(options, args) {
     let pwdHash = null;
 
     if (args.password) {
-        if (!args.publicKeyHex) {
-            throw new HaloLogicError("Target public key must be provided when using password.");
-        }
+        let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 32, 'sha512');
 
-        let pwdBuf = Buffer.from(args.password, "utf-8");
-        let publicKeyBuf = Buffer.from(args.publicKeyHex, "hex");
-        pwdHash = Buffer.from(sha256(Buffer.concat([publicKeyBuf, pwdBuf])), "hex");
+        pwdHash = Buffer.from(sha256(Buffer.concat([
+            Buffer.from([0x19]),
+            Buffer.from("Password authentication:\n"),
+            Buffer.from([args.keyNo]),
+            digestBuf,
+            derivedKey
+        ])), "hex");
     }
 
     if (args.legacySignCommand || options.method === "webnfc") {
@@ -270,7 +273,8 @@ async function cmdCfgNDEF(options, args) {
 async function cmdGenKey(options, args) {
     if (!args.entropy) {
         let payload = Buffer.concat([
-            Buffer.from([CMD.SHARED_CMD_GENERATE_3RD_KEY])
+            Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_INIT]),
+            Buffer.from([args.keyNo])
         ]);
         let resp = await options.exec(payload);
         let res = Buffer.from(resp.result, "hex");
@@ -284,7 +288,8 @@ async function cmdGenKey(options, args) {
         }
 
         let payload = Buffer.concat([
-            Buffer.from([CMD.SHARED_CMD_GENERATE_3RD_KEY]),
+            Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_INIT]),
+            Buffer.from([args.keyNo]),
             entropyBuf
         ]);
 
@@ -308,8 +313,18 @@ async function cmdGenKey(options, args) {
             throw new HaloLogicError("The hardened key generation algorithm is not supported with this tag version.");
         }
 
-        let msg1 = Buffer.from(sha256(res.slice(0, 32)), 'hex');
-        let msg2 = Buffer.from(sha256(res.slice(32, 64)), 'hex');
+        let m1Prefixed = Buffer.concat([
+            Buffer.from([0x19]),
+            Buffer.from("Key generation sample:\n"),
+            res.slice(0, 32)
+        ]);
+        let m2Prefixed = Buffer.concat([
+            Buffer.from([0x19]),
+            Buffer.from("Key generation sample:\n"),
+            res.slice(32, 64)
+        ]);
+        let msg1 = Buffer.from(sha256(m1Prefixed), 'hex');
+        let msg2 = Buffer.from(sha256(m2Prefixed), 'hex');
         let sig = res.slice(64);
         let sig1Length = sig[1];
         let sig1 = sig.slice(0, 2 + sig1Length);
@@ -329,7 +344,8 @@ async function cmdGenKey(options, args) {
 
 async function cmdGenKeyConfirm(options, args) {
     let payload = Buffer.concat([
-        Buffer.from([CMD.SHARED_CMD_GENERATE_3RD_KEY_CONT]),
+        Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_CONT]),
+        Buffer.from([args.keyNo]),
         Buffer.from(args.publicKey, "hex")
     ]);
 
@@ -340,7 +356,8 @@ async function cmdGenKeyConfirm(options, args) {
 
 async function cmdGenKeyFinalize(options, args) {
     let payload = Buffer.concat([
-        Buffer.from([CMD.SHARED_CMD_GENERATE_3RD_KEY_FINALIZE])
+        Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_FINALIZE]),
+        Buffer.from([args.keyNo])
     ]);
 
     await options.exec(payload);
@@ -362,13 +379,12 @@ async function cmdSetURLSubdomain(options, args) {
 }
 
 async function cmdSetPassword(options, args) {
-    let pwdBuf = Buffer.from(args.password, "utf-8");
+    let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 32, 'sha512');
 
     let payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_SET_PASSWORD]),
         Buffer.from([args.keyNo]),
-        Buffer.from([pwdBuf.length]),
-        pwdBuf
+        derivedKey
     ]);
 
     await options.exec(payload);
@@ -377,14 +393,18 @@ async function cmdSetPassword(options, args) {
 }
 
 async function cmdUnsetPassword(options, args) {
-    let pwdBuf = Buffer.from(args.password, "utf-8");
-    let publicKeyBuf = Buffer.from(args.publicKeyHex, "hex");
-    let pwdHash = Buffer.from(sha256(Buffer.concat([publicKeyBuf, pwdBuf])), "hex");
+    let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 32, 'sha512');
+    let authHash = Buffer.from(sha256(Buffer.concat([
+        Buffer.from([0x19]),
+        Buffer.from("Unset password auth:\n"),
+        Buffer.from([args.keyNo]),
+        derivedKey
+    ])), "hex");
 
     let payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_UNSET_PASSWORD]),
         Buffer.from([args.keyNo]),
-        pwdHash
+        authHash
     ]);
 
     await options.exec(payload);
