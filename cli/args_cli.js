@@ -161,35 +161,22 @@ setNDEFCfgParser.add_argument("--flag-legacy-static", {
     required: false
 });
 
-let genKeyParser = subparsers.add_parser("gen_key", {help: "Generate key in slot #3."});
+let genKeyParser = subparsers.add_parser("full_gen_key", {help: "Generate key in slot #3."});
 genKeyParser.add_argument("-k", "--key-no", {
     dest: 'keyNo',
     type: 'int',
     help: "Target key slot number.",
     required: true
-
 });
 genKeyParser.add_argument("--entropy", {
     dest: 'entropy',
     help: "Additional entropy (32 bytes, hex encoded).",
     required: true
 });
-
-let genKeyConfirmParser = subparsers.add_parser("gen_key_confirm", {help: "Confirm public key in slot #3 (only if additional entropy was provided)."});
-genKeyConfirmParser.add_argument("-k", "--key-no", {
-    dest: 'keyNo',
-    type: 'int',
-    help: "Target key slot number.",
-    required: true
-});
-genKeyConfirmParser.add_argument("--public-key", {dest: 'publicKey', help: "Key slot #3 public key", required: true});
-
-let genKeyFinalize = subparsers.add_parser("gen_key_finalize", {help: "Finalize key generation in slot #3."});
-genKeyFinalize.add_argument("-k", "--key-no", {
-    dest: 'keyNo',
-    type: 'int',
-    help: "Target key slot number.",
-    required: true
+genKeyParser.add_argument("--password", {
+    dest: 'password',
+    help: "Slot password (optional, utf-8 string).",
+    required: false
 });
 
 let setPasswordParser = subparsers.add_parser("set_password", {help: "Set password for slot #3."});
@@ -202,6 +189,24 @@ setPasswordParser.add_argument("-k", "--key-no", {
 setPasswordParser.add_argument("--password", {
     dest: 'password',
     help: "Slot password (utf-8 string).",
+    required: true
+});
+
+let replacePasswordParser = subparsers.add_parser("replace_password", {help: "Replace password for slot #3."});
+replacePasswordParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    'default': 3,
+    type: 'int',
+    help: "Target key slot number (default: 3)."
+});
+replacePasswordParser.add_argument("--cur-password", {
+    dest: 'currentPassword',
+    help: "Current slot password (utf-8 string).",
+    required: true
+});
+replacePasswordParser.add_argument("--new-password", {
+    dest: 'newPassword',
+    help: "New slot password (utf-8 string).",
     required: true
 });
 

@@ -23,7 +23,11 @@ let ERROR_CODES = {
     0x10: ["ERROR_CODE_PWD_NOT_SET", "Password was not set."],
     0x11: ["ERROR_CODE_WRONG_PWD", "Wrong password provided."],
     0x12: ["ERROR_CODE_PWD_ALREADY_SET", "Password is already set."],
-    0x13: ["ERROR_CODE_NO_ADDON", "HaLo Addons are not installed on this tag."]
+    0x13: ["ERROR_CODE_NO_ADDON", "HaLo Addons are not installed on this tag."],
+    0x14: ["ERROR_CODE_INTERNAL_ERROR_1", "Internal error #1, no details available."],
+    0x15: ["ERROR_CODE_INTERNAL_ERROR_2", "Internal error #2, no details available."],
+    0x16: ["ERROR_CODE_INTERNAL_ERROR_3", "Internal error #3, no details available."],
+    0x17: ["ERROR_CODE_PWD_MANDATORY", "The specified key slot must be password protected."]
 };
 
 module.exports = {ERROR_CODES};

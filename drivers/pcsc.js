@@ -147,6 +147,26 @@ async function execHaloCmdPCSC(command, reader) {
         // PCSC-specific NDEF reader command
         let wrappedTransceive = async (payload) => await transceive(reader, payload, {noCheck: true});
         return await readNDEF(wrappedTransceive, {allowCache: true});
+    } else if (command.name === "full_gen_key") {
+        await selectCore(reader);
+
+        let res = await execHaloCmd({
+            "name": "gen_key",
+            "keyNo": command.keyNo,
+            "entropy": command.entropy
+        }, options);
+
+        await execHaloCmd({
+            "name": "gen_key_confirm",
+            "keyNo": command.keyNo,
+            "publicKey": res.publicKey
+        }, options);
+
+        return await execHaloCmd({
+            "name": "gen_key_finalize",
+            "keyNo": command.keyNo,
+            "password": command.password
+        }, options);
     } else {
         // divert to the common command execution flow
         await selectCore(reader);

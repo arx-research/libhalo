@@ -13,6 +13,7 @@ const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
 const CMD = require('./cmdcodes').CMD_CODES;
 const pbkdf2 = require('pbkdf2');
+const crypto = require('node:crypto');
 
 const ec = new EC('secp256k1');
 
@@ -102,7 +103,7 @@ async function cmdSign(options, args) {
     let pwdHash = null;
 
     if (args.password) {
-        let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 32, 'sha512');
+        let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
 
         pwdHash = Buffer.from(sha256(Buffer.concat([
             Buffer.from([0x19]),
@@ -355,10 +356,22 @@ async function cmdGenKeyConfirm(options, args) {
 }
 
 async function cmdGenKeyFinalize(options, args) {
-    let payload = Buffer.concat([
-        Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_FINALIZE]),
-        Buffer.from([args.keyNo])
-    ]);
+    let payload;
+
+    if (args.password) {
+        let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
+
+        payload = Buffer.concat([
+            Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_FIN_PWD]),
+            Buffer.from([args.keyNo]),
+            derivedKey
+        ]);
+    } else {
+        payload = Buffer.concat([
+            Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_FINALIZE]),
+            Buffer.from([args.keyNo])
+        ]);
+    }
 
     await options.exec(payload);
 
@@ -379,7 +392,7 @@ async function cmdSetURLSubdomain(options, args) {
 }
 
 async function cmdSetPassword(options, args) {
-    let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 32, 'sha512');
+    let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
 
     let payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_SET_PASSWORD]),
@@ -393,7 +406,7 @@ async function cmdSetPassword(options, args) {
 }
 
 async function cmdUnsetPassword(options, args) {
-    let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 32, 'sha512');
+    let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
     let authHash = Buffer.from(sha256(Buffer.concat([
         Buffer.from([0x19]),
         Buffer.from("Unset password auth:\n"),
@@ -404,6 +417,39 @@ async function cmdUnsetPassword(options, args) {
     let payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_UNSET_PASSWORD]),
         Buffer.from([args.keyNo]),
+        authHash
+    ]);
+
+    await options.exec(payload);
+
+    return {"status": "ok"};
+}
+
+async function cmdReplacePassword(options, args) {
+    let curPassword = pbkdf2.pbkdf2Sync(args.currentPassword, 'HaLoChipSalt', 5000, 16, 'sha512');
+    let newPassword = pbkdf2.pbkdf2Sync(args.newPassword, 'HaLoChipSalt', 5000, 16, 'sha512');
+
+    let plaintext = Buffer.concat([
+        Buffer.from(sha256(newPassword), "hex").slice(0, 16),
+        newPassword
+    ]);
+
+    let cipher = crypto.createCipheriv('aes-128-cbc', curPassword, Buffer.alloc(16));
+    cipher.setAutoPadding(false);
+    let ct = Buffer.from(cipher.update(plaintext, 'buffer', 'hex') + cipher.final('hex'), 'hex');
+
+    let authHash = Buffer.from(sha256(Buffer.concat([
+        Buffer.from([0x19]),
+        Buffer.from("Replace password auth:\n"),
+        Buffer.from([args.keyNo]),
+        ct,
+        curPassword
+    ])), "hex");
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_REPLACE_PASSWORD]),
+        Buffer.from([args.keyNo]),
+        ct,
         authHash
     ]);
 
@@ -424,5 +470,6 @@ module.exports = {
     cmdSignChallenge,
     cmdSetURLSubdomain,
     cmdSetPassword,
-    cmdUnsetPassword
+    cmdUnsetPassword,
+    cmdReplacePassword
 };
