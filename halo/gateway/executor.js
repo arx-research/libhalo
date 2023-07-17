@@ -1,7 +1,9 @@
 const {JWEUtil} = require("../jwe_util");
 const queryString = require("query-string");
 const WebSocketAsPromised = require("websocket-as-promised");
+const {execHaloCmdWeb} = require("../../drivers/web.js");
 
+let gatewayServerHost = null;
 let currentCmd = null;
 let jweUtil = new JWEUtil();
 let wsp;
@@ -15,8 +17,12 @@ function createWs(url) {
     });
 }
 
+function haloGateExecutorSetHost(newGatewayServerHost) {
+    gatewayServerHost = newGatewayServerHost;
+}
+
 async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
-    let protocol;
+    let serverPrefix;
     let searchParts = window.location.hash.split('/');
 
     if (searchParts.length !== 3 || searchParts[0] !== "#!" || searchParts[2] !== "") {
@@ -33,13 +39,17 @@ async function haloGateExecutorCreateWs(logCallback, newCommandCallback) {
 
     const sessionId = qs.id;
 
-    if (window.location.protocol === 'https:') {
-        protocol = 'wss://';
+    if (!gatewayServerHost) {
+        if (window.location.protocol === 'https:') {
+            serverPrefix = 'wss://' + window.location.host;
+        } else {
+            serverPrefix = 'ws://' + window.location.host;
+        }
     } else {
-        protocol = 'ws://';
+        serverPrefix = gatewayServerHost;
     }
 
-    wsp = createWs(protocol + window.location.host + '/ws?side=executor&sessionId=' + sessionId);
+    wsp = createWs(serverPrefix + '/ws?side=executor&sessionId=' + sessionId);
 
     wsp.onUnpackedMessage.addListener(async ev => {
         if (ev.type === "ping") {
@@ -93,6 +103,7 @@ async function haloGateExecutorUserConfirm(logCallback) {
 }
 
 module.exports = {
+    haloGateExecutorSetHost,
     haloGateExecutorCreateWs,
     haloGateExecutorUserConfirm
 };
