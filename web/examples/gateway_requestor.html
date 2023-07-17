@@ -26,6 +26,11 @@
         with the smartphone used solely as the NFC reader. Finally, the command results will arrive back to PC.
     </p>
     <div class="mb-3">
+        <label class="form-label">Override the default URL in QR code</label>
+        <input type="text" class="form-control" id="httpURL" value="https://s1.halo-gateway.arx.org/e">
+        <p class="text-muted">Only for debugging. It's recommended to keep this as it is.</p>
+    </div>
+    <div class="mb-3">
         <label class="form-label">Message to be signed with ECDSA/Keccak (hex-encoded)</label>
         <input type="text" class="form-control" id="message" value="">
     </div>
@@ -56,6 +61,7 @@
         async function btnSignMessageClicked() {
             document.getElementById('pairSignBtn').disabled = true;
             gate = new HaloGateway('wss://s1.halo-gateway.arx.org');
+            gate.gatewayServerHttp = document.getElementById('httpURL').value;
 
             try {
                 let pairInfo = await gate.startPairing();
