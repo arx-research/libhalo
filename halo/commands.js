@@ -76,6 +76,10 @@ async function cmdSign(options, args) {
             messageBuf = Buffer.from(args.message);
         } else if (!args.format || args.format === "hex") {
             messageBuf = Buffer.from(args.message, "hex");
+
+            if (args.message.length !== messageBuf.length * 2) {
+                throw new HaloLogicError("Failed to decode command.message parameter. If you want to sign text instead of bytes, please use command.format = 'text'.");
+            }
         } else {
             throw new HaloLogicError("Invalid message format specified. Valid formats: text, hex.");
         }
@@ -93,6 +97,10 @@ async function cmdSign(options, args) {
         digestBuf = Buffer.from(hashStr.slice(2), "hex");
     } else if (args.hasOwnProperty("digest") && typeof args.digest !== "undefined") {
         digestBuf = Buffer.from(args.digest, "hex");
+
+        if (args.digest.length !== digestBuf.length * 2 || digestBuf.length !== 32) {
+            throw new HaloLogicError("Failed to decode command.digest parameter. The digest to be signed must be exactly 32 bytes long.");
+        }
     } else {
         throw new HaloLogicError("Either args.digest, args.message or args.typedData is required.");
     }
