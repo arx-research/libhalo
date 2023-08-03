@@ -16,12 +16,15 @@ function makeQR(url) {
 }
 
 class HaloGateway {
-    constructor(gatewayServer) {
+    constructor(gatewayServer, options) {
         this.jweUtil = new JWEUtil();
         this.isRunning = false;
 
         this.lastCommand = null;
         this.gatewayServer = gatewayServer;
+
+        options = Object.assign({}, options);
+        let createWebSocket = options.createWebSocket ? options.createWebSocket : (url) => new WebSocket(url);
 
         let urlObj = new URL(gatewayServer);
 
@@ -42,6 +45,7 @@ class HaloGateway {
         this.gatewayServerHttp = urlObj.toString();
 
         this.ws = new WebSocketAsPromised(this.gatewayServer + '/ws?side=requestor', {
+            createWebSocket: url => createWebSocket(url),
             packMessage: data => JSON.stringify(data),
             unpackMessage: data => JSON.parse(data),
             attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
