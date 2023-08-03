@@ -3,7 +3,7 @@
 ## Install dependencies
 ```bash
 npm i --save nfc-pcsc
-npm i --save libhalo
+npm i --save @arx-research/libhalo
 ```
 
 ## Basic usage

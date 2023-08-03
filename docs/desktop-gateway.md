@@ -4,7 +4,7 @@
 ```bash
 npm i --save qrcode
 npm i --save websocket
-npm i --save libhalo
+npm i --save @arx-research/libhalo
 ```
 
 ## Basic usage
