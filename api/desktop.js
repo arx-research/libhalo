@@ -5,6 +5,7 @@
  */
 
 const {execHaloCmdPCSC} = require("../drivers/pcsc");
+const {HaloGateway} = require("../halo/gateway/requestor");
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
@@ -12,5 +13,6 @@ const {execHaloCmdPCSC} = require("../drivers/pcsc");
  */
 module.exports = {
     // for desktop usage
-    execHaloCmdPCSC
+    execHaloCmdPCSC,
+    HaloGateway
 };
