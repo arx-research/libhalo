@@ -63,12 +63,9 @@ process.exit(0);
 
 ## Notes
 
-Please review the [documentation on the execHaloCmdPCSC function](/docs/api-pcsc.md) to find out
-the exact specification of the `execHaloCmdPCSC()` function.
-
 Please review the [documentation of the available commands (Halo Command Set)](/docs/halo-command-set.md) to find
 out what commands are available with the HaLo tags.
 
 ## Example project
 
-Please check GitHub [arx-research/libhalo-example-pcsc](https://github.com/arx-research/libhalo-example-pcsc) project for the complete project example.
+Please check GitHub [arx-research/libhalo-example-pc-gateway](https://github.com/arx-research/libhalo-example-pc-gateway) project for the complete project example.
