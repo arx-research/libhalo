@@ -2,6 +2,7 @@ const {NFCAbortedError, NFCMethodNotSupported} = require("../halo/exceptions");
 const {execCredential} = require("./credential");
 const {execWebNFC} = require("./webnfc");
 const {execHaloCmd} = require("./common");
+const {defaultWebNFCStatusCallback} = require("../web/soft_prompt");
 
 let isCallRunning = null;
 
@@ -64,6 +65,8 @@ async function execHaloCmdWeb(command, options) {
                 })
             };
         } else if (options.method === "webnfc") {
+            options.statusCallback = makeDefault(options.statusCallback, defaultWebNFCStatusCallback);
+
             cmdOpts = {
                 method: "webnfc",
                 exec: async (command) => await execWebNFC(command, {
@@ -76,6 +79,10 @@ async function execHaloCmdWeb(command, options) {
 
         return await execHaloCmd(command, cmdOpts);
     } finally {
+        if (options.statusCallback) {
+            options.statusCallback(null);
+        }
+
         isCallRunning = false;
     }
 }

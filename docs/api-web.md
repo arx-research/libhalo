@@ -62,8 +62,19 @@ query string parameter, and this parameter is higher or equal `01.C5` (by lexico
 options.statusCallback: null/function
 ```
 
-Optionally, you can provide a callback which will inform you about certain status events while
-the command execution process is ongoing. This could be used to increase user's experience.
+Depending on the command execution method that is used by LibHaLo, the operating system might, or might not
+display the standard NFC scanning prompt.
+
+With the `credential` execution method (mostly user on iOS/Windows platforms), the operating system would display
+a standard NFC scanning prompt that would instruct the user to scan the HaLo tag. This is not the case for
+`webnfc` (mostly on Android) execution method, where there is no standard scanner prompt at all.
+In order to smoothen  the user experience for that platform, LibHaLo will automatically emulate the NFC
+scanning prompt in HTML.
+
+You can customize this behavior by passing `options.statusCallback`. When such callback function is provided,
+the LibHaLo will not inject any HTML content to your website. The callback will be invoked on different steps
+of the NFC scanning process, allowing your web application to provide appropriate instructions to the user
+and increase user experience.
 
 Example callback:
 ```
@@ -86,9 +97,6 @@ The `execMethod` will be either:
 
 * `credential` - if the credential prompt method is being used in order to scan the tag (mostly on iOS/Windows);
 * `webnfc` - if the WebNFC method is used in order to scan the tag (mostly on Android);
-
-The application's frontend could differentiate the UI behavior depending on the `execMethod` that is being used
-by the library in order to provide better user experience.
 
 ### Return value
 

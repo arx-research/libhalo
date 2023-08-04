@@ -76,7 +76,7 @@
             // all options are optional, you can use them to increase user's experience
             let options = {
                 method: method,
-                statusCallback: (cause, execMethod) => {
+                /* statusCallback: (cause, execMethod) => {
                     if (cause === "init") {
                         // explicitly ask the user to tap the tag
                         document.getElementById('statusText').innerText =
@@ -98,7 +98,7 @@
                         document.getElementById('statusText').style.color = 'orange';
                         document.getElementById('statusText').innerText = 'Tag was scanned. Please wait until we compute the result...';
                     }
-                }
+                } */
             };
 
             let command = {
