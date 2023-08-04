@@ -32,6 +32,78 @@ function detectMethod() {
     return "webnfc";
 }
 
+function defaultWebNFCStatusCallback(status) {
+    console.log('running default callback'); // TODO
+
+    if (!document.getElementById('__libhalo_popup_stylesheet')) {
+        console.log('injecting scripts'); // TODO
+
+        const style = document.createElement('style');
+        style.setAttribute('id', '__libhalo_popup_stylesheet');
+        style.textContent = `
+#__libhalo_popup {
+  position: fixed;
+  padding: 10px;
+  width: 340px;
+  left: 50%;
+  margin-left: -170px;
+  font-size: 12px;
+  text-align: center;
+  height: 180px;
+  top: 50%;
+  margin-top: -100px;
+  background: #FFF;
+  z-index: 20;
+}
+
+#__libhalo_popup:after {
+  position: fixed;
+  content: "";
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: -2;
+}
+
+#__libhalo_popup:before {
+  position: absolute;
+  content: "";
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: #FFF;
+  z-index: -1;
+}`;
+        document.head.append(style);
+    }
+
+    if (!document.getElementById('__libhalo_popup')) {
+        console.log('injecting popup'); // TODO
+
+        const pdiv1 = document.createElement('div');
+        pdiv1.setAttribute('id', '__libhalo_popup');
+
+        document.body.append(pdiv1);
+    }
+
+    const pdiv = document.getElementById('__libhalo_popup');
+    let statusText = '<unknown>';
+
+    switch (status) {
+        case "init": statusText = "Please tap your HaLo tag to the back of your smartphone and hold it for a while..."; break;
+        case "again": statusText = "Almost there... Please tap HaLo tag again..."; break;
+        case "retry": statusText = "Something went wrong, please try again..."; break;
+        case "scanned": statusText = "Scan successful, please wait..."; break;
+        default: statusText = "<" + status + ">"; break;
+    }
+
+    pdiv.innerText = statusText;
+    pdiv.style.display = status !== null ? 'block' : 'none';
+}
+
 /**
  * Execute the NFC command from the web browser.
  * @param command Command specification object.
@@ -49,6 +121,8 @@ async function execHaloCmdWeb(command, options) {
     options.method = makeDefault(options.method, detectMethod());
     options.noDebounce = makeDefault(options.noDebounce, false);
     options.compatibleCallMode = makeDefault(options.compatibleCallMode, true);
+    // options.statusCallback = makeDefault(options.statusCallback, defaultWebNFCStatusCallback);
+    options.statusCallback = defaultWebNFCStatusCallback;
 
     command = command ? Object.assign({}, command) : {};
 
@@ -76,6 +150,7 @@ async function execHaloCmdWeb(command, options) {
 
         return await execHaloCmd(command, cmdOpts);
     } finally {
+        options.statusCallback(null);
         isCallRunning = false;
     }
 }
