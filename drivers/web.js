@@ -150,7 +150,10 @@ async function execHaloCmdWeb(command, options) {
 
         return await execHaloCmd(command, cmdOpts);
     } finally {
-        options.statusCallback(null);
+        if (options.statusCallback) {
+            options.statusCallback(null);
+        }
+
         isCallRunning = false;
     }
 }
