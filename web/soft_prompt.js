@@ -80,10 +80,10 @@ const PROMPT_STYLES = `
   position: fixed;
   padding: 20px;
   width: calc(80vw - 40px);
-  left: 10vw;
+  left: calc(10vw + 20px);
   font-size: 12px;
   text-align: center;
-  height: 210px;
+  height: 250px;
   top: 50%;
   margin-top: -100px;
   background: #232323;
