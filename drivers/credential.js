@@ -32,6 +32,7 @@ async function execCredential(request, options) {
         encodedRequest = new Uint8Array([...request]);
     }
 
+    let ctrl = new AbortController();
     let u2fReq = {
         "publicKey": {
             "allowCredentials": [
@@ -44,12 +45,17 @@ async function execCredential(request, options) {
             "challenge": challenge,
             "timeout": 60000,
             "userVerification": "discouraged"
-        }
+        },
+        "signal": ctrl.signal
     };
 
     let u2fRes;
 
-    options.statusCallback("init", "credential", "get-credential");
+    options.statusCallback("init", {
+        execMethod: "credential",
+        execStep: "get-credential",
+        cancelScan: () => ctrl.abort(),
+    });
 
     try {
         u2fRes = await navigator.credentials.get(u2fReq);
@@ -61,7 +67,11 @@ async function execCredential(request, options) {
         }
     }
 
-    options.statusCallback("scanned", "credential", "get-credential-done");
+    options.statusCallback("scanned", {
+        execMethod: "credential",
+        execStep: "get-credential-done",
+        cancelScan: () => ctrl.abort(),
+    });
 
     let res = u2fRes.response.signature;
     let resBuf = new Uint8Array(res);

@@ -80,7 +80,11 @@ async function execHaloCmdWeb(command, options) {
         return await execHaloCmd(command, cmdOpts);
     } finally {
         if (options.statusCallback) {
-            options.statusCallback(null);
+            options.statusCallback("finished", {
+                execMethod: options.method,
+                execStep: "finished",
+                cancelScan: () => null,
+            });
         }
 
         isCallRunning = false;
