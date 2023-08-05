@@ -76,6 +76,17 @@ const PROMPT_STYLES = `
   margin-top: 20px;
 }
 
+.__libhalo_popup .cancel-button {
+  width: 100%;
+  font-weight: 600;
+  margin-top: 10px;
+  font-size: 12px;
+  background: #232323;
+  border: 1px solid white;
+  color: white;
+  padding: 10px;
+}
+
 #__libhalo_popup {
   position: fixed;
   padding: 20px;
@@ -83,7 +94,6 @@ const PROMPT_STYLES = `
   left: calc(10vw + 20px);
   font-size: 12px;
   text-align: center;
-  height: 250px;
   top: 50%;
   margin-top: -100px;
   background: #232323;
