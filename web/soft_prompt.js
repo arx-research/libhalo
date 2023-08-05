@@ -44,6 +44,8 @@ const PROMPT_STYLES = `
   height: 60px;
   position: relative;
   margin: 25px auto 32px;
+  padding: 0;
+  font-size: 12px !important;
 }
 .__libhalo_popup .waiting-x img,
 .__libhalo_popup .waiting-x svg {
@@ -69,33 +71,42 @@ const PROMPT_STYLES = `
   animation-delay: 1.5s;
 }
 .__libhalo_popup .waiting-text {
-  font-size: 14px;
+  padding: 0;
+  font-size: 14px !important;
   text-transform: uppercase;
   font-weight: 600;
   color: white;
-  margin-top: 20px;
+  margin: 20px 0 0 0;
+  width: 100%;
+  height: 64px;
+  overflow: hidden;
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
 
 .__libhalo_popup .cancel-button {
   width: 100%;
+  height: auto;
   font-weight: 600;
-  margin-top: 10px;
-  font-size: 12px;
+  margin: 10px 0 0 0;
+  font-size: 12px !important;
   background: #232323;
   border: 1px solid white;
   color: white;
   padding: 10px;
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
 
 #__libhalo_popup {
   position: fixed;
+  border-radius: 20px;
   padding: 20px;
+  height: 290px;
   width: calc(80vw - 40px);
   left: calc(10vw + 20px);
   font-size: 12px;
   text-align: center;
   top: 50%;
-  margin-top: -100px;
+  margin: -145px 0 0 0;
   background: #232323;
   z-index: 99999;
 }
@@ -113,6 +124,7 @@ const PROMPT_STYLES = `
 
 #__libhalo_popup:before {
   position: absolute;
+  border-radius: 20px;
   content: "";
   top: 0;
   left: 0;
@@ -136,7 +148,7 @@ const PROMPT_HTML = `
             />
         </svg>
     </div>
-    <span class="waiting-text" id="__libhalo_popup_status_text">Loading...</span>
+    <div class="waiting-text" id="__libhalo_popup_status_text">Loading...</div>
     <button class="cancel-button" id="__libhalo_popup_cancel_btn">CANCEL SCAN</button>
 </div>
 `;
