@@ -53,8 +53,16 @@ async function checkWebNFCPermission() {
 }
 
 async function execWebNFC(request, options) {
-    if (!window.isSecureContext) {
-        throw new NFCMethodNotSupported("This method can be invoked only in the secure context (HTTPS).");
+    let isWebNFCGranted;
+
+    try {
+        isWebNFCGranted = await checkWebNFCPermission();
+    } catch (e) {
+        throw new NFCMethodNotSupported("Internal error when checking WebNFC permission: " + e.toString());
+    }
+
+    if (!isWebNFCGranted) {
+        throw new NFCPermissionRequestDenied("NFC permission request denied by the user.");
     }
 
     options = Object.assign({}, options) || {};
