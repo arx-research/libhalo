@@ -78,7 +78,7 @@ and increase user experience.
 
 Example callback:
 ```
-statusCallback: (cause, execMethod) => console.log(cause, execMethod)
+statusCallback: (cause, statusObj) => console.log(cause, statusObj)
 ```
 
 The callback could be called with the following `cause` as a first argument:
@@ -93,10 +93,13 @@ The callback could be called with the following `cause` as a first argument:
   the library is postprocessing the result, the frontend should ask the user to untap the tag
   and wait a moment until the operation is completed;
 
-The `execMethod` will be either:
+The `statusObj` is the object that contains the following keys:
 
-* `credential` - if the credential prompt method is being used in order to scan the tag (mostly on iOS/Windows);
-* `webnfc` - if the WebNFC method is used in order to scan the tag (mostly on Android);
+* `execMethod` - either:
+  * `credential` - if the credential prompt method is being used in order to scan the tag (mostly on iOS/Windows);
+  * `webnfc` - if the WebNFC method is used in order to scan the tag (mostly on Android);
+* `execStep` - a string containing more detailed information about current command execution step;
+* `cancelScan` - a function that allow to cancel the scanning process at any moment (usually when user requests so by clicking the appropriate button);
 
 ### Return value
 
