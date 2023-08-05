@@ -51,6 +51,9 @@ async function execHaloCmdWeb(command, options) {
     options.noDebounce = makeDefault(options.noDebounce, false);
     options.compatibleCallMode = makeDefault(options.compatibleCallMode, true);
 
+    // FIXME
+    options.statusCallback = makeDefault(options.statusCallback, defaultWebNFCStatusCallback);
+
     command = command ? Object.assign({}, command) : {};
 
     try {
@@ -80,7 +83,11 @@ async function execHaloCmdWeb(command, options) {
         return await execHaloCmd(command, cmdOpts);
     } finally {
         if (options.statusCallback) {
-            options.statusCallback(null);
+            options.statusCallback("finished", {
+                execMethod: options.method,
+                execStep: "finished",
+                cancelScan: () => null,
+            });
         }
 
         isCallRunning = false;

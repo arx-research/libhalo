@@ -127,10 +127,11 @@ const PROMPT_HTML = `
         </svg>
     </div>
     <span class="waiting-text" id="__libhalo_popup_status_text">Loading...</span>
+    <button class="waiting-text" id="__libhalo_popup_cancel_btn">CANCEL</button>
 </div>
 `;
 
-function defaultWebNFCStatusCallback(status) {
+function defaultWebNFCStatusCallback(status, statusObj) {
     if (!document.getElementById('__libhalo_popup_stylesheet')) {
         const style = document.createElement('style');
         style.setAttribute('id', '__libhalo_popup_stylesheet');
@@ -139,8 +140,6 @@ function defaultWebNFCStatusCallback(status) {
     }
 
     if (!document.getElementById('__libhalo_popup')) {
-        console.log('injecting popup'); // TODO
-
         const pdiv1 = document.createElement('div');
         pdiv1.setAttribute('id', '__libhalo_popup');
         pdiv1.setAttribute('class', '__libhalo_popup');
@@ -151,7 +150,8 @@ function defaultWebNFCStatusCallback(status) {
 
     const rdiv = document.getElementById('__libhalo_popup');
     const pdiv = document.getElementById('__libhalo_popup_status_text');
-    let statusText = '<unknown>';
+    const cancelBtn = document.getElementById('__libhalo_popup_cancel_btn');
+    let statusText;
 
     switch (status) {
         case "init": statusText = "Please tap your HaLo tag to the back of your smartphone and hold it for a while..."; break;
@@ -162,7 +162,8 @@ function defaultWebNFCStatusCallback(status) {
     }
 
     pdiv.innerText = statusText;
-    rdiv.style.display = status !== null ? 'block' : 'none';
+    cancelBtn.onclick = statusObj.cancelScan;
+    rdiv.style.display = status !== 'finished' ? 'block' : 'none';
 }
 
 module.exports = {
