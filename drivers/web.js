@@ -51,9 +51,6 @@ async function execHaloCmdWeb(command, options) {
     options.noDebounce = makeDefault(options.noDebounce, false);
     options.compatibleCallMode = makeDefault(options.compatibleCallMode, true);
 
-    // FIXME
-    options.statusCallback = makeDefault(options.statusCallback, defaultWebNFCStatusCallback);
-
     command = command ? Object.assign({}, command) : {};
 
     try {

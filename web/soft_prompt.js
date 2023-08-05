@@ -137,7 +137,7 @@ const PROMPT_HTML = `
         </svg>
     </div>
     <span class="waiting-text" id="__libhalo_popup_status_text">Loading...</span>
-    <button class="waiting-text" id="__libhalo_popup_cancel_btn">CANCEL</button>
+    <button class="cancel-button" id="__libhalo_popup_cancel_btn">CANCEL SCAN</button>
 </div>
 `;
 
