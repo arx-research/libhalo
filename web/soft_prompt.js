@@ -153,7 +153,7 @@ const PROMPT_HTML = `
 </div>
 `;
 
-function defaultWebNFCStatusCallback(status, statusObj) {
+function emulatedPromptStatusCallback(status, statusObj) {
     if (!document.getElementById('__libhalo_popup_stylesheet')) {
         const style = document.createElement('style');
         style.setAttribute('id', '__libhalo_popup_stylesheet');
@@ -189,5 +189,5 @@ function defaultWebNFCStatusCallback(status, statusObj) {
 }
 
 module.exports = {
-    defaultWebNFCStatusCallback
+    emulatedPromptStatusCallback
 };
