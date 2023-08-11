@@ -44,19 +44,6 @@ Don't automatically debounce calls to `execHaloCmdWeb` when it's concurrently ca
 * (default) `false` - automatically debounce calls;
 * `true` - don't automatically debounce calls, not recommended;
 
-#### options.compatibleCallMode
-```
-options.compatibleCallMode: true/false
-```
-
-Use the compatible protocol which is compatible with earlier batches of HaLo tags.
-
-* (default) `true` - use the compatible protocol compatible with all tags (use only if needed);
-* `false` - use more recent protocol compatible with tags `v=01.C5` onwards only;
-
-**Note:** Optionally, set this to `false` if all your tags are generating URLs with the `v` (version)
-query string parameter, and this parameter is higher or equal `01.C5` (by lexicographical comparison).
-
 #### options.statusCallback
 ```
 options.statusCallback: null/function

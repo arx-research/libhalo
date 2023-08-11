@@ -59,7 +59,6 @@ async function execHaloCmdWeb(command, options) {
     options = options ? Object.assign({}, options) : {};
     options.method = makeDefault(options.method, detectMethod());
     options.noDebounce = makeDefault(options.noDebounce, false);
-    options.compatibleCallMode = makeDefault(options.compatibleCallMode, true);
     options.statusCallback = makeDefault(options.statusCallback, defaultStatusCallback);
 
     command = command ? Object.assign({}, command) : {};
@@ -71,8 +70,7 @@ async function execHaloCmdWeb(command, options) {
             cmdOpts = {
                 method: "credential",
                 exec: async (command) => await execCredential(command, {
-                    statusCallback: options.statusCallback,
-                    compatibleCallMode: options.compatibleCallMode
+                    statusCallback: options.statusCallback
                 })
             };
         } else if (options.method === "webnfc") {
