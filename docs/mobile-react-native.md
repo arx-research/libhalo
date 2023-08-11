@@ -9,7 +9,7 @@ These steps are common for both Android and iOS applications:
 **Using NPM:**
 ```
 npm install --save react-native-nfc-manager
-npm install --save libhalo
+npm install --save @arx-research/libhalo
 ```
 **Using Yarn:**
 ```bash

@@ -44,30 +44,28 @@ Don't automatically debounce calls to `execHaloCmdWeb` when it's concurrently ca
 * (default) `false` - automatically debounce calls;
 * `true` - don't automatically debounce calls, not recommended;
 
-#### options.compatibleCallMode
-```
-options.compatibleCallMode: true/false
-```
-
-Use the compatible protocol which is compatible with earlier batches of HaLo tags.
-
-* (default) `true` - use the compatible protocol compatible with all tags (use only if needed);
-* `false` - use more recent protocol compatible with tags `v=01.C5` onwards only;
-
-**Note:** Optionally, set this to `false` if all your tags are generating URLs with the `v` (version)
-query string parameter, and this parameter is higher or equal `01.C5` (by lexicographical comparison).
-
 #### options.statusCallback
 ```
 options.statusCallback: null/function
 ```
 
-Optionally, you can provide a callback which will inform you about certain status events while
-the command execution process is ongoing. This could be used to increase user's experience.
+Depending on the command execution method that is used by LibHaLo, the operating system might, or might not
+display the standard NFC scanning prompt.
+
+With the `credential` execution method (mostly user on iOS/Windows platforms), the operating system would display
+a standard NFC scanning prompt that would instruct the user to scan the HaLo tag. This is not the case for
+`webnfc` (mostly on Android) execution method, where there is no standard scanner prompt at all.
+In order to smoothen  the user experience for that platform, LibHaLo will automatically emulate the NFC
+scanning prompt in HTML.
+
+You can customize this behavior by passing `options.statusCallback`. When such callback function is provided,
+the LibHaLo will not inject any HTML content to your website. The callback will be invoked on different steps
+of the NFC scanning process, allowing your web application to provide appropriate instructions to the user
+and increase user experience.
 
 Example callback:
 ```
-statusCallback: (cause, execMethod) => console.log(cause, execMethod)
+statusCallback: (cause, statusObj) => console.log(cause, statusObj)
 ```
 
 The callback could be called with the following `cause` as a first argument:
@@ -82,13 +80,13 @@ The callback could be called with the following `cause` as a first argument:
   the library is postprocessing the result, the frontend should ask the user to untap the tag
   and wait a moment until the operation is completed;
 
-The `execMethod` will be either:
+The `statusObj` is the object that contains the following keys:
 
-* `credential` - if the credential prompt method is being used in order to scan the tag (mostly on iOS/Windows);
-* `webnfc` - if the WebNFC method is used in order to scan the tag (mostly on Android);
-
-The application's frontend could differentiate the UI behavior depending on the `execMethod` that is being used
-by the library in order to provide better user experience.
+* `execMethod` - either:
+  * `credential` - if the credential prompt method is being used in order to scan the tag (mostly on iOS/Windows);
+  * `webnfc` - if the WebNFC method is used in order to scan the tag (mostly on Android);
+* `execStep` - a string containing more detailed information about current command execution step;
+* `cancelScan` - a function that allow to cancel the scanning process at any moment (usually when user requests so by clicking the appropriate button);
 
 ### Return value
 

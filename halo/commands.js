@@ -54,7 +54,16 @@ async function cmdGetPkeys(options, args) {
     let resp = await options.exec(payload);
     let res = Buffer.from(resp.result, "hex");
 
-    return {"publicKeys": parsePublicKeys(res)};
+    let publicKeys = parsePublicKeys(res);
+    let compressedPublicKeys = {};
+    let etherAddresses = {};
+
+    for (let pkNo of Object.keys(publicKeys)) {
+        compressedPublicKeys[pkNo] = ec.keyFromPublic(publicKeys[pkNo], 'hex').getPublic().encodeCompressed('hex');
+        etherAddresses[pkNo] = ethers.utils.computeAddress('0x' + publicKeys[pkNo]);
+    }
+
+    return {publicKeys, compressedPublicKeys, etherAddresses};
 }
 
 async function cmdSign(options, args) {
@@ -78,6 +87,10 @@ async function cmdSign(options, args) {
             messageBuf = Buffer.from(args.message);
         } else if (!args.format || args.format === "hex") {
             messageBuf = Buffer.from(args.message, "hex");
+
+            if (args.message.length !== messageBuf.length * 2) {
+                throw new HaloLogicError("Failed to decode command.message parameter. If you want to sign text instead of bytes, please use command.format = 'text'.");
+            }
         } else {
             throw new HaloLogicError("Invalid message format specified. Valid formats: text, hex.");
         }
@@ -95,6 +108,10 @@ async function cmdSign(options, args) {
         digestBuf = Buffer.from(hashStr.slice(2), "hex");
     } else if (args.hasOwnProperty("digest") && typeof args.digest !== "undefined") {
         digestBuf = Buffer.from(args.digest, "hex");
+
+        if (args.digest.length !== digestBuf.length * 2 || digestBuf.length !== 32) {
+            throw new HaloLogicError("Failed to decode command.digest parameter. The digest to be signed must be exactly 32 bytes long.");
+        }
     } else {
         throw new HaloLogicError("Either args.digest, args.message or args.typedData is required.");
     }
@@ -192,7 +209,8 @@ async function cmdSign(options, args) {
         return {
             "input": inputObj,
             "signature": convertSignature(digestBuf.toString('hex'), sig.toString('hex'), publicKey.toString('hex')),
-            publicKey: publicKey.toString('hex')
+            "publicKey": publicKey.toString('hex'),
+            "etherAddress": ethers.utils.computeAddress('0x' + publicKey.toString('hex'))
         };
     } else {
         return {

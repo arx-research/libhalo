@@ -6,7 +6,7 @@
 
 const {HaloGateway} = require("../halo/gateway/requestor");
 const {haloFindBridge} = require("../web/web_utils");
-const {haloGateExecutorCreateWs, haloGateExecutorUserConfirm} = require("../halo/gateway/executor");
+const {haloGateExecutorCreateWs, haloGateExecutorUserConfirm, haloGateExecutorSetHost} = require("../halo/gateway/executor");
 const {execHaloCmdWeb, detectMethod} = require("../drivers/web");
 const {checkWebNFCPermission} = require("../drivers/webnfc");
 
@@ -23,6 +23,7 @@ module.exports = {
 
     // for web usage with gateway
     HaloGateway,
+    haloGateExecutorSetHost,
     haloGateExecutorCreateWs,
     haloGateExecutorUserConfirm,
 };

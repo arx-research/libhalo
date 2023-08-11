@@ -24,14 +24,8 @@ async function execCredential(request, options) {
     let challenge = new Uint8Array(32);
     crypto.getRandomValues(challenge);
 
-    let encodedRequest;
-
-    if (!options.compatibleCallMode) {
-        encodedRequest = new Uint8Array([FLAG_USE_NEW_MODE, 0x00, ...request]);
-    } else {
-        encodedRequest = new Uint8Array([...request]);
-    }
-
+    let encodedRequest = new Uint8Array([...request]);
+    let ctrl = new AbortController();
     let u2fReq = {
         "publicKey": {
             "allowCredentials": [
@@ -44,12 +38,17 @@ async function execCredential(request, options) {
             "challenge": challenge,
             "timeout": 60000,
             "userVerification": "discouraged"
-        }
+        },
+        "signal": ctrl.signal
     };
 
     let u2fRes;
 
-    options.statusCallback("init", "credential", "get-credential");
+    options.statusCallback("init", {
+        execMethod: "credential",
+        execStep: "get-credential",
+        cancelScan: () => ctrl.abort(),
+    });
 
     try {
         u2fRes = await navigator.credentials.get(u2fReq);
@@ -61,28 +60,14 @@ async function execCredential(request, options) {
         }
     }
 
-    options.statusCallback("scanned", "credential", "get-credential-done");
+    options.statusCallback("scanned", {
+        execMethod: "credential",
+        execStep: "get-credential-done",
+        cancelScan: () => ctrl.abort(),
+    });
 
     let res = u2fRes.response.signature;
     let resBuf = new Uint8Array(res);
-
-    if (!options.compatibleCallMode) {
-        // the tag will respond with E101 (ERROR_UNKNOWN_CMD) if it doesn't understand new call protocol
-        // which is available only since C5 version
-        if (resBuf.length === 2 && resBuf[0] === 0xE1 && resBuf[1] === 0x01) {
-            throw new HaloLogicError("Command failed. The tag doesn't support new call protocol. Please set options.compatibleCallMode = true.");
-        }
-
-        // 30 <remaining length> 04 00 04 <remaining length> <data ...>
-        if (resBuf[0] !== 0x30 || resBuf[2] !== 0x04) {
-            throw new HaloLogicError("Tag's response is not correctly structured.");
-        }
-
-        let skipLength = resBuf[3];
-
-        // cut ASN.1 encoding to get pure response
-        resBuf = resBuf.slice(skipLength + 6);
-    }
 
     if (resBuf.length === 2 && resBuf[0] === 0xE1) {
         if (ERROR_CODES.hasOwnProperty(resBuf[1])) {

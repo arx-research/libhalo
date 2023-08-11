@@ -3,7 +3,7 @@
 
 The HaLo Tag's functionality is divided into two components:
 * HaLo Core - Open source, provides the core functionality of the HaLo tags (key management, signing and other related functions);
-* HaLo Addons - Proprietary extension by Arx Research Inc., which provides additional functionality (background scanning and tag interaction straight with web browsers with no additional software);
+* HaLo Addons - Proprietary extension by Arx Research Inc., which provides additional functionality;
 
 Both mentioned components are versioned separately. For clear distinction, HaLo Core versions will always start
 with just a number (e.g. "01"), while the HaLo Addons versions are always prefixed with "A" letter followed by a number.
@@ -38,44 +38,50 @@ The following CLI command will reveal the HaLo firmware version for any tag:
 ```
 
 ## Driver compatibility table
+### Drivers available in HaLo Core (OSS)
 
-The "Req." column represents the following information:
-* `C` - the driver only requires HaLo Core software in order to work properly;
-* `C+A` - the tag must support both HaLo Core and HaLo Addons for the driver to work properly;
+| Driver       | Core ver. |
+|--------------|-----------|
+| PC/SC        | 01.C1     |
+| React Native | 01.C1     |
 
-The "Core ver." column represents the minimal HaLo Core version that is required in order
-for the tag to support the indicated feature.
+Core ver. - first HaLo Core version to support the indicated driver.
 
-| Driver       | Req. | Core ver. |
-|--------------|------|-----------|
-| PC/SC        | C    | 01.C1     |
-| React Native | C    | 01.C1     |
-| WebNFC       | C+A  | 01.C1     |
-| Credential   | C+A  | 01.C1     |
+### Drivers only available with HaLo Addons extension
 
-## Feature compatibility table
+| Driver       | Addons ver. |
+|--------------|-------------|
+| WebNFC       | A01.01      |
+| Credential   | A01.01      |
 
-The "Req." column represents the following information:
-* `C` - only HaLo Core software is required on the NFC tag to interact with the indicated feature;
-* `C+A` - both HaLo Core and HaLo Addons are required on the NFC tag to interact with the indicated feature;
+Addons ver. - first HaLo Addons version to support the indicated driver.
 
-The "Core ver." column represents the minimal HaLo Core version that is required in order
-for the tag to support the indicated feature.
+## Command compatibility table
+### Commands available in HaLo OSS
 
-| Command            | Req. | Core ver. | Comment                                       |
-|--------------------|------|-----------|-----------------------------------------------|
-| `version`          | C    | 01.C1     | Only for PCSC/React Native.                   |
-| `sign`             | C    | 01.C1     | Only with `command.legacySignCommand = true`. |
-| `get_pkeys`        | C    | 01.C1     |                                               |
-| `write_latch`      | C    | 01.C3     |                                               |
-| `sign`             | C    | 01.C4     | All options except for the `password` key.    |
-| `sign`             | C    | 01.C6     | All combinations of options.                  |
-| `sign_random`      | C    | 01.C4     |                                               |
-| `cfg_ndef`         | C+A  | 01.C4     | Addons required.                              |
-| `gen_key`          | C    | 01.C6     |                                               |
-| `gen_key_confirm`  | C    | 01.C6     |                                               |
-| `gen_key_finalize` | C    | 01.C6     |                                               |
-| `set_password`     | C    | 01.C6     |                                               |
-| `unset_password`   | C    | 01.C6     |                                               |
-| `read_ndef`        | C+A  | 01.C1     | Only for PCSC/React Native. Addons required.  |
-| `pcsc_detect`      | C    | 01.C1     | Only with CLI tool.                           |
+| Command            | Core ver. | Comment                                       |
+|--------------------|-----------|-----------------------------------------------|
+| `version`          | 01.C1     | Only for PCSC/React Native drivers.           |
+| `sign`             | 01.C1     | Only with `command.legacySignCommand = true`. |
+| `get_pkeys`        | 01.C1     |                                               | 
+| `write_latch`      | 01.C3     |                                               |
+| `sign`             | 01.C4     | All combinations of options.                  |
+| `sign_random`      | 01.C4     |                                               |
+| `gen_key`          | 01.C6     |                                               |
+| `gen_key_confirm`  | 01.C6     |                                               |
+| `gen_key_finalize` | 01.C6     |                                               |
+| `set_password`     | 01.C6     |                                               |
+| `replace_password` | 01.C6     |                                               |
+| `unset_password`   | 01.C6     |                                               |
+| `pcsc_detect`      | 01.C1     | Only with CLI tool.                           |
+
+Core ver. - first HaLo Core version to officially support the indicated command.
+
+### Commands only available with HaLo Addons extension
+
+| Command            | Addons ver.  | Comment                             |
+|--------------------|--------------|-------------------------------------|
+| `cfg_ndef`         | A02.01       |                                     |
+| `read_ndef`        | A01.01       | Only for PCSC/React Native drivers. |
+
+Addons ver. - first HaLo Addons version to officially support the indicated command.

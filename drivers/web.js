@@ -2,6 +2,7 @@ const {NFCAbortedError, NFCMethodNotSupported} = require("../halo/exceptions");
 const {execCredential} = require("./credential");
 const {execWebNFC} = require("./webnfc");
 const {execHaloCmd} = require("./common");
+const {emulatedPromptStatusCallback} = require("../web/soft_prompt");
 
 let isCallRunning = null;
 
@@ -32,6 +33,16 @@ function detectMethod() {
     return "webnfc";
 }
 
+function defaultStatusCallback(cause, statusObj) {
+    if (statusObj.execMethod === "webnfc") {
+        return emulatedPromptStatusCallback(cause, statusObj);
+    }
+
+    // the rest execMethods are ignored since the operating system
+    // would display appropriate UI with a scanning prompt on its own
+    return null;
+}
+
 /**
  * Execute the NFC command from the web browser.
  * @param command Command specification object.
@@ -48,7 +59,7 @@ async function execHaloCmdWeb(command, options) {
     options = options ? Object.assign({}, options) : {};
     options.method = makeDefault(options.method, detectMethod());
     options.noDebounce = makeDefault(options.noDebounce, false);
-    options.compatibleCallMode = makeDefault(options.compatibleCallMode, true);
+    options.statusCallback = makeDefault(options.statusCallback, defaultStatusCallback);
 
     command = command ? Object.assign({}, command) : {};
 
@@ -59,8 +70,7 @@ async function execHaloCmdWeb(command, options) {
             cmdOpts = {
                 method: "credential",
                 exec: async (command) => await execCredential(command, {
-                    statusCallback: options.statusCallback,
-                    compatibleCallMode: options.compatibleCallMode
+                    statusCallback: options.statusCallback
                 })
             };
         } else if (options.method === "webnfc") {
@@ -76,6 +86,14 @@ async function execHaloCmdWeb(command, options) {
 
         return await execHaloCmd(command, cmdOpts);
     } finally {
+        if (options.statusCallback) {
+            options.statusCallback("finished", {
+                execMethod: options.method,
+                execStep: "finished",
+                cancelScan: () => null,
+            });
+        }
+
         isCallRunning = false;
     }
 }

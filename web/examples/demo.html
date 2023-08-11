@@ -20,6 +20,9 @@
 <body>
 <div class="container mt-3 mb-5">
     <h1>LibHaLo Demo</h1>
+    <p class="text-muted">
+        Asymmetrically sign arbitrary raw 32 byte digest using HaLo tag.
+    </p>
 
     <div class="mb-4">
         <div class="mb-2">
@@ -73,32 +76,36 @@
             let digest = document.getElementById('digest').value;
             let keyNo = document.getElementById('keyNo').value;
 
+            let customStatusCallback = (cause, execMethod) => {
+                if (cause === "init") {
+                    // explicitly ask the user to tap the tag
+                    document.getElementById('statusText').innerText =
+                        'Tap the tag to the back of your smartphone and hold it for a while. ' +
+                        'Using execution method: ' + execMethod;
+                } else if (cause === "again") {
+                    // another tap is needed to complete the operation
+                    document.getElementById('statusText').innerText =
+                        'Keep holding the tag to the back of your smartphone. ' +
+                        'Using execution method: ' + execMethod;
+                } else if (cause === "retry") {
+                    // this callback is invoked when there is a communication error
+                    // the executeNFCCommand() call will be still running and the frontend
+                    // should ask the user to just try to tap the tag again
+                    document.getElementById('statusText').innerText = 'Failed to scan the tag. Please try to tap it again. (' + cause + ').';
+                } else if (cause === "scanned") {
+                    // everything is done on the NFC part, but we need a tiny bit of time to compute the result on the client-side
+                    // the frontend should instruct the user that he can take the tag away already
+                    document.getElementById('statusText').style.color = 'orange';
+                    document.getElementById('statusText').innerText = 'Tag was scanned. Please wait until we compute the result...';
+                }
+            }
+
             // all options are optional, you can use them to increase user's experience
             let options = {
                 method: method,
-                statusCallback: (cause, execMethod) => {
-                    if (cause === "init") {
-                        // explicitly ask the user to tap the tag
-                        document.getElementById('statusText').innerText =
-                            'Tap the tag to the back of your smartphone and hold it for a while. ' +
-                            'Using execution method: ' + execMethod;
-                    } else if (cause === "again") {
-                        // another tap is needed to complete the operation
-                        document.getElementById('statusText').innerText =
-                            'Keep holding the tag to the back of your smartphone. ' +
-                            'Using execution method: ' + execMethod;
-                    } else if (cause === "retry") {
-                        // this callback is invoked when there is a communication error
-                        // the executeNFCCommand() call will be still running and the frontend
-                        // should ask the user to just try to tap the tag again
-                        document.getElementById('statusText').innerText = 'Failed to scan the tag. Please try to tap it again. (' + cause + ').';
-                    } else if (cause === "scanned") {
-                        // everything is done on the NFC part, but we need a tiny bit of time to compute the result on the client-side
-                        // the frontend should instruct the user that he can take the tag away already
-                        document.getElementById('statusText').style.color = 'orange';
-                        document.getElementById('statusText').innerText = 'Tag was scanned. Please wait until we compute the result...';
-                    }
-                }
+                // uncomment this if you want to implement a custom scanner prompt on Android,
+                // by default the LibHaLo will emulate the scanner prompt automatically
+                // statusCallback: customStatusCallback,
             };
 
             let command = {
@@ -111,30 +118,19 @@
             execHaloCmdWeb(command, options)
                 .then((res) => {
                     // operation succeeded, display the result to the user
-                    document.getElementById('statusText').style.color = 'black';
                     document.getElementById('statusText').innerText = JSON.stringify(res, null, 4);
-
-                    document.getElementById('btn-auto').disabled = false;
-                    document.getElementById('btn-credential').disabled = false;
-                    document.getElementById('btn-webnfc').disabled = false;
                 })
                 .catch((e) => {
-                    console.error(e);
-
-                    if (e instanceof NFCAbortedError) {
-                        // in case of multiple calls to executeNFCCommand(), for example when somebody is mashing
-                        // a button, all calls except one will fail by throwing NFCAbortedError
-                        // this exception should be ignored on the frontend
-                    } else {
-                        // the operation has failed, display the reason to the user
-                        document.getElementById('statusText').style.color = 'black';
-                        document.getElementById('statusText').innerText = e;
-
-                        document.getElementById('btn-auto').disabled = false;
-                        document.getElementById('btn-credential').disabled = false;
-                        document.getElementById('btn-webnfc').disabled = false;
-                    }
+                    // the operation has failed, display the reason to the user
+                    console.error('execHaloCmdWeb error', e);
+                    document.getElementById('statusText').innerText = e;
                 });
+
+            document.getElementById('statusText').style.color = 'black';
+
+            document.getElementById('btn-auto').disabled = false;
+            document.getElementById('btn-credential').disabled = false;
+            document.getElementById('btn-webnfc').disabled = false;
         }
     </script>
 </div>

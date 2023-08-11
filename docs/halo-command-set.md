@@ -24,10 +24,11 @@ Please check [HaLo Tag Firmware Versions](/docs/firmware-versions.md) for the de
 
 ## Command: sign
 
-Sign an arbitrary message using ERC-191 (version 0x45) algorithm, typed data (EIP-712), or sign a raw digest using plain ECDSA (secp256k1) algorithm. This command could use tag's private key slot #1 or #3.
+Sign an arbitrary message using EIP-191 (version 0x45) algorithm, typed data (EIP-712), or sign a raw digest using plain ECDSA (secp256k1) algorithm. This command could use tag's private key slot #1 or #3.
 
 ### Arguments
-* `message` (str) - the hex-encoded message to be signed as an Ethereum EIP-191 personal message;
+* `message` (str) - the hex-encoded message to be signed as an Ethereum EIP-191 personal message (personal_sign);
+* `format` (str) - optional; format of the `message` argument, either `hex` (default) or `text`;
 * `digest` (str) - the raw hex-encoded 32 byte digest to be signed using plain ECDSA;
 * `typedData` (object) - EIP-712 typed data to be signed, should contain sub-keys: `domain`, `types`, `value`;
 * `keyNo` (int) - number of the key slot to use;
@@ -49,9 +50,12 @@ Don't use `legacySignCommand` if all your tags have `v=01.C4` or higher.
 * `signature.der` - DER encoded signature (hex encoded);
 * `signature.ether` - Ethereum-formatted signature;
 * `publicKey` - the public key corresponding to the requested key slot (65 bytes, hex encoded, uncompressed);
+* `etherAddress` - the Ethereum address corresponding to the requested key slot;
 
 ### Examples
-#### Message signing (ERC-191)
+#### Message signing (EIP-191)
+Sign bytes `[0x01, 0x02, 0x03]` using EIP-191 (personal_sign).
+
 Command:
 ```json
 {
@@ -78,11 +82,24 @@ Response:
     "der": "304602210093137bc7bfeaa86e26c6a9bbd6fb8acdf73ed5fd232cc2be1a0714f583f04d2e02210080a283db9e25079b6a783c3aef031fa4469a702836148c14b97551054320f726",
     "ether": "0x93137bc7bfeaa86e26c6a9bbd6fb8acdf73ed5fd232cc2be1a0714f583f04d2e7f5d7c2461daf8649587c3c510fce05a74146cbe79341427065d0d878d154a1b1b"
   },
-  "publicKey": "046ca7458b4c8c4f9a196094bda5f01ac1e588f6604bc2f7a58ba4d1fa3c3cb9102720bdb43f73972ea3dfc1c6ab8a6cb7d14114765eb76ff0fb2df34a5f7cab56"
+  "publicKey": "046ca7458b4c8c4f9a196094bda5f01ac1e588f6604bc2f7a58ba4d1fa3c3cb9102720bdb43f73972ea3dfc1c6ab8a6cb7d14114765eb76ff0fb2df34a5f7cab56",
+  "etherAddress": "0x1aaBF638eC3c4A5C2D5cD14fd460Fee2c364c579"
 }
 ```
 
+Verification using ethers.js:
+```
+let res = ethers.utils.verifyMessage(
+  Buffer.from("010203", "hex"),
+  '0x93137bc7bfeaa86e26c6a9bbd6fb8acdf73ed5fd232cc2be1a0714f583f04d2e7f5d7c2461daf8649587c3c510fce05a74146cbe79341427065d0d878d154a1b1b'
+);
+
+console.log(res); // will print: 0x1aaBF638eC3c4A5C2D5cD14fd460Fee2c364c579
+```
+
 #### Typed data signing (EIP-712)
+Sign typed data according to EIP-712.
+
 Command:
 ```json
 {
@@ -199,11 +216,14 @@ Response:
     "der": "3046022100e08869b150de98d3dbbe53628851bf0fa8107442695edb802f521fdc845e6fd40221009d0afba2d76be4e78325e69fc9a2db22ac737856e9278275b3d21db2208d9784",
     "ether": "0xe08869b150de98d3dbbe53628851bf0fa8107442695edb802f521fdc845e6fd462f5045d28941b187cda1960365d24dc0e3b648fc6211dc60c0040daafa8a9bd1b"
   },
-  "publicKey": "042c061312771f471910ef8a3a437ac89f6ff81b2aeb0e3f5dcc2dd15d0d9d1fd7b48dba2ec753f0f70ea9b9a85df8a16e664546c9f7bad2be38e08eec63b916c7"
+  "publicKey": "042c061312771f471910ef8a3a437ac89f6ff81b2aeb0e3f5dcc2dd15d0d9d1fd7b48dba2ec753f0f70ea9b9a85df8a16e664546c9f7bad2be38e08eec63b916c7",
+  "etherAddress": "0xd1c1062019d80cbb68df2920859df6C66Cfa52eC"
 }
 ```
 
 #### Raw digest signing
+Sign arbitrary 32-byte digest using plain ECDSA asymmetric cipher.
+
 Command:
 ```json
 {
@@ -229,7 +249,8 @@ Response:
         "der": "3046022100c1546b135afaaca445ea627057f3d3660ab94c98a4a0cf7b70ec7cc065728d77022100aac58cf00d3acb116e82deaa6d8855e8e0cd39acb904c9493a5c2c78053dd781",
         "ether": "0xc1546b135afaaca445ea627057f3d3660ab94c98a4a0cf7b70ec7cc065728d77553a730ff2c534ee917d21559277aa15d9e1a339f643d6f285763214caf869c01b"
     },
-    "publicKey": "046ca7458b4c8c4f9a196094bda5f01ac1e588f6604bc2f7a58ba4d1fa3c3cb9102720bdb43f73972ea3dfc1c6ab8a6cb7d14114765eb76ff0fb2df34a5f7cab56"
+    "publicKey": "046ca7458b4c8c4f9a196094bda5f01ac1e588f6604bc2f7a58ba4d1fa3c3cb9102720bdb43f73972ea3dfc1c6ab8a6cb7d14114765eb76ff0fb2df34a5f7cab56",
+    "etherAddress": "0x1aaBF638eC3c4A5C2D5cD14fd460Fee2c364c579"
 }
 ```
 
@@ -261,7 +282,8 @@ Response:
         "der": "30460221009ffb5e0c4c0e97b36af5e62bb7ca8641862e883cc50668b42017c6b42d536b41022100cfc79e7d1120ba187783388ef39a8b88e1f2012cdfd0d9a26fa12100007edcbd",
         "ether": "0x9ffb5e0c4c0e97b36af5e62bb7ca8641862e883cc50668b42017c6b42d536b4130386182eedf45e7887cc7710c657475d8bcdbb9cf77c69950313d8ccfb764841c"
     },
-    "publicKey": "049d1e9cd828fcea59cfee261c705ed84023103537aea7069fe001129cdf69e60bc0c6de184cc0e6a5b396c19a4450e94dafa9dc87b6a527e60aa2104bb253933e"
+    "publicKey": "049d1e9cd828fcea59cfee261c705ed84023103537aea7069fe001129cdf69e60bc0c6de184cc0e6a5b396c19a4450e94dafa9dc87b6a527e60aa2104bb253933e",
+    "etherAddress": "0x04C147798dB0f016223cB371c06Fb03f706f918d"
 }
 ```
 
@@ -539,11 +561,18 @@ Command:
 Response:
 ```json
 {
-  "publicKeys": {
-    "1": "042c061312771f471910ef8a3a437ac89f6ff81b2aeb0e3f5dcc2dd15d0d9d1fd7b48dba2ec753f0f70ea9b9a85df8a16e664546c9f7bad2be38e08eec63b916c7",
-    "2": "049faee2f29091bd63c48e8dd13e2577475c7eb4d4c6fa741300dedf5847e08f578296507382da42145d0ce5e5d6534bc94ba2ba8edbd6bb52af21223f914ceab0",
-    "3": "048069784d0c60e64952aa68744bb7dfff0bffa4cff0d160208a7a86600b466a433787f64b6efb0b8700e392d8ecb8ed5f1ee08f2440022d4efb8ab5ab3c2a9846"
-  }
+    "publicKeys": {
+        "1": "043acc264e3c10c01417a871b0f5b31eaacc4e6ee4966cd23420f48be5bc8c90f40c177c49e306d54b33071eeb2502a9bd04b4285530efbcb4dc5c05bfd2bb5d3f",
+        "2": "042c2215c8836febbd50a12dd1d1586c79a1b83f6f7bf36340059eba62ee7fe759aa46209a8afaaf2a96f43e47d25cee39eeff3577e704baebeff940deef5092b4"
+    },
+    "compressedPublicKeys": {
+        "1": "033acc264e3c10c01417a871b0f5b31eaacc4e6ee4966cd23420f48be5bc8c90f4",
+        "2": "022c2215c8836febbd50a12dd1d1586c79a1b83f6f7bf36340059eba62ee7fe759"
+    },
+    "etherAddresses": {
+        "1": "0x80aB6122F717874B4125d23440548B67eef21936",
+        "2": "0x78A0AFF76C8276d3108c20Cbf6249748E528b26c"
+    }
 }
 ```
 
