@@ -10,7 +10,7 @@ const {
 } = require("../halo/exceptions");
 const {
     cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm, cmdGenKeyFinalize,
-    cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword
+    cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword, cmdReplacePassword
 } = require("../halo/commands");
 const {ERROR_CODES} = require("../halo/errors");
 
@@ -43,6 +43,8 @@ async function execHaloCmd(command, options) {
             return await cmdSetURLSubdomain(options, command);
         case 'set_password':
             return await cmdSetPassword(options, command);
+        case 'replace_password':
+            return await cmdReplacePassword(options, command);
         case 'unset_password':
             return await cmdUnsetPassword(options, command);
         default:
