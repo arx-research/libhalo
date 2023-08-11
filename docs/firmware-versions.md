@@ -38,33 +38,47 @@ The following CLI command will reveal the HaLo firmware version for any tag:
 ```
 
 ## Driver compatibility table
+### Drivers available in HaLo Core (OSS)
 
-Whenever the "Minimal version" column contains the version with "A" prefix, it means that
-HaLo Addons extension is required in order for the tag to support the indicated feature.
+| Driver       | Core ver. |
+|--------------|-----------|
+| PC/SC        | 01.C1     |
+| React Native | 01.C1     |
 
-| Driver       | Minimal version | Comment          |
-|--------------|-----------------|------------------|
-| PC/SC        | 01.C1           |                  |
-| React Native | 01.C1           |                  |
-| WebNFC       | A01.C1          | Addons required. |
-| Credential   | A01.C1          | Addons required. |
+Core ver. - first HaLo Core version to support the indicated driver.
 
-## Feature compatibility table
+### Drivers only available with HaLo Addons extension
 
-Whenever the "Minimal version" column contains the version with "A" prefix, it means that
-HaLo Addons extension is required in order for the tag to support the indicated feature.
+| Driver       | Addons ver. |
+|--------------|-------------|
+| WebNFC       | A01.01      |
+| Credential   | A01.01      |
 
-| Command           | Minimal version | Comment                                       |
-|-------------------|-----------------|-----------------------------------------------|
-| `version`         | 01.C1           | Only for PCSC/React Native.                   |
-| `sign`            | 01.C1           | Only with `command.legacySignCommand = true`. |
-| `get_pkeys`       | 01.C1           |                                               |
-| `gen_key`         | 01.C3           | Only without `command.entropy` argument.      |
-| `write_latch`     | 01.C3           |                                               |
-| `sign`            | 01.C4           | All combinations of arguments.                |
-| `sign_random`     | 01.C4           |                                               |
-| `cfg_ndef`        | A01.C4          |                                               |
-| `gen_key`         | 01.C4           | All combinations of arguments.                |
-| `gen_key_confirm` | 01.C4           |                                               |
-| `read_ndef`       | A01.C1          | Only for PCSC/React Native.                   |
-| `pcsc_detect`     | 01.C1           | Only with CLI tool.                           |
+Addons ver. - first HaLo Addons version to support the indicated driver.
+
+## Command compatibility table
+### Commands available in HaLo OSS
+
+| Command            | Core ver. | Comment                                       |
+|--------------------|-----------|-----------------------------------------------|
+| `version`          | 01.C1     | Only for PCSC/React Native drivers.           |
+| `sign`             | 01.C1     | Only with `command.legacySignCommand = true`. |
+| `get_pkeys`        | 01.C1     |                                               | 
+| `write_latch`      | 01.C3     |                                               |
+| `sign`             | 01.C4     | All combinations of arguments.                |
+| `sign_random`      | 01.C4     |                                               |
+| `gen_key`          | 01.C6     | All combinations of arguments.                |
+| `gen_key_confirm`  | 01.C6     |                                               |
+| `gen_key_finalize` | 01.C6     |                                               |
+| `pcsc_detect`      | 01.C1     | Only with CLI tool.                           |
+
+Core ver. - first HaLo Core version to officially support the indicated command.
+
+### Commands only available with HaLo Addons extension
+
+| Command            | Addons ver.  | Comment                             |
+|--------------------|--------------|-------------------------------------|
+| `cfg_ndef`         | A02.01       |                                     |
+| `read_ndef`        | A01.01       | Only for PCSC/React Native drivers. |
+
+Addons ver. - first HaLo Addons version to officially support the indicated command.
