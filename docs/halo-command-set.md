@@ -87,6 +87,16 @@ Response:
 }
 ```
 
+Verification using ethers.js:
+```
+let res = ethers.utils.verifyMessage(
+  Buffer.from("010203", "hex"),
+  '0x93137bc7bfeaa86e26c6a9bbd6fb8acdf73ed5fd232cc2be1a0714f583f04d2e7f5d7c2461daf8649587c3c510fce05a74146cbe79341427065d0d878d154a1b1b'
+);
+
+console.log(res); // will print: 0x1aaBF638eC3c4A5C2D5cD14fd460Fee2c364c579
+```
+
 #### Typed data signing (EIP-712)
 Sign typed data according to EIP-712.
 
