@@ -13,7 +13,7 @@ const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
 const CMD = require('./cmdcodes').CMD_CODES;
 const pbkdf2 = require('pbkdf2');
-const crypto = require('node:crypto');
+const crypto = require('crypto-browserify');
 
 const ec = new EC('secp256k1');
 
