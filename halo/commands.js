@@ -205,7 +205,8 @@ async function cmdSign(options, args) {
         return {
             "input": inputObj,
             "signature": convertSignature(digestBuf.toString('hex'), sig.toString('hex'), publicKey.toString('hex')),
-            publicKey: publicKey.toString('hex')
+            "publicKey": publicKey.toString('hex'),
+            "etherAddress": ethers.utils.computeAddress('0x' + publicKey.toString('hex'))
         };
     } else {
         return {
