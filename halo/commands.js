@@ -52,7 +52,16 @@ async function cmdGetPkeys(options, args) {
     let resp = await options.exec(payload);
     let res = Buffer.from(resp.result, "hex");
 
-    return {"publicKeys": parsePublicKeys(res)};
+    let publicKeys = parsePublicKeys(res);
+    let compressedPublicKeys = {};
+    let etherAddresses = {};
+
+    for (let pkNo of Object.keys(publicKeys)) {
+        compressedPublicKeys[pkNo] = ec.keyFromPublic(publicKeys[pkNo], 'hex').getPublic().encodeCompressed('hex');
+        etherAddresses[pkNo] = ethers.utils.computeAddress('0x' + publicKeys[pkNo]);
+    }
+
+    return {publicKeys, compressedPublicKeys, etherAddresses};
 }
 
 async function cmdSign(options, args) {
