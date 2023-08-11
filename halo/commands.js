@@ -131,7 +131,7 @@ async function cmdSign(options, args) {
         ])), "hex");
     }
 
-    if (args.legacySignCommand || options.method === "webnfc") {
+    if ((args.legacySignCommand || options.method === "webnfc") && args.keyNo <= 3) {
         // the public key will be available through URL parameters
         // we only need to sign the digest
         if (!pwdHash) {
@@ -181,7 +181,7 @@ async function cmdSign(options, args) {
     let sig = sigBuf.slice(0, sigLen).toString('hex');
     let publicKey = null;
 
-    if (!args.legacySignCommand && options.method !== "webnfc") {
+    if ((!args.legacySignCommand && options.method !== "webnfc") || args.keyNo > 3) {
         if (sigBuf[sigLen] !== 0x04) {
             throw new HaloLogicError("Assertion failed, expected public key first byte to be 0x04.");
         }
