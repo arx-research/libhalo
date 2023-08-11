@@ -24,10 +24,11 @@ Please check [HaLo Tag Firmware Versions](/docs/firmware-versions.md) for the de
 
 ## Command: sign
 
-Sign an arbitrary message using ERC-191 (version 0x45) algorithm, typed data (EIP-712), or sign a raw digest using plain ECDSA (secp256k1) algorithm. This command could use tag's private key slot #1 or #3.
+Sign an arbitrary message using EIP-191 (version 0x45) algorithm, typed data (EIP-712), or sign a raw digest using plain ECDSA (secp256k1) algorithm. This command could use tag's private key slot #1 or #3.
 
 ### Arguments
-* `message` (str) - the hex-encoded message to be signed as an Ethereum EIP-191 personal message;
+* `message` (str) - the hex-encoded message to be signed as an Ethereum EIP-191 personal message (personal_sign);
+* `format` (str) - optional; format of the `message` argument, either `hex` (default) or `text`;
 * `digest` (str) - the raw hex-encoded 32 byte digest to be signed using plain ECDSA;
 * `typedData` (object) - EIP-712 typed data to be signed, should contain sub-keys: `domain`, `types`, `value`;
 * `keyNo` (int) - number of the key slot to use;
@@ -51,7 +52,9 @@ Don't use `legacySignCommand` if all your tags have `v=01.C4` or higher.
 * `publicKey` - the public key corresponding to the requested key slot (65 bytes, hex encoded, uncompressed);
 
 ### Examples
-#### Message signing (ERC-191)
+#### Message signing (EIP-191)
+Sign bytes `[0x01, 0x02, 0x03]` using EIP-191 (personal_sign).
+
 Command:
 ```json
 {
@@ -83,6 +86,8 @@ Response:
 ```
 
 #### Typed data signing (EIP-712)
+Sign typed data according to EIP-712.
+
 Command:
 ```json
 {
@@ -204,6 +209,8 @@ Response:
 ```
 
 #### Raw digest signing
+Sign arbitrary 32-byte digest using plain ECDSA asymmetric cipher.
+
 Command:
 ```json
 {
