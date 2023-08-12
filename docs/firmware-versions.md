@@ -67,6 +67,7 @@ Addons ver. - first HaLo Addons version to support the indicated driver.
 | `write_latch`      | 01.C3     |                                               |
 | `sign`             | 01.C4     | All combinations of options.                  |
 | `sign_random`      | 01.C4     |                                               |
+| `get_key_info`     | 01.C6     |                                               |
 | `gen_key`          | 01.C6     |                                               |
 | `gen_key_confirm`  | 01.C6     |                                               |
 | `gen_key_finalize` | 01.C6     |                                               |

@@ -156,11 +156,15 @@ async function execHaloCmdPCSC(command, reader) {
             "entropy": command.entropy
         }, options);
 
-        await execHaloCmd({
+        // TODO validate root trust anchor
+
+        console.log(await execHaloCmd({
             "name": "gen_key_confirm",
             "keyNo": command.keyNo,
             "publicKey": res.publicKey
-        }, options);
+        }, options));
+
+        // TODO validate intermediate sig
 
         return await execHaloCmd({
             "name": "gen_key_finalize",
