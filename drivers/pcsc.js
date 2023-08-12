@@ -100,6 +100,7 @@ function makeOptions(reader) {
 }
 
 async function execHaloCmdPCSC(command, reader) {
+    await selectCore(reader);
     let version = await getVersion(reader);
 
     let [verMajor, verMinor, verSeq, verShortId] = version.split('.');
