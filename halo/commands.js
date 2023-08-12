@@ -426,7 +426,7 @@ async function cmdSetURLSubdomain(options, args) {
 
 async function cmdGetKeyInfo(options, args) {
     let payload = Buffer.concat([
-        Buffer.from([CMD.SHARED_CMD_GET_ATTEST]),
+        Buffer.from([CMD.SHARED_CMD_GET_KEY_INFO]),
         Buffer.from([args.keyNo]),
     ]);
 
