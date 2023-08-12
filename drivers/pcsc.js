@@ -157,21 +157,21 @@ async function execHaloCmdPCSC(command, reader) {
             "entropy": command.entropy
         }, options);
 
-        // TODO validate root trust anchor
-
-        console.log(await execHaloCmd({
+        let rootPkRes = await execHaloCmd({
             "name": "gen_key_confirm",
             "keyNo": command.keyNo,
             "publicKey": res.publicKey
-        }, options));
+        }, options);
 
-        // TODO validate intermediate sig
-
-        return await execHaloCmd({
+        let subPkRes = await execHaloCmd({
             "name": "gen_key_finalize",
             "keyNo": command.keyNo,
             "password": command.password
         }, options);
+
+        return {
+            generatedPublicKey: {...subPkRes, attestedWith: rootPkRes}
+        };
     } else {
         // divert to the common command execution flow
         await selectCore(reader);
