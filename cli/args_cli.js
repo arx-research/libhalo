@@ -225,6 +225,13 @@ unsetPasswordParser.add_argument("--password", {
 
 subparsers.add_parser("get_pkeys", {help: "Get tag's public keys #1, #2 and #3."});
 
+let getKeyInfoParser = subparsers.add_parser("get_key_info", {help: "Get key information."});
+getKeyInfoParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    type: 'int',
+    help: "Target key slot number."
+});
+
 subparsers.add_parser("pcsc_detect", {help: "Detect PC/SC readers and HaLo tags (for debugging)."});
 
 function parseArgs() {

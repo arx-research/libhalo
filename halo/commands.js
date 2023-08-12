@@ -368,9 +368,16 @@ async function cmdGenKeyConfirm(options, args) {
         Buffer.from(args.publicKey, "hex")
     ]);
 
-    await options.exec(payload);
+    let resp = await options.exec(payload);
+    let res = Buffer.from(resp.result, "hex");
 
-    return {"status": "ok"};
+    let rootPublicKey = res.slice(0, 65);
+    let rootAttestSig = res.slice(65);
+
+    return {
+        rootPublicKey: rootPublicKey.toString('hex'),
+        rootAttestSig: rootAttestSig.toString('hex')
+    };
 }
 
 async function cmdGenKeyFinalize(options, args) {
@@ -391,9 +398,17 @@ async function cmdGenKeyFinalize(options, args) {
         ]);
     }
 
-    await options.exec(payload);
+    let resp = await options.exec(payload);
+    let res = Buffer.from(resp.result, "hex");
 
-    return {"status": "ok"};
+    let newKeyNo = res.slice(0, 1);
+    let publicKey = res.slice(1, 1 + 65);
+    let attestSig = res.slice(1 + 65);
+
+    return {
+        publicKey: publicKey.toString('hex'),
+        attestSig: attestSig.toString('hex')
+    };
 }
 
 async function cmdSetURLSubdomain(options, args) {
@@ -407,6 +422,28 @@ async function cmdSetURLSubdomain(options, args) {
     await options.exec(payload);
 
     return {"status": "ok"};
+}
+
+async function cmdGetKeyInfo(options, args) {
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_GET_KEY_INFO]),
+        Buffer.from([args.keyNo]),
+    ]);
+
+    let resp = await options.exec(payload);
+    let res = Buffer.from(resp.result, "hex");
+
+    let keyFlags = res.slice(0, 1);
+    let publicKey = res.slice(1, 1 + 65);
+    let attestSig = res.slice(1 + 65);
+
+    return {
+        keyState: {
+            isPasswordProtected: keyFlags[0] === 0x01
+        },
+        publicKey: publicKey.toString('hex'),
+        attestSig: attestSig.toString('hex')
+    };
 }
 
 async function cmdSetPassword(options, args) {
@@ -489,5 +526,6 @@ module.exports = {
     cmdSetURLSubdomain,
     cmdSetPassword,
     cmdUnsetPassword,
-    cmdReplacePassword
+    cmdReplacePassword,
+    cmdGetKeyInfo
 };
