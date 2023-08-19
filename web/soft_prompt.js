@@ -51,6 +51,8 @@ const PROMPT_STYLES = `
 .__libhalo_popup .waiting-x svg {
   z-index: 2;
   position: relative;
+  max-width: none;
+  margin: 0;
 }
 .__libhalo_popup .waiting-x:before, .__libhalo_popup .waiting-x:after {
   z-index: 1;

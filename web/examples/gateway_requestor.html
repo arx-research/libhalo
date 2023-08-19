@@ -16,6 +16,13 @@
         // ensure the library is always fully reloaded
         document.write('<script src="../dist/libhalo.js?_v=' + (Math.random() + '') + '"></scr' + 'ipt>');
     </script>
+
+    <style>
+        #qr-link {
+            font-size: 10px;
+            color: gray;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -40,6 +47,9 @@
     <br>
     <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
     <img id="qr" src="data:," alt>
+    <div class="qr-link-container">
+        <a href="about:blank" id="qr-link"></a>
+    </div>
 
     <script type="text/javascript">
         // generate random message on load
@@ -67,6 +77,8 @@
                 let pairInfo = await gate.startPairing();
                 console.log('URL in the QR code:', pairInfo.execURL);
                 document.getElementById('qr').src = pairInfo.qrCode;
+                document.getElementById('qr-link').href = pairInfo.execURL;
+                document.getElementById('qr-link').innerText = pairInfo.execURL;
                 log('Please scan the QR code presented below with your smartphone.');
             } catch (e) {
                 document.getElementById('pairSignBtn').disabled = false;
@@ -83,6 +95,8 @@
 
             log('Smartphone paired succesfully.');
             document.getElementById('qr').style.display = 'none';
+            document.getElementById('qr-link').href = 'about:blank';
+            document.getElementById('qr-link').innerText = '';
 
             await btnInitiateSessClicked();
 
