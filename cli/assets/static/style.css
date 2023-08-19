@@ -103,7 +103,7 @@ svg {
   text-align: center;
   font-weight: 600;
   font-size: 15px;
-  transition: 0.2s background-color;
+  transition: 0.2s background-color, 0.2s opacity;
   display: block;
   width: 100%;
 }
@@ -129,7 +129,10 @@ svg {
 }
 
 .button:disabled {
-  background: silver;
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+  transition: 0.2s opacity;
 }
 
 .flex-buttons {
