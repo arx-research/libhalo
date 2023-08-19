@@ -85,9 +85,20 @@ async function haloGateExecutorUserConfirm(logCallback) {
     logCallback('Please tap HaLo tag to the back of your smartphone and hold it for a while...');
 
     try {
-        res = await execHaloCmdWeb(currentCmd.command);
+        res = {
+            status: "success",
+            output: await execHaloCmdWeb(currentCmd.command)
+        };
     } catch (e) {
-        throw e;
+        res = {
+            status: "exception",
+            exception: {
+                kind: e.constructor.name,
+                name: e.name,
+                message: e.message,
+                stack: e.stack
+            }
+        }
     }
 
     logCallback('Command executed, sending result over the network...');

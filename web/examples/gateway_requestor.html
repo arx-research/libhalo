@@ -27,7 +27,7 @@
     </p>
     <div class="mb-3">
         <label class="form-label">Override the default URL in QR code</label>
-        <input type="text" class="form-control" id="httpURL" value="https://s1.halo-gateway.arx.org/e">
+        <input type="text" class="form-control" id="httpURL" value="http://localhost:32842/e">
         <p class="text-muted">Only for debugging. It's recommended to keep this as it is.</p>
     </div>
     <div class="mb-3">
@@ -60,7 +60,7 @@
 
         async function btnSignMessageClicked() {
             document.getElementById('pairSignBtn').disabled = true;
-            gate = new HaloGateway('wss://s1.halo-gateway.arx.org');
+            gate = new HaloGateway('ws://localhost:32842');
             gate.gatewayServerHttp = document.getElementById('httpURL').value;
 
             try {

@@ -2,6 +2,7 @@ const QRCode = require("qrcode");
 const WebSocketAsPromised = require("websocket-as-promised");
 const crypto = require("crypto");
 const {JWEUtil} = require("../jwe_util");
+const {HaloLogicError, HaloTagError} = require("../exceptions");
 
 function makeQR(url) {
     return new Promise((resolve, reject) => {
@@ -167,7 +168,31 @@ class HaloGateway {
                 throw new Error("Mismatched nonce in reply.");
             }
 
-            return out.response;
+            let resolution = out.response;
+
+            if (resolution.status === "success") {
+                return resolution.output;
+            } else if (resolution.status === "exception") {
+                let e;
+
+                switch (resolution.exception.kind) {
+                    case 'HaloLogicError':
+                        e = new HaloLogicError(resolution.exception.message);
+                        break;
+                    case 'HaloTagError':
+                        e = new HaloTagError(resolution.exception.name, resolution.exception.message);
+                        break;
+                    default:
+                        e = new Error("Unexpected exception occurred while executing the command. " +
+                            resolution.exception.name + ": " + resolution.exception.message);
+                        break;
+                }
+
+                e.stackOnExecutor = resolution.exception.stack;
+                throw e;
+            } else {
+                throw new Error("Unexpected status received.");
+            }
         } finally {
             this.isRunning = false;
         }

@@ -10,7 +10,7 @@
     <div class="container">
       <div class="box">
         <h1>HaLo Gateway server</h1>
-        <button id="click-btn" class="button button--success">Confirm</button>
+        <button id="click-btn" class="button button--success" disabled>Waiting for command...</button>
         <pre class="log-box" id="log">Please wait, connecting...</pre>
       </div>
       <svg
@@ -28,21 +28,26 @@
     </div>
     <script src="/assets/static/libhalo.js"></script>
     <script>
-      document.getElementById("click-btn").disabled = true;
-
       function log(data) {
         console.log(data);
         document.getElementById("log").innerText = data;
       }
 
+      function toggleConfirmBtn(isEnabled) {
+        document.getElementById('click-btn').disabled = !isEnabled;
+        document.getElementById('click-btn').innerText = isEnabled ? 'Confirm and scan HaLo' : 'Waiting for command...';
+      }
+
+      toggleConfirmBtn(false);
+
       async function confirmButtonClicked(ev) {
-        document.getElementById("click-btn").disabled = true;
+        toggleConfirmBtn(false);
 
         try {
           await haloGateExecutorUserConfirm(log);
         } catch (e) {
           log("Something went wrong when running the command.\n" + e.stack);
-          document.getElementById("click-btn").disabled = false;
+          toggleConfirmBtn(true);
           return;
         }
 
@@ -57,7 +62,7 @@
               "Requested to execute the following command:\n" +
                 JSON.stringify(command, null, 4)
             );
-            document.getElementById("click-btn").disabled = false;
+            toggleConfirmBtn(true);
           });
         } catch (e) {
           log(
