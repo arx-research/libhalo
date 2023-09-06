@@ -271,7 +271,7 @@ async function cmdCfgNDEF(options, args) {
         throw new HaloLogicError("It's not allowed to use both flagHidePk1 and flagHidePk2.");
     }
 
-    let flagBuf = Buffer.alloc(2);
+    let flagBuf = Buffer.alloc(3);
 
     Object.keys(args)
         .filter((k) => k.startsWith('flag') && args[k])
@@ -279,6 +279,13 @@ async function cmdCfgNDEF(options, args) {
         .forEach((v) => {
             flagBuf[v[0]] |= v[1];
         });
+
+    if (!args.flagShowPkN && !args.flagShowPkNAttest && !args.pkN) {
+        // use legacy format
+        flagBuf = flagBuf.slice(0, 2);
+    } else if (args.pkN) {
+        flagBuf[2] = args.pkN;
+    }
 
     let payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_SET_NDEF_MODE]),
