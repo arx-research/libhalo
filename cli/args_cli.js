@@ -160,6 +160,24 @@ setNDEFCfgParser.add_argument("--flag-legacy-static", {
     action: 'store_true',
     required: false
 });
+setNDEFCfgParser.add_argument("--flag-show-pkn", {
+    dest: "flagShowPkN",
+    help: "Display the public key of the selected key slot in the URL.",
+    action: 'store_true',
+    required: false
+});
+setNDEFCfgParser.add_argument("--flag-show-pkn-attest", {
+    dest: "flagShowPkNAttest",
+    help: "Display the attest of the public key of the selected key slot in the URL.",
+    action: 'store_true',
+    required: false
+});
+setNDEFCfgParser.add_argument("--pkn", {
+    dest: "pkN",
+    help: "Key slot number for --flag-show-pkn and --flag-show-pkn-attest",
+    type: 'int',
+    required: false
+});
 
 let genKeyParser = subparsers.add_parser("full_gen_key", {help: "Generate key in slot #3."});
 genKeyParser.add_argument("-k", "--key-no", {

@@ -17,7 +17,9 @@ const FLAGS = {
     flagShowPk3Attest: [1, 0x01],
     flagShowLatch1Sig: [1, 0x02],
     flagShowLatch2Sig: [1, 0x04],
-    flagLegacyStatic:  [1, 0x08]
+    flagLegacyStatic:  [1, 0x08],
+    flagShowPkN:       [1, 0x10],
+    flagShowPkNAttest: [1, 0x20]
 };
 
 module.exports = {FLAGS};
