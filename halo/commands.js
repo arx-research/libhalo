@@ -440,9 +440,9 @@ async function cmdGetKeyInfo(options, args) {
     let resp = await options.exec(payload);
     let res = Buffer.from(resp.result, "hex");
 
-    let keyFlags = res.slice(0, 1);
-    let publicKey = res.slice(1, 1 + 65);
-    let attestSig = res.slice(1 + 65);
+    let keyFlags = res.slice(1, 2);
+    let publicKey = res.slice(2, 2 + 65);
+    let attestSig = res.slice(2 + 65);
 
     return {
         keyState: {
