@@ -172,6 +172,12 @@ setNDEFCfgParser.add_argument("--flag-show-pkn-attest", {
     action: 'store_true',
     required: false
 });
+setNDEFCfgParser.add_argument("--flag-rndsig-use-bjj62", {
+    dest: "flagRNDSIGUseBJJ62",
+    help: "Use BJJ key slot #62 for the \"rndsig\" signature.",
+    action: 'store_true',
+    required: false
+});
 setNDEFCfgParser.add_argument("--pkn", {
     dest: "pkN",
     help: "Key slot number for --flag-show-pkn and --flag-show-pkn-attest",

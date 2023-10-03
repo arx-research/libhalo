@@ -151,17 +151,19 @@ async function execHaloCmdPCSC(command, reader) {
     } else if (command.name === "full_gen_key") {
         await selectCore(reader);
 
-        let res = await execHaloCmd({
+        let rootPkRes = await execHaloCmd({
             "name": "gen_key",
             "keyNo": command.keyNo,
             "entropy": command.entropy
         }, options);
 
-        let rootPkRes = await execHaloCmd({
-            "name": "gen_key_confirm",
-            "keyNo": command.keyNo,
-            "publicKey": res.publicKey
-        }, options);
+        if (rootPkRes.needsConfirmPK) {
+            rootPkRes = await execHaloCmd({
+                "name": "gen_key_confirm",
+                "keyNo": command.keyNo,
+                "publicKey": rootPkRes.publicKey
+            }, options);
+        }
 
         let subPkRes = await execHaloCmd({
             "name": "gen_key_finalize",
