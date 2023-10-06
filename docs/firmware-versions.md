@@ -68,12 +68,12 @@ Addons ver. - first HaLo Addons version to support the indicated driver.
 | `sign`             | 01.C4     | All combinations of options.                  |
 | `sign_random`      | 01.C4     |                                               |
 | `get_key_info`     | 01.C6     |                                               |
-| `gen_key`          | 01.C6     |                                               |
-| `gen_key_confirm`  | 01.C6     |                                               |
-| `gen_key_finalize` | 01.C6     |                                               |
-| `set_password`     | 01.C6     |                                               |
-| `replace_password` | 01.C6     |                                               |
-| `unset_password`   | 01.C6     |                                               |
+| `gen_key`          | 01.C7     |                                               |
+| `gen_key_confirm`  | 01.C7     |                                               |
+| `gen_key_finalize` | 01.C7     |                                               |
+| `set_password`     | 01.C7     |                                               |
+| `replace_password` | 01.C7     |                                               |
+| `unset_password`   | 01.C7     |                                               |
 | `pcsc_detect`      | 01.C1     | Only with CLI tool.                           |
 
 Core ver. - first HaLo Core version to officially support the indicated command.
