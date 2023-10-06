@@ -205,6 +205,16 @@ async function cmdSign(options, args) {
         inputObj.domainHash = ethers.utils._TypedDataEncoder.hashDomain(args.typedData.domain).slice(2);
     }
 
+    if (args.keyNo >= 0x60) {
+        return {
+            "input": inputObj,
+            "signature": {
+                "der": sig.toString('hex')
+            },
+            "publicKey": publicKey.toString('hex')
+        };
+    }
+
     if (publicKey) {
         return {
             "input": inputObj,
@@ -326,7 +336,7 @@ async function cmdGenKey(options, args) {
         } catch (e) {
             if (e instanceof HaloTagError) {
                 if (e.name === "ERROR_CODE_INVALID_LENGTH") {
-                    throw new HaloLogicError("The hardened key generation algorithm is not supported with this tag version.");
+                    throw new HaloLogicError("The key generation algorithm is not supported with this tag version.");
                 }
             }
 
@@ -335,36 +345,50 @@ async function cmdGenKey(options, args) {
 
         let res = Buffer.from(resp.result, "hex");
 
-        if (res.length === 65) {
-            throw new HaloLogicError("The hardened key generation algorithm is not supported with this tag version.");
+        if (res[0] === 0x00) {
+            // TODO all offsets +1
+
+            let m1Prefixed = Buffer.concat([
+                Buffer.from([0x19]),
+                Buffer.from("Key generation sample:\n"),
+                res.slice(1, 1 + 32)
+            ]);
+            let m2Prefixed = Buffer.concat([
+                Buffer.from([0x19]),
+                Buffer.from("Key generation sample:\n"),
+                res.slice(1 + 32, 1 + 64)
+            ]);
+            let msg1 = Buffer.from(sha256(m1Prefixed), 'hex');
+            let msg2 = Buffer.from(sha256(m2Prefixed), 'hex');
+            let sig = res.slice(1 + 64);
+            let sig1Length = sig[1];
+            let sig1 = sig.slice(0, 2 + sig1Length);
+            let sig2 = sig.slice(2 + sig1Length);
+
+            let candidates = [];
+
+            for (let i = 0; i < 2; i++) {
+                candidates.push(ec.recoverPubKey(msg1, parseSig(sig1), i).encode('hex'));
+                candidates.push(ec.recoverPubKey(msg2, parseSig(sig2), i).encode('hex'));
+            }
+
+            let bestPk = Buffer.from(mode(candidates), 'hex');
+            return {
+                "publicKey": bestPk.toString('hex'),
+                "needsConfirmPK": true
+            };
+        } else if (res[0] === 0x01) {
+            let rootKeyPk = res.slice(0, 65);
+            let rootKeyAttest = res.slice(65);
+
+            return {
+                "rootPublicKey": rootKeyPk.toString('hex'),
+                "rootAttestSig": rootKeyAttest.toString('hex'),
+                "needsConfirmPK": false
+            };
+        } else {
+            throw new HaloLogicError("Unexpected response from HaLo.");
         }
-
-        let m1Prefixed = Buffer.concat([
-            Buffer.from([0x19]),
-            Buffer.from("Key generation sample:\n"),
-            res.slice(0, 32)
-        ]);
-        let m2Prefixed = Buffer.concat([
-            Buffer.from([0x19]),
-            Buffer.from("Key generation sample:\n"),
-            res.slice(32, 64)
-        ]);
-        let msg1 = Buffer.from(sha256(m1Prefixed), 'hex');
-        let msg2 = Buffer.from(sha256(m2Prefixed), 'hex');
-        let sig = res.slice(64);
-        let sig1Length = sig[1];
-        let sig1 = sig.slice(0, 2 + sig1Length);
-        let sig2 = sig.slice(2 + sig1Length);
-
-        let candidates = [];
-
-        for (let i = 0; i < 2; i++) {
-            candidates.push(ec.recoverPubKey(msg1, parseSig(sig1), i).encode('hex'));
-            candidates.push(ec.recoverPubKey(msg2, parseSig(sig2), i).encode('hex'));
-        }
-
-        let bestPk = Buffer.from(mode(candidates), 'hex');
-        return {"status": "ok", "publicKey": bestPk.toString('hex'), "needsConfirm": true};
     }
 }
 
