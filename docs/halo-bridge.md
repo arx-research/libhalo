@@ -139,3 +139,7 @@ grep -v -q "halo-bridge.internal" /etc/hosts && echo "" >> /etc/hosts && echo "1
 ```
 
 The HaLo Bridge would automatically detect the certificate upon the next startup and start the Secure WebSocket server at `wss://halo-bridge.internal:32869`, in addition to the normal (unsecured) WebSocket endpoint at `ws://127.0.0.1:32868`.
+
+## Example project
+
+Please check GitHub [arx-research/libhalo-example-reactjs-bridge](https://github.com/arx-research/libhalo-example-reactjs-bridge) project for the complete project example.
