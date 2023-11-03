@@ -71,6 +71,7 @@ If you wish to build the HaLo CLI from source, you can perform the following ste
    # go to the cli/ subdirectory
    cd cli
    npm install
+   npm install -g pkg
    pkg package.json
    ```
 3. Done! The binaries will be produced in `cli/dist` subdirectory.
