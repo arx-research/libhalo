@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+    Copyright by Arx Research, Inc., a Delaware corporation
+    License: MIT
+    -->
+    <title>LibHaLo Demo</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <script type="text/javascript">
+        // ensure the library is always fully reloaded
+        document.write('<script src="../dist/libhalo.js?_v=' + (Math.random() + '') + '"></scr' + 'ipt>');
+    </script>
+</head>
+<body>
+<div class="container mt-3 mb-5">
+    <h1>LibHaLo Demo</h1>
+    <p>
+        Key slot password management demo.
+    </p>
+
+    <div class="mb-4">
+        <strong>Key slot number:</strong>
+        <input type="text" class="form-control" id="keyNo" value="3">
+        <p class="text-muted">Number of key slot to be modified.</p>
+    </div>
+
+    <div class="mb-4">
+        <strong>What do you want to do?</strong>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="operation" id="opSetPassword" onchange="opChanged();" checked>
+            <label class="form-check-label" for="opSetPassword">
+                Set password
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="operation" id="opUnsetPassword" onchange="opChanged();">
+            <label class="form-check-label" for="opUnsetPassword">
+                Unset password
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="operation" id="opReplacePassword" onchange="opChanged();">
+            <label class="form-check-label" for="opReplacePassword">
+                Replace password
+            </label>
+        </div>
+    </div>
+
+    <div class="mb-4" id="curPasswordBlock" style="display: none;">
+        <strong>Current password:</strong>
+        <input type="text" class="form-control" id="currentPassword" value="">
+        <p class="text-muted">Current password that protects the selected key slot (string value of any length).</p>
+    </div>
+
+    <div class="mb-4" id="newPasswordBlock">
+        <strong>New password:</strong>
+        <input type="text" class="form-control" id="newPassword" value="">
+        <p class="text-muted">New password to be set for the key slot (string value of any length).</p>
+    </div>
+
+    <strong>Status text:</strong>
+    <pre id="statusText" style="white-space: pre-wrap; word-break: break-all;">Please click on the button below.</pre>
+
+    <button class="btn btn-primary" onclick="btnExecuteNFC();">
+        Perform operation
+    </button>
+
+    <script type="text/javascript">
+        function opChanged() {
+            if (document.getElementById('opSetPassword').checked) {
+                document.getElementById('curPasswordBlock').style.display = 'none';
+                document.getElementById('newPasswordBlock').style.display = 'block';
+            } else if (document.getElementById('opUnsetPassword').checked) {
+                document.getElementById('curPasswordBlock').style.display = 'block';
+                document.getElementById('newPasswordBlock').style.display = 'none';
+            } else if (document.getElementById('opReplacePassword').checked) {
+                document.getElementById('curPasswordBlock').style.display = 'block';
+                document.getElementById('newPasswordBlock').style.display = 'block';
+            }
+        }
+
+        function btnExecuteNFC() {
+            document.getElementById('statusText').innerText = 'Tap the tag in order to perform the requested operation...';
+
+            let command = null;
+            let keyNo = parseInt(document.getElementById('keyNo').value);
+
+            if (document.getElementById('opSetPassword').checked) {
+                command = {
+                    name: "set_password",
+                    keyNo: keyNo,
+                    password: document.getElementById('newPassword').value
+                };
+            } else if (document.getElementById('opUnsetPassword').checked) {
+                command = {
+                    name: "unset_password",
+                    keyNo: keyNo,
+                    password: document.getElementById('currentPassword').value
+                }
+            } else if (document.getElementById('opReplacePassword').checked) {
+                command = {
+                    name: "replace_password",
+                    keyNo: keyNo,
+                    currentPassword: document.getElementById('currentPassword').value,
+                    newPassword: document.getElementById('newPassword').value
+                };
+            }
+
+            execHaloCmdWeb(command)
+                .then((res) => {
+                    // operation succeeded, display the result to the user
+                    console.log(res);
+                    alert('Done, operation was performed.');
+                    document.getElementById('statusText').innerText = 'Operation succeeded.';
+                })
+                .catch((e) => {
+                    console.error(e);
+
+                    if (e instanceof NFCAbortedError) {
+                        // in case of multiple calls to executeNFCCommand(), for example when somebody is mashing
+                        // a button, all calls except one will fail by throwing NFCAbortedError
+                        // this exception should be ignored on the frontend
+                    } else {
+                        // the operation has failed, display the reason to the user
+                        document.getElementById('statusText').innerText = e;
+                    }
+                });
+        }
+    </script>
+</div>
+</body>
+</html>
