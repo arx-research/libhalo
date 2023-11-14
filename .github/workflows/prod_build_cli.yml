@@ -138,7 +138,7 @@ jobs:
           cd cli/dist
           tar -pczf ../dist.tgz .
       - name: Install cosign
-        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
+        uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8
       - name: Sign output with cosign
         run: |
           echo y | cosign sign-blob ./cli/dist.tgz --output-certificate ./cli/dist.tgz-keyless.pem --output-signature ./cli/dist.tgz-keyless.sig
@@ -174,7 +174,7 @@ jobs:
         with:
           name: binary-${{ matrix.os }}
       - name: Install cosign
-        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
+        uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8
       - name: Validate signatures from previous stage
         shell: bash
         run: |
