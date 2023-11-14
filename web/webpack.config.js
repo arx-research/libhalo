@@ -1,4 +1,5 @@
 const fs = require('fs');
+const webpack = require("webpack");
 
 module.exports = {
     entry: {
@@ -11,6 +12,7 @@ module.exports = {
     target: 'web',
     resolve: {
         fallback: {
+            buffer: require.resolve('buffer/'),
             crypto: require.resolve('crypto-browserify'),
             stream: require.resolve('stream-browserify'),
         },
@@ -24,6 +26,9 @@ module.exports = {
                     });
                 });
             }
-        }
+        },
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+        })
     ]
 };
