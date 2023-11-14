@@ -71,7 +71,7 @@ jobs:
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Install cosign
-        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
+        uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8
       - name: Sign libhalo.js with cosign
         run: |
           cd ./web/dist
@@ -144,7 +144,7 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Install cosign
-        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
+        uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8
       - name: Run npm ci
         run: npm ci
       - name: Get package integrity hash
