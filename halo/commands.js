@@ -254,7 +254,7 @@ async function cmdSignRandom(options, args) {
 
     return {
         "counter": counter,
-        "digest": digest.toString('hex'),
+        "payload": digest.toString('hex'),
         "signature": signature.toString('hex'),
         "publicKey": publicKey.toString('hex')
     };
@@ -268,11 +268,13 @@ async function cmdSignChallenge(options, args) {
     let sigLen = 2 + resBuf[1];
 
     let signature = resBuf.slice(0, sigLen);
-    let publicKey = resBuf.slice(sigLen);
+    let publicKey = resBuf.slice(sigLen, sigLen + 65);
+    let attestSig = resBuf.slice(sigLen + 65);
 
     return {
         "signature": signature.toString('hex'),
-        "publicKey": publicKey.toString('hex')
+        "publicKey": publicKey.toString('hex'),
+        "attestSig": attestSig.toString('hex')
     };
 }
 
@@ -290,7 +292,7 @@ async function cmdCfgNDEF(options, args) {
             flagBuf[v[0]] |= v[1];
         });
 
-    if (!args.flagShowPkN && !args.flagShowPkNAttest && !args.pkN) {
+    if (!args.flagShowPkN && !args.flagShowPkNAttest && !args.pkN && !args.flagRNDSIGUseBJJ62) {
         // use legacy format
         flagBuf = flagBuf.slice(0, 2);
     } else if (args.pkN) {
