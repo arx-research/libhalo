@@ -11,6 +11,7 @@
 * [Command: gen_key](#command-gen_key)
 * [Command: gen_key_confirm](#command-gen_key_confirm)
 * [Command: get_pkeys](#command-get_pkeys)
+* [Command: get_key_info](#command-get_key_info)
 * [Command: set_password](#command-set_password)
 * [Command: unset_password](#command-unset_password)
 * [Command: version (only for PCSC/React Native)](#command-version)
@@ -223,6 +224,8 @@ Response:
 ```
 
 #### Raw digest signing
+> Web example: [LibHaLo Demos - demo.html](https://halo-demos.arx.org/examples/demo.html) ([source code](https://github.com/arx-research/libhalo/blob/master/web/examples/demo.html))
+
 Sign arbitrary 32-byte digest using plain ECDSA asymmetric cipher.
 
 Command:
@@ -576,6 +579,8 @@ This command will also return:
 Then you need to proceed with `gen_key_finalize` command in order to finish the key generation procedure.
 
 ### Examples
+> Web example: [LibHaLo Demos - gen_key.html](https://halo-demos.arx.org/examples/gen_key.html) ([source code](https://github.com/arx-research/libhalo/blob/master/web/examples/gen_key.html))
+
 Command:
 ```json
 {
@@ -720,6 +725,42 @@ Response:
 ### Errors
 This command doesn't throw expected errors.
 
+## Command: get_key_info
+
+Get information about the specific key slot.
+
+### Arguments
+
+* `keyNo` (number) - target key slot;
+
+### Return value
+
+* `keyState` (object) - flags corresponding to the current key state:
+  * `isPasswordProtected` (bool) - whether the key is currently password-protected or not;
+* `publicKey` (str) - public key of the target key slot (uncompressed, 65 bytes hex);
+* `attestSig` (str) - attestation signature of the public key;
+
+### Examples
+Command:
+```json
+{
+    "name": "get_key_info",
+    "keyNo": 3
+}
+```
+
+Response:
+```json
+{
+    "keyState": { "isPasswordProtected": true },
+    "publicKey": "0440782fc7273bf9613801d5741d37af99d795d6f6c099507b6be370c75bbc44dff8795653b0bab3bae6a256e0f370232f952dbb56f8db46a2fab9b269c0b4f33e",
+    "attestSig": "30440220316197a51b8f315f7b331bf276b35fcc65a63139dec5482d55dd0055399904bf0220701159887a3afbf4138a71d122b3d8bd1e904d3d21f53c61d129c91dc145799e"
+}
+```
+
+### Errors
+This command doesn't throw expected errors.
+
 ## Command: set_password
 
 Set password protection for the key slot #3. After the password is set, it would not be possible to
@@ -736,6 +777,8 @@ already generated on the card.
 * `status` (str) - value `ok` when the password was successfully set; 
 
 ### Examples
+> Web example: [LibHaLo Demos - pwd_management.html](https://halo-demos.arx.org/examples/pwd_management.html) ([source code](https://github.com/arx-research/libhalo/blob/master/web/examples/pwd_management.html))
+
 Command:
 ```json
 {

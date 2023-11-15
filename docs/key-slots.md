@@ -3,8 +3,8 @@
 |--------------|------------|---------|-------------|-------------------------|
 | 0x01         | 01.C1      | ✔️      | secp256k1   |                         |
 | 0x02         | 01.C1      | ✔️      | secp256k1   | `RAW_DIGEST_PROHIBITED` |
-| 0x03-0x05    | 01.C6      | ❌      | secp256k1   |                         |
-| 0x06-0x09    | 01.C6      | ❌      | secp256k1   | `MANDATORY_PASSWORD`    |
+| 0x03-0x05    | 01.C7      | ❌      | secp256k1   |                         |
+| 0x06-0x09    | 01.C7      | ❌      | secp256k1   | `MANDATORY_PASSWORD`    |
 | 0x61         | 01.D1      | ❌      | Baby JubJub |                         |
 | 0x62         | 01.D1      | ✔️      | Baby JubJub | `RAW_DIGEST_PROHIBITED` |
 
