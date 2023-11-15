@@ -97,16 +97,20 @@
                         if (res.needsConfirmPK) {
                             // old hardware revisions require three steps for key generation
                             toggleButtons("btn-confirm");
+                            document.getElementById('statusText').innerText = 'Click on "Confirm key generation" to continue.';
                         } else {
                             // newer hardware revisions only require two steps
                             toggleButtons("btn-finalize");
+                            document.getElementById('statusText').innerText = 'Click on "Finalize key generation" to continue.';
                         }
-
-                        document.getElementById('statusText').innerText = 'Click on "Confirm key generation" to continue.';
                     } else if (opName === "confirm") {
                         toggleButtons("btn-finalize");
                         document.getElementById('statusText').innerText = 'Click on "Finalize key generation" to continue.';
                     } else if (opName === "finalize") {
+                        if (res.publicKey) {
+                            lastPublicKey = res.publicKey;
+                        }
+
                         toggleButtons(null);
                         document.getElementById('statusText').innerText = 'Key was generated: ' + lastPublicKey;
                     }
