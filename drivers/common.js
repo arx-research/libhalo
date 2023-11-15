@@ -17,6 +17,8 @@ const {ERROR_CODES} = require("../halo/errors");
 async function execHaloCmd(command, options) {
     command = Object.assign({}, command);
 
+    console.log(command);
+
     let commandName = command.name;
     delete command['name'];
 
