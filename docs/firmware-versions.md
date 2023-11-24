@@ -74,19 +74,19 @@ Addons ver. - first HaLo Addons version to support the indicated driver.
 | `set_password`      | 01.C7     |                                                        |
 | `replace_password`  | 01.C7     |                                                        |
 | `unset_password`    | 01.C7     |                                                        |
-| `get_transport_pk`  | 01.C8     | Only with `options.method = 'credential'` or CLI tool. |
-| `load_transport_pk` | 01.C8     | Only with `options.method = 'credential'` or CLI tool. |
-| `export_key`        | 01.C8     | Only with `options.method = 'credential'` or CLI tool. |
-| `import_key`        | 01.C8     | Only with `options.method = 'credential'` or CLI tool. |
 | `pcsc_detect`       | 01.C1     | Only with CLI tool.                                    |
 
 Core ver. - first HaLo Core version to officially support the indicated command.
 
 ### Commands only available with HaLo Addons extension
 
-| Command            | Addons ver.  | Comment                             |
-|--------------------|--------------|-------------------------------------|
-| `cfg_ndef`         | A02.01       |                                     |
-| `read_ndef`        | A01.01       | Only for PCSC/React Native drivers. |
+| Command             | Addons ver. | Comment                                                |
+|---------------------|-------------|--------------------------------------------------------|
+| `get_transport_pk`  | A02.03      | Only with `options.method = 'credential'` or CLI tool. |
+| `load_transport_pk` | A02.03      | Only with `options.method = 'credential'` or CLI tool. |
+| `export_key`        | A02.03      | Only with `options.method = 'credential'` or CLI tool. |
+| `import_key`        | A02.03      | Only with `options.method = 'credential'` or CLI tool. |
+| `cfg_ndef`          | A02.01      |                                                        |
+| `read_ndef`         | A01.01      | Only for PCSC/React Native drivers.                    |
 
 Addons ver. - first HaLo Addons version to officially support the indicated command.
