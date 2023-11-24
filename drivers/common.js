@@ -10,14 +10,13 @@ const {
 } = require("../halo/exceptions");
 const {
     cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm, cmdGenKeyFinalize,
-    cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword, cmdReplacePassword, cmdGetKeyInfo
+    cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword, cmdReplacePassword, cmdGetKeyInfo,
+    cmdGetTransportPK, cmdLoadTheirPK, cmdExportKey, cmdImportKey
 } = require("../halo/commands");
 const {ERROR_CODES} = require("../halo/errors");
 
 async function execHaloCmd(command, options) {
     command = Object.assign({}, command);
-
-    console.log(command);
 
     let commandName = command.name;
     delete command['name'];
@@ -51,6 +50,14 @@ async function execHaloCmd(command, options) {
             return await cmdUnsetPassword(options, command);
         case 'get_key_info':
             return await cmdGetKeyInfo(options, command);
+        case 'get_transport_pk':
+            return await cmdGetTransportPK(options, command);
+        case 'load_their_pk':
+            return await cmdLoadTheirPK(options, command);
+        case 'export_key':
+            return await cmdExportKey(options, command);
+        case 'import_key':
+            return await cmdImportKey(options, command);
         default:
             throw new HaloLogicError("Unsupported command.name parameter specified.");
     }

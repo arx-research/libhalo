@@ -546,6 +546,88 @@ async function cmdReplacePassword(options, args) {
     return {"status": "ok"};
 }
 
+async function cmdGetTransportPK(options, args) {
+    if (options.method !== "credential" && options.method !== "pcsc") {
+        throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
+    }
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.CRED_CMD_GET_TRANSPORT_PK_ATT])
+    ]);
+
+    let resp = await options.exec(payload);
+
+    return {
+        "data": resp.result.toString('hex')
+    }
+}
+
+async function cmdLoadTheirPK(options, args) {
+    if (options.method !== "credential" && options.method !== "pcsc") {
+        throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
+    }
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.CRED_CMD_LOAD_THEIR_PK]),
+        Buffer.from(args.data, 'hex')
+    ]);
+
+    let resp = await options.exec(payload);
+
+    return {
+        "data": resp.result.toString('hex')
+    }
+}
+
+async function cmdExportKey(options, args) {
+    if (options.method !== "credential" && options.method !== "pcsc") {
+        throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
+    }
+
+    let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
+    let dataBuf = Buffer.from(args.data, 'hex');
+    let sigLen = dataBuf[1] + 2;
+
+    let pwdHash = Buffer.from(sha256(Buffer.concat([
+        Buffer.from([0x19]),
+        Buffer.from("Key backup:\n"),
+        Buffer.from([args.keyNo]),
+        derivedKey,
+        dataBuf.slice(sigLen),
+    ])), "hex");
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.CRED_CMD_EXPORT_KEY]),
+        Buffer.from([args.keyNo]),
+        dataBuf,
+        pwdHash
+    ]);
+
+    let resp = await options.exec(payload);
+
+    return {
+        "data": resp.result.toString('hex')
+    }
+}
+
+async function cmdImportKey(options, args) {
+    if (options.method !== "credential" && options.method !== "pcsc") {
+        throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
+    }
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.CRED_CMD_IMPORT_KEY]),
+        Buffer.from([args.keyNo]),
+        Buffer.from(args.data, 'hex')
+    ]);
+
+    let resp = await options.exec(payload);
+
+    return {
+        "publicKey": resp.result.toString('hex')
+    }
+}
+
 module.exports = {
     cmdSign,
     cmdSignRandom,
@@ -560,5 +642,9 @@ module.exports = {
     cmdSetPassword,
     cmdUnsetPassword,
     cmdReplacePassword,
-    cmdGetKeyInfo
+    cmdGetKeyInfo,
+    cmdGetTransportPK,
+    cmdLoadTheirPK,
+    cmdExportKey,
+    cmdImportKey,
 };
