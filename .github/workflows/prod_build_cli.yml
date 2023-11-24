@@ -65,8 +65,6 @@ jobs:
           brew install python@3.11
           brew unlink python@3.11
           brew link --overwrite python@3.11
-          python3 --version
-          ls -alh /usr/local/bin/python3
           brew install pcsc-lite
       - name: Checkout the repository
         uses: actions/checkout@v3
