@@ -562,13 +562,13 @@ async function cmdGetTransportPK(options, args) {
     }
 }
 
-async function cmdLoadTheirPK(options, args) {
+async function cmdLoadTransportPK(options, args) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
 
     let payload = Buffer.concat([
-        Buffer.from([CMD.CRED_CMD_LOAD_THEIR_PK]),
+        Buffer.from([CMD.CRED_CMD_LOAD_TRANSPORT_PK]),
         Buffer.from(args.data, 'hex')
     ]);
 
@@ -644,7 +644,7 @@ module.exports = {
     cmdReplacePassword,
     cmdGetKeyInfo,
     cmdGetTransportPK,
-    cmdLoadTheirPK,
+    cmdLoadTransportPK,
     cmdExportKey,
     cmdImportKey,
 };

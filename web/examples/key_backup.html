@@ -35,17 +35,24 @@
     <strong>Status text:</strong>
     <pre id="statusText" style="white-space: pre-wrap; word-break: break-all;">Please click on one of the buttons below.</pre>
 
+    <h2>Step 1</h2>
     <button class="btn btn-primary" onclick="btnExecuteNFC('get_transport_pk');">
-        get_transport_pk
+        [source card] get_transport_pk
     </button>
-    <button class="btn btn-secondary" onclick="btnExecuteNFC('load_their_pk');">
-        load_their_pk
+
+    <h2>Step 2</h2>
+    <button class="btn btn-secondary" onclick="btnExecuteNFC('load_transport_pk');">
+        [target card] load_transport_pk
     </button>
+
+    <h2>Step 3</h2>
     <button class="btn btn-secondary" onclick="btnExecuteNFC('export_key');">
-        export_key
+        [source card] export_key
     </button>
+
+    <h2>Step 4</h2>
     <button class="btn btn-secondary" onclick="btnExecuteNFC('import_key');">
-        import_key
+        [target card] import_key
     </button>
 
     <script type="text/javascript">
@@ -53,19 +60,19 @@
         let targetPK = null;
         let keyCT = null;
 
-        let keyNo = document.getElementById('keySlot').value;
-        let password = document.getElementById('password').value;
-
         function btnExecuteNFC(method) {
+            let keyNo = document.getElementById('keySlot').value;
+            let password = document.getElementById('password').value;
+
             let command;
 
             if (method === 'get_transport_pk') {
                 command = {
                     name: "get_transport_pk"
                 };
-            } else if (method === 'load_their_pk') {
+            } else if (method === 'load_transport_pk') {
                 command = {
-                    name: "load_their_pk",
+                    name: "load_transport_pk",
                     data: sourcePK
                 };
             } else if (method === 'export_key') {
@@ -83,14 +90,14 @@
                 };
             }
 
-            execHaloCmdWeb(command)
+            execHaloCmdWeb(command, {method: 'credential'})
                 .then((res) => {
                     // operation succeeded, display the result to the user
                     document.getElementById('statusText').innerText = JSON.stringify(res, null, 4);
 
                     if (method === 'get_transport_pk') {
                         sourcePK = res.data;
-                    } else if (method === 'load_their_pk') {
+                    } else if (method === 'load_transport_pk') {
                         targetPK = res.data;
                     } else if (method === 'export_key') {
                         keyCT = res.data;
