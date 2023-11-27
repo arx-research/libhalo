@@ -552,7 +552,7 @@ async function cmdGetTransportPK(options, args) {
 
     let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
 
-    if (resp.result[0] !== 0x00) {
+    if (resp.result[0] !== 0x01) {
         throw new HaloLogicError("Unsupported protocol version reported by the HaLo tag.");
     }
 
@@ -573,7 +573,7 @@ async function cmdLoadTransportPK(options, args) {
 
     let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
 
-    if (resp.result[0] !== 0x00) {
+    if (resp.result[0] !== 0x01) {
         throw new HaloLogicError("Unsupported protocol version reported by the HaLo tag.");
     }
 
