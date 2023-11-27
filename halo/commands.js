@@ -348,8 +348,6 @@ async function cmdGenKey(options, args) {
         let res = Buffer.from(resp.result, "hex");
 
         if (res[0] === 0x00) {
-            // TODO all offsets +1
-
             let m1Prefixed = Buffer.concat([
                 Buffer.from([0x19]),
                 Buffer.from("Key generation sample:\n"),
@@ -405,7 +403,7 @@ async function cmdGenKeyConfirm(options, args) {
     let res = Buffer.from(resp.result, "hex");
 
     let rootPublicKey = res.slice(0, 65);
-    let rootAttestSig = res.slice(65);
+    let rootAttestSig = res.slice(65 + 1);
 
     return {
         rootPublicKey: rootPublicKey.toString('hex'),
