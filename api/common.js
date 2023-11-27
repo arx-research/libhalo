@@ -12,7 +12,7 @@ const {
     NFCAbortedError,
     NFCOperationError
 } = require("../halo/exceptions");
-const {parsePublicKeys, convertSignature, recoverPublicKey} = require("../halo/utils");
+const {parsePublicKeys, convertSignature, recoverPublicKey} = require("../halo/util");
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else

@@ -8,6 +8,7 @@ const Buffer = require('buffer/').Buffer;
 const EC = require('elliptic').ec;
 const ethers = require('ethers');
 const {HaloLogicError} = require("./exceptions");
+const {webcrypto: crypto} = require("crypto");
 const BN = require('bn.js').BN;
 
 const ec = new EC('secp256k1');
@@ -149,6 +150,10 @@ function mode(arr) {
     ).pop();
 }
 
+function randomBuffer() {
+    return Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
+}
+
 module.exports = {
     hex2arr,
     arr2hex,
@@ -156,5 +161,6 @@ module.exports = {
     convertSignature,
     parsePublicKeys,
     recoverPublicKey,
-    mode
+    mode,
+    randomBuffer
 };
