@@ -17,6 +17,20 @@ async function selectCore(reader) {
     }
 }
 
+async function selectU2FLayer(reader) {
+    try {
+        let res = await reader.transmit(Buffer.from("00A4040008A0000006472F0001", "hex"), 255);
+        let statusCheck = res.slice(-2).compare(Buffer.from([0x91, 0x00])) !== 0;
+
+        if (!statusCheck) {
+            throw new HaloLogicError("Unable to select HaLo U2F layer.");
+        }
+    } catch (e) {
+        throw new HaloLogicError("Unable to access HaLo U2F layer. " +
+            "This command must be run with administrative privileges.");
+    }
+}
+
 async function transceive(reader, command, options) {
     options = options || {};
 
@@ -75,16 +89,53 @@ async function getAddonVersion(reader) {
     return addonVersionRes.slice(0, -2).toString();
 }
 
-async function execCoreCommand(reader, command) {
-    const cmdBuf = Buffer.concat([
-        Buffer.from("B0510000", "hex"),
+function wrapCommandForU2F(command) {
+    let payload = Buffer.concat([
+        Buffer.from(Array(64)),
         Buffer.from([command.length]),
-        command,
-        Buffer.from("00", "hex")
+        command
     ]);
 
-    let res = await transceive(reader, cmdBuf);
+    return Buffer.concat([
+        Buffer.from("00020800", "hex"),
+        Buffer.from([payload.length]),
+        payload,
+        Buffer.from([0x00])
+    ]);
+}
+
+function unwrapResultFromU2F(res) {
+    return res.slice(5);
+}
+
+async function execCoreCommand(reader, command, options) {
+    options = Object.assign({}, options);
+
+    let cmdBuf;
+
+    if (options.pcscExecLayer === "u2f") {
+        await selectU2FLayer(reader);
+        cmdBuf = wrapCommandForU2F(command);
+    } else {
+        cmdBuf = Buffer.concat([
+            Buffer.from("B0510000", "hex"),
+            Buffer.from([command.length]),
+            command,
+            Buffer.from("00", "hex")
+        ]);
+    }
+
+    let res = await transceive(reader, cmdBuf, options);
+
+    if (options.pcscExecLayer === "u2f") {
+        res = unwrapResultFromU2F(res);
+    }
+
     checkErrors(res);
+
+    if (options.pcscExecLayer === "u2f") {
+        await selectCore(reader);
+    }
 
     return {
         result: res.toString('hex'),
@@ -95,7 +146,7 @@ async function execCoreCommand(reader, command) {
 function makeOptions(reader) {
     return {
         method: 'pcsc',
-        exec: async (command) => await execCoreCommand(reader, command),
+        exec: async (command, options) => await execCoreCommand(reader, command, options),
     }
 }
 

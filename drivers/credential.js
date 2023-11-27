@@ -6,7 +6,7 @@
 
 const {HaloTagError, HaloLogicError, NFCOperationError, NFCMethodNotSupported} = require("../halo/exceptions");
 const {ERROR_CODES} = require("../halo/errors");
-const {arr2hex} = require("../halo/utils");
+const {arr2hex} = require("../halo/util");
 
 const FLAG_USE_NEW_MODE = 0x00;
 

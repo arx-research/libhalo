@@ -7,7 +7,7 @@
 const Buffer = require('buffer/').Buffer;
 const ethers = require('ethers');
 const {HaloLogicError, HaloTagError} = require("./exceptions");
-const {convertSignature, mode, parseSig, parsePublicKeys} = require("./utils");
+const {convertSignature, mode, parseSig, parsePublicKeys, randomBuffer} = require("./util");
 const {FLAGS} = require("./flags");
 const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
@@ -310,85 +310,82 @@ async function cmdCfgNDEF(options, args) {
 
 async function cmdGenKey(options, args) {
     if (!args.entropy) {
-        let payload = Buffer.concat([
-            Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_INIT]),
-            Buffer.from([args.keyNo])
-        ]);
-        let resp = await options.exec(payload);
-        let res = Buffer.from(resp.result, "hex");
-
-        return {"status": "ok", "publicKey": res.toString('hex'), "needsConfirm": false};
-    } else {
-        let entropyBuf = Buffer.from(args.entropy, "hex");
-
-        if (entropyBuf.length !== 32) {
+        if (options.method === "pcsc") {
+            args.entropy = randomBuffer().toString("hex");
+        } else {
             throw new HaloLogicError("The command.entropy should be exactly 32 bytes, hex encoded.");
         }
+    }
 
-        let payload = Buffer.concat([
-            Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_INIT]),
-            Buffer.from([args.keyNo]),
-            entropyBuf
+    let entropyBuf = Buffer.from(args.entropy, "hex");
+
+    if (entropyBuf.length !== 32) {
+        throw new HaloLogicError("The command.entropy should be exactly 32 bytes, hex encoded.");
+    }
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_INIT]),
+        Buffer.from([args.keyNo]),
+        entropyBuf
+    ]);
+
+    let resp;
+
+    try {
+        resp = await options.exec(payload);
+    } catch (e) {
+        if (e instanceof HaloTagError) {
+            if (e.name === "ERROR_CODE_INVALID_LENGTH") {
+                throw new HaloLogicError("The key generation algorithm is not supported with this tag version.");
+            }
+        }
+
+        throw e;
+    }
+
+    let res = Buffer.from(resp.result, "hex");
+
+    if (res[0] === 0x00) {
+        let m1Prefixed = Buffer.concat([
+            Buffer.from([0x19]),
+            Buffer.from("Key generation sample:\n"),
+            res.slice(1, 1 + 32)
         ]);
+        let m2Prefixed = Buffer.concat([
+            Buffer.from([0x19]),
+            Buffer.from("Key generation sample:\n"),
+            res.slice(1 + 32, 1 + 64)
+        ]);
+        let msg1 = Buffer.from(sha256(m1Prefixed), 'hex');
+        let msg2 = Buffer.from(sha256(m2Prefixed), 'hex');
+        let sig = res.slice(1 + 64);
+        let sig1Length = sig[1];
+        let sig1 = sig.slice(0, 2 + sig1Length);
+        let sig2 = sig.slice(2 + sig1Length);
 
-        let resp;
+        let candidates = [];
 
-        try {
-            resp = await options.exec(payload);
-        } catch (e) {
-            if (e instanceof HaloTagError) {
-                if (e.name === "ERROR_CODE_INVALID_LENGTH") {
-                    throw new HaloLogicError("The key generation algorithm is not supported with this tag version.");
-                }
-            }
-
-            throw e;
+        for (let i = 0; i < 2; i++) {
+            candidates.push(ec.recoverPubKey(msg1, parseSig(sig1), i).encode('hex'));
+            candidates.push(ec.recoverPubKey(msg2, parseSig(sig2), i).encode('hex'));
         }
 
-        let res = Buffer.from(resp.result, "hex");
+        let bestPk = Buffer.from(mode(candidates), 'hex');
+        return {
+            "publicKey": bestPk.toString('hex'),
+            "needsConfirmPK": true
+        };
+    } else if (res[0] === 0x01) {
+        let rootKeyPk = res.slice(0, 65);
+        let rootKeyAttest = res.slice(65);
 
-        if (res[0] === 0x00) {
-            let m1Prefixed = Buffer.concat([
-                Buffer.from([0x19]),
-                Buffer.from("Key generation sample:\n"),
-                res.slice(1, 1 + 32)
-            ]);
-            let m2Prefixed = Buffer.concat([
-                Buffer.from([0x19]),
-                Buffer.from("Key generation sample:\n"),
-                res.slice(1 + 32, 1 + 64)
-            ]);
-            let msg1 = Buffer.from(sha256(m1Prefixed), 'hex');
-            let msg2 = Buffer.from(sha256(m2Prefixed), 'hex');
-            let sig = res.slice(1 + 64);
-            let sig1Length = sig[1];
-            let sig1 = sig.slice(0, 2 + sig1Length);
-            let sig2 = sig.slice(2 + sig1Length);
-
-            let candidates = [];
-
-            for (let i = 0; i < 2; i++) {
-                candidates.push(ec.recoverPubKey(msg1, parseSig(sig1), i).encode('hex'));
-                candidates.push(ec.recoverPubKey(msg2, parseSig(sig2), i).encode('hex'));
-            }
-
-            let bestPk = Buffer.from(mode(candidates), 'hex');
-            return {
-                "publicKey": bestPk.toString('hex'),
-                "needsConfirmPK": true
-            };
-        } else if (res[0] === 0x01) {
-            let rootKeyPk = res.slice(0, 65);
-            let rootKeyAttest = res.slice(65);
-
-            return {
-                "rootPublicKey": rootKeyPk.toString('hex'),
-                "rootAttestSig": rootKeyAttest.toString('hex'),
-                "needsConfirmPK": false
-            };
-        } else {
-            throw new HaloLogicError("Unexpected response from HaLo.");
-        }
+        return {
+            "rootPublicKey": rootKeyPk.toString('hex'),
+            "rootAttestSig": rootKeyAttest.toString('hex'),
+            "needsConfirmPK": false
+        };
+    } else {
+        throw new HaloLogicError("Unexpected response from HaLo.");
     }
 }
 
@@ -553,7 +550,7 @@ async function cmdGetTransportPK(options, args) {
         Buffer.from([CMD.CRED_CMD_GET_TRANSPORT_PK_ATT])
     ]);
 
-    let resp = await options.exec(payload);
+    let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
 
     return {
         "data": resp.result.toString('hex')
@@ -570,7 +567,7 @@ async function cmdLoadTransportPK(options, args) {
         Buffer.from(args.data, 'hex')
     ]);
 
-    let resp = await options.exec(payload);
+    let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
 
     return {
         "data": resp.result.toString('hex')
@@ -601,7 +598,7 @@ async function cmdExportKey(options, args) {
         pwdHash
     ]);
 
-    let resp = await options.exec(payload);
+    let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
 
     return {
         "data": resp.result.toString('hex')
@@ -619,7 +616,7 @@ async function cmdImportKey(options, args) {
         Buffer.from(args.data, 'hex')
     ]);
 
-    let resp = await options.exec(payload);
+    let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
 
     return {
         "publicKey": resp.result.toString('hex')

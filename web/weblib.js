@@ -6,7 +6,7 @@
 
 const {
     arr2hex, hex2arr
-} = require("../halo/utils");
+} = require("../halo/util");
 const {__runTestSuite} = require("../halo/tests");
 const {haloCreateWs} = require("./web_utils");
 
