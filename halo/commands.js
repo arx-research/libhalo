@@ -566,13 +566,14 @@ async function cmdGetTransportPK(options, args) {
     ]);
 
     let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
+    let res = Buffer.from(resp.result, "hex");
 
-    if (resp.result[0] !== 0x01) {
+    if (res[0] !== 0x01) {
         throw new HaloLogicError("Unsupported protocol version reported by the HaLo tag.");
     }
 
     return {
-        "data": resp.result.slice(1).toString('hex')
+        "data": res.slice(1).toString('hex')
     }
 }
 
@@ -587,13 +588,14 @@ async function cmdLoadTransportPK(options, args) {
     ]);
 
     let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
+    let res = Buffer.from(resp.result, "hex");
 
-    if (resp.result[0] !== 0x01) {
+    if (res[0] !== 0x01) {
         throw new HaloLogicError("Unsupported protocol version reported by the HaLo tag.");
     }
 
     return {
-        "data": resp.result.slice(1).toString('hex')
+        "data": res.slice(1).toString('hex')
     }
 }
 
@@ -622,9 +624,10 @@ async function cmdExportKey(options, args) {
     ]);
 
     let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
+    let res = Buffer.from(resp.result, "hex");
 
     return {
-        "data": resp.result.toString('hex')
+        "data": res.toString('hex')
     }
 }
 
@@ -640,9 +643,10 @@ async function cmdImportKey(options, args) {
     ]);
 
     let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
+    let res = Buffer.from(resp.result, "hex");
 
     return {
-        "publicKey": resp.result.toString('hex')
+        "publicKey": res.toString('hex')
     }
 }
 
