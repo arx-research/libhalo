@@ -462,12 +462,27 @@ async function cmdGetKeyInfo(options, args) {
     let res = Buffer.from(resp.result, "hex");
 
     let keyFlags = res.slice(1, 2);
-    let publicKey = res.slice(2, 2 + 65);
-    let attestSig = res.slice(2 + 65);
+
+    if ((keyFlags[0] & 0x03) !== keyFlags[0]) {
+        throw new HaloLogicError("Unsupported key flags reported: " + keyFlags[0] + " (base 10).");
+    }
+
+    let failedAuthCtr = 0;
+    let off = 2;
+
+    if ((keyFlags[0] & 0x02) === 0x02) {
+        // key info contains failed auth counter
+        off = 3;
+        failedAuthCtr = res.slice(2, 3)[0];
+    }
+
+    let publicKey = res.slice(off, off + 65);
+    let attestSig = res.slice(off + 65);
 
     return {
         keyState: {
-            isPasswordProtected: keyFlags[0] === 0x01
+            isPasswordProtected: (keyFlags[0] & 0x01) === 0x01,
+            failedAuthCounter: failedAuthCtr
         },
         publicKey: publicKey.toString('hex'),
         attestSig: attestSig.toString('hex')
