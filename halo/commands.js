@@ -663,7 +663,7 @@ async function cmdImportKey(options, args) {
     let res = Buffer.from(resp.result, "hex");
 
     return {
-        "publicKey": res.toString('hex')
+        "publicKey": res.slice(1).toString('hex')
     }
 }
 
