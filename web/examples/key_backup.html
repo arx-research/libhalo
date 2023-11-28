@@ -41,16 +41,21 @@
     </button>
 
     <h2>Step 2</h2>
-    <button class="btn btn-secondary" onclick="btnExecuteNFC('load_transport_pk');">
+    <button class="btn btn-secondary" onclick="btnExecuteNFC('target_load_transport_pk');">
         [target card] load_transport_pk
     </button>
 
     <h2>Step 3</h2>
+    <button class="btn btn-secondary" onclick="btnExecuteNFC('source_load_transport_pk');">
+        [source card] load_transport_pk
+    </button>
+
+    <h2>Step 4</h2>
     <button class="btn btn-secondary" onclick="btnExecuteNFC('export_key');">
         [source card] export_key
     </button>
 
-    <h2>Step 4</h2>
+    <h2>Step 5</h2>
     <button class="btn btn-secondary" onclick="btnExecuteNFC('import_key');">
         [target card] import_key
     </button>
@@ -70,10 +75,15 @@
                 command = {
                     name: "get_transport_pk"
                 };
-            } else if (method === 'load_transport_pk') {
+            } else if (method === 'target_load_transport_pk') {
                 command = {
                     name: "load_transport_pk",
                     data: sourcePK
+                };
+            } else if (method === 'source_load_transport_pk') {
+                command = {
+                    name: "load_transport_pk",
+                    data: targetPK
                 };
             } else if (method === 'export_key') {
                 command = {
@@ -97,7 +107,7 @@
 
                     if (method === 'get_transport_pk') {
                         sourcePK = res.data;
-                    } else if (method === 'load_transport_pk') {
+                    } else if (method === 'target_load_transport_pk') {
                         targetPK = res.data;
                     } else if (method === 'export_key') {
                         keyCT = res.data;

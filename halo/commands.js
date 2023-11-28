@@ -594,8 +594,11 @@ async function cmdLoadTransportPK(options, args) {
         throw new HaloLogicError("Unsupported protocol version reported by the HaLo tag.");
     }
 
+    let sigLen = res[2] + 2;
+
     return {
-        "data": res.slice(1).toString('hex')
+        "data": res.slice(1).toString('hex'),
+        "publicKey": res.slice(1 + sigLen).toString('hex')
     }
 }
 
@@ -605,21 +608,19 @@ async function cmdExportKey(options, args) {
     }
 
     let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
-    let dataBuf = Buffer.from(args.data, 'hex');
-    let sigLen = dataBuf[1] + 2;
+    let publicKeyBuf = Buffer.from(args.publicKey, 'hex');
 
     let pwdHash = Buffer.from(sha256(Buffer.concat([
         Buffer.from([0x19]),
         Buffer.from("Key backup:\n"),
         Buffer.from([args.keyNo]),
         derivedKey,
-        dataBuf.slice(sigLen),
+        publicKeyBuf,
     ])), "hex");
 
     let payload = Buffer.concat([
         Buffer.from([CMD.CRED_CMD_EXPORT_KEY]),
         Buffer.from([args.keyNo]),
-        dataBuf,
         pwdHash
     ]);
 
