@@ -631,6 +631,24 @@ async function cmdExportKey(options, args) {
     }
 }
 
+async function cmdImportKeyInit(options, args) {
+    if (options.method !== "credential" && options.method !== "pcsc") {
+        throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
+    }
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.CRED_CMD_IMPORT_KEY_INIT]),
+        Buffer.from([args.keyNo]),
+        Buffer.from(args.data, 'hex')
+    ]);
+
+    await options.exec(payload, {pcscExecLayer: "u2f"});
+
+    return {
+        "status": "ok"
+    }
+}
+
 async function cmdImportKey(options, args) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
@@ -638,8 +656,7 @@ async function cmdImportKey(options, args) {
 
     let payload = Buffer.concat([
         Buffer.from([CMD.CRED_CMD_IMPORT_KEY]),
-        Buffer.from([args.keyNo]),
-        Buffer.from(args.data, 'hex')
+        Buffer.from([args.keyNo])
     ]);
 
     let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
@@ -668,5 +685,6 @@ module.exports = {
     cmdGetTransportPK,
     cmdLoadTransportPK,
     cmdExportKey,
+    cmdImportKeyInit,
     cmdImportKey,
 };

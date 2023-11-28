@@ -11,7 +11,7 @@ const {
 const {
     cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm, cmdGenKeyFinalize,
     cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword, cmdReplacePassword, cmdGetKeyInfo,
-    cmdGetTransportPK, cmdLoadTransportPK, cmdExportKey, cmdImportKey
+    cmdGetTransportPK, cmdLoadTransportPK, cmdExportKey, cmdImportKey, cmdImportKeyInit
 } = require("../halo/commands");
 const {ERROR_CODES} = require("../halo/errors");
 
@@ -56,6 +56,8 @@ async function execHaloCmd(command, options) {
             return await cmdLoadTransportPK(options, command);
         case 'export_key':
             return await cmdExportKey(options, command);
+        case 'import_key_init':
+            return await cmdImportKeyInit(options, command);
         case 'import_key':
             return await cmdImportKey(options, command);
         default:

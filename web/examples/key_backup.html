@@ -33,32 +33,50 @@
     </div>
 
     <strong>Status text:</strong>
-    <pre id="statusText" style="white-space: pre-wrap; word-break: break-all;">Please click on one of the buttons below.</pre>
+    <pre id="statusText"
+         style="white-space: pre-wrap; word-break: break-all;">Please click on one of the buttons below.</pre>
 
-    <h2>Step 1</h2>
-    <button class="btn btn-secondary" onclick="btnExecuteNFC('get_transport_pk');">
-        [source card] get_transport_pk
-    </button>
+    <div class="mt-2">
+        <h2>Step 1</h2>
+        <button class="btn btn-secondary" onclick="btnExecuteNFC('get_transport_pk');">
+            [source card] get_transport_pk
+        </button>
+    </div>
 
-    <h2>Step 2</h2>
-    <button class="btn btn-secondary" onclick="btnExecuteNFC('target_load_transport_pk');">
-        [target card] load_transport_pk
-    </button>
+    <div class="mt-2">
+        <h2>Step 2</h2>
+        <button class="btn btn-secondary" onclick="btnExecuteNFC('target_load_transport_pk');">
+            [target card] load_transport_pk
+        </button>
+    </div>
 
-    <h2>Step 3</h2>
-    <button class="btn btn-secondary" onclick="btnExecuteNFC('source_load_transport_pk');">
-        [source card] load_transport_pk
-    </button>
+    <div class="mt-2">
+        <h2>Step 3</h2>
+        <button class="btn btn-secondary" onclick="btnExecuteNFC('source_load_transport_pk');">
+            [source card] load_transport_pk
+        </button>
+    </div>
 
-    <h2>Step 4</h2>
-    <button class="btn btn-secondary" onclick="btnExecuteNFC('export_key');">
-        [source card] export_key
-    </button>
+    <div class="mt-2">
+        <h2>Step 4</h2>
+        <button class="btn btn-secondary" onclick="btnExecuteNFC('export_key');">
+            [source card] export_key
+        </button>
+    </div>
 
-    <h2>Step 5</h2>
-    <button class="btn btn-secondary" onclick="btnExecuteNFC('import_key');">
-        [target card] import_key
-    </button>
+    <div class="mt-2">
+        <h2>Step 5</h2>
+        <button class="btn btn-secondary" onclick="btnExecuteNFC('import_key');">
+            [target card] import_key
+        </button>
+    </div>
+
+    <div class="mt-2">
+        <h2>Step 6</h2>
+        <button class="btn btn-secondary" onclick="btnExecuteNFC('import_key_finalize');">
+            [target card] import_key_finalize
+        </button>
+    </div>
 
     <script type="text/javascript">
         let sourcePK = null;
@@ -92,11 +110,16 @@
                     data: targetPK,
                     password: password
                 };
+            } else if (method === 'import_key_init') {
+                command = {
+                    name: "import_key_init",
+                    keyNo: keyNo,
+                    data: keyCT
+                };
             } else if (method === 'import_key') {
                 command = {
                     name: "import_key",
-                    keyNo: keyNo,
-                    data: keyCT
+                    keyNo: keyNo
                 };
             }
 

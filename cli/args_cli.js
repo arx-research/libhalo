@@ -316,22 +316,30 @@ exportKeyParser.add_argument("--password", {
     help: "Key slot password (utf-8 string).",
     required: true
 });
-exportKeyParser.add_argument("--public-key", {
-    dest: 'publicKey',
-    help: "Target tag's public key.",
+exportKeyParser.add_argument("--data", {
+    dest: 'data',
+    help: "Target tag's secure transport credentials.",
     required: true
 });
 
-let importKeyParser = subparsers.add_parser("import_key", {help: "[Key backup] Import encrypted key pair into the target HaLo tag."});
-importKeyParser.add_argument("-k", "--key-no", {
+let importKeyInitParser = subparsers.add_parser("import_key_init", {help: "[Key backup] Initialize import of the encrypted key pair into the target HaLo tag."});
+importKeyInitParser.add_argument("-k", "--key-no", {
     dest: 'keyNo',
     type: 'int',
     help: "Target key slot number.",
     required: true
 });
-importKeyParser.add_argument("--data", {
+importKeyInitParser.add_argument("--data", {
     dest: 'data',
     help: "Encrypted key pair data.",
+    required: true
+});
+
+let importKeyParser = subparsers.add_parser("import_key", {help: "[Key backup] Finalize import of the encrypted key pair into the target HaLo tag."});
+importKeyParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    type: 'int',
+    help: "Target key slot number.",
     required: true
 });
 
