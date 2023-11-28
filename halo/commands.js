@@ -607,19 +607,19 @@ async function cmdExportKey(options, args) {
     let derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
     let dataBuf = Buffer.from(args.data, 'hex');
     let sigLen = dataBuf[1] + 2;
+    let publicKeyBuf = dataBuf.slice(sigLen);
 
     let pwdHash = Buffer.from(sha256(Buffer.concat([
         Buffer.from([0x19]),
         Buffer.from("Key backup:\n"),
         Buffer.from([args.keyNo]),
         derivedKey,
-        dataBuf.slice(sigLen),
+        publicKeyBuf,
     ])), "hex");
 
     let payload = Buffer.concat([
         Buffer.from([CMD.CRED_CMD_EXPORT_KEY]),
         Buffer.from([args.keyNo]),
-        dataBuf,
         pwdHash
     ]);
 
@@ -631,6 +631,24 @@ async function cmdExportKey(options, args) {
     }
 }
 
+async function cmdImportKeyInit(options, args) {
+    if (options.method !== "credential" && options.method !== "pcsc") {
+        throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
+    }
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.CRED_CMD_IMPORT_KEY_INIT]),
+        Buffer.from([args.keyNo]),
+        Buffer.from(args.data, 'hex')
+    ]);
+
+    await options.exec(payload, {pcscExecLayer: "u2f"});
+
+    return {
+        "status": "ok"
+    }
+}
+
 async function cmdImportKey(options, args) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
@@ -638,15 +656,14 @@ async function cmdImportKey(options, args) {
 
     let payload = Buffer.concat([
         Buffer.from([CMD.CRED_CMD_IMPORT_KEY]),
-        Buffer.from([args.keyNo]),
-        Buffer.from(args.data, 'hex')
+        Buffer.from([args.keyNo])
     ]);
 
     let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
     let res = Buffer.from(resp.result, "hex");
 
     return {
-        "publicKey": res.toString('hex')
+        "publicKey": res.slice(1).toString('hex')
     }
 }
 
@@ -668,5 +685,6 @@ module.exports = {
     cmdGetTransportPK,
     cmdLoadTransportPK,
     cmdExportKey,
+    cmdImportKeyInit,
     cmdImportKey,
 };
