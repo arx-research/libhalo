@@ -316,9 +316,9 @@ exportKeyParser.add_argument("--password", {
     help: "Key slot password (utf-8 string).",
     required: true
 });
-exportKeyParser.add_argument("--data", {
-    dest: 'data',
-    help: "Target tag's secure transport credentials.",
+exportKeyParser.add_argument("--public-key", {
+    dest: 'publicKey',
+    help: "Target tag's public key.",
     required: true
 });
 
