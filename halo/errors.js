@@ -28,7 +28,8 @@ let ERROR_CODES = {
     0x15: ["ERROR_CODE_INTERNAL_ERROR_2", "Internal error #2, no details available."],
     0x16: ["ERROR_CODE_INTERNAL_ERROR_3", "Internal error #3, no details available."],
     0x17: ["ERROR_CODE_PWD_MANDATORY", "The specified key slot must be password protected."],
-    0x18: ["ERROR_CODE_TOO_MANY_AUTH_FAILS", "The key slot is permanently locked, too many authentication failures."]
+    0x18: ["ERROR_CODE_TOO_MANY_AUTH_FAILS", "The key slot is permanently locked, too many authentication failures."],
+    0x19: ["ERROR_CODE_OP_LIMIT_EXCEEDED", "Command locked for security reasons. Too many repetitions of the command."]
 };
 
 module.exports = {ERROR_CODES};
