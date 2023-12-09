@@ -667,6 +667,71 @@ async function cmdImportKey(options, args) {
     }
 }
 
+async function cmdGetDataStruct(options, args) {
+    let specItems = args.spec.split(',');
+    specItems = specItems.map((item) => item.split(':', 2));
+
+    const TYPES = {
+        "publicKey":            0x01,
+        "publicKeyAttest":      0x02,
+        "keySlotFlags":         0x03,
+        "keySlotFailedAuthCtr": 0x04,
+        "latchValue":           0x20,
+        "latchAttest":          0x21,
+        "firmwareVersion":      0xF0
+    };
+
+    let data = Buffer.alloc(0);
+
+    for (let item of specItems) {
+        if (!TYPES[item[0]]) {
+            throw new HaloLogicError("Unsupported object type: " + item[0]);
+        }
+
+        let val = parseInt(item[1]);
+
+        if (val < 0 || val > 255) {
+            throw new HaloLogicError("Too high index value at: " + item[0] + ":" + item[1]);
+        }
+
+        data = Buffer.concat([
+            data,
+            Buffer.from([TYPES[item[0]], val])
+        ]);
+    }
+
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_GET_DATA_STRUCT]),
+        data
+    ]);
+
+    let resp = await options.exec(payload);
+    let res = Buffer.from(resp.result, "hex");
+
+    specItems = specItems.reverse();
+    let out = {};
+
+    while (res.length > 0) {
+        let item = specItems.pop();
+
+        let len = res[0];
+        let data = res.slice(1, len + 1);
+        let value = data.toString('hex');
+
+        if (!data.length) {
+            value = null;
+        }
+
+        out[item[0] + ':' + item[1]] = value;
+        res = res.slice(len + 1);
+    }
+
+    return {
+        isPartial: specItems.length !== 0,
+        data: out
+    };
+}
+
 module.exports = {
     cmdSign,
     cmdSignRandom,
@@ -687,4 +752,5 @@ module.exports = {
     cmdExportKey,
     cmdImportKeyInit,
     cmdImportKey,
+    cmdGetDataStruct,
 };

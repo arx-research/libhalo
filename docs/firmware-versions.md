@@ -74,6 +74,7 @@ Addons ver. - first HaLo Addons version to support the indicated driver.
 | `set_password`      | 01.C7     |                                               |
 | `replace_password`  | 01.C7     |                                               |
 | `unset_password`    | 01.C7     |                                               |
+| `get_data_struct`   | 01.C8     |                                               |
 | `pcsc_detect`       | 01.C1     | Only with CLI tool.                           |
 
 Core ver. - first HaLo Core version to officially support the indicated command.
