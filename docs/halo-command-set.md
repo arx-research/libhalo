@@ -14,6 +14,7 @@
 * [Command: get_key_info](#command-get_key_info)
 * [Command: set_password](#command-set_password)
 * [Command: unset_password](#command-unset_password)
+* [Command: get_data_struct](#command-get_data_struct)
 * [Command: version (only for PCSC/React Native)](#command-version)
 * [Command: read_ndef (only for PCSC/React Native)](#command-read_ndef)
 * [Command: pcsc_detect (only with CLI tool)](#command-pcsc_detect)
@@ -838,6 +839,60 @@ Response:
 * `ERROR_CODE_INVALID_KEY_NO` - the target key number is not #3;
 * `ERROR_CODE_PWD_NOT_SET` - password for that key slot is not set or the slot is not yet initialized;
 * `ERROR_CODE_WRONG_PWD` - wrong password (or target public key) provided by the user;
+
+## Command: get_data_struct
+
+Batch retrieve certain public objects from the HaLo tag (like public key values, latch values etc.)
+
+### Arguments
+
+* `spec` (str) - list of queried objects;
+
+#### Format for `spec`
+
+The `spec` value is expected to be formatted as:
+```
+<object type>:<object id>,<object type>:<object id>,...
+```
+
+Where the acceptable object types are:
+* `publicKey` - the uncompressed public key corresponding to the particular key slot;
+* `publicKeyAttest` - the public key's attest signature;
+* `keySlotFlags` - status flags corresponding to the particular key slot;
+* `keySlotFailedAuthCtr` - failed password authentication counter of the particular key slot;
+* `latchValue` - value of the latch (possible object IDs: 1, 2);
+* `latchAttest` - attest signature of the latch;
+* `firmwareVersion` - HaLo firmware version (object ID: 1 - core version; object ID: 2 - addons version);
+
+### Return value
+
+* `isPartial` (bool) - whether the query was answered in full or there was not enough space in the output buffer to return all requested objects;
+* `data` (object) - values of the queried objects;
+
+### Examples
+Command:
+```json
+{
+    "name": "get_data_struct",
+    "spec": "publicKey:1,publicKey:2,publicKey:200"
+}
+```
+
+Response:
+```json
+{
+    "isPartial": false,
+    "data": {
+        "publicKey:1": "04d034dd75fecae0879246bd3fafdd3195d3aad1c89d59aa39cb191714451af74732ccf1abbe5b86a55c52b29bf3c862b0234e021126a8371196083dacaed44c2b",
+        "publicKey:2": "049fbc8dbeee3af7ca838ff9276670aac077cb3309347cd1dca0f383c445b2b529548092490293801871de74807ec833a44526cc4c43edbe2a53354fef630f66a5",
+        "publicKey:200": null
+    }
+}
+```
+
+### Errors
+
+This command doesn't throw expected errors.
 
 ## Command: version
 
