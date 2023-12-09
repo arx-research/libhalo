@@ -343,6 +343,14 @@ importKeyParser.add_argument("-k", "--key-no", {
     required: true
 });
 
+let getDataStructParser = subparsers.add_parser("get_data_struct", {help: "Get certain data from the tag."});
+getDataStructParser.add_argument("-s", "--spec", {
+    dest: 'spec',
+    type: 'str',
+    help: "Data specification.",
+    required: true
+});
+
 subparsers.add_parser("pcsc_detect", {help: "Detect PC/SC readers and HaLo tags (for debugging)."});
 
 function parseArgs() {
