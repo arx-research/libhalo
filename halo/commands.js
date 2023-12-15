@@ -254,6 +254,8 @@ async function cmdSignRandom(options, args) {
 
     if (args.keyNo >= 0x60) {
         signature = sigToDer(parseSig(signature, BJJ_ORDER));
+    } else {
+        signature = sigToDer(parseSig(signature, SECP256k1_ORDER));
     }
 
     return {
@@ -277,6 +279,8 @@ async function cmdSignChallenge(options, args) {
 
     if (args.keyNo >= 0x60) {
         signature = sigToDer(parseSig(signature, BJJ_ORDER));
+    } else {
+        signature = sigToDer(parseSig(signature, SECP256k1_ORDER));
     }
 
     return {

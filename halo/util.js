@@ -158,7 +158,7 @@ function convertSignature(digest, signature, publicKey, curveOrder) {
             ...fixedSig,
             v: recoveryParam + 0x1b
         },
-        "der": signature.toString('hex'),
+        "der": sigToDer(parseSig(signature, curveOrder)).toString('hex'),
         "ether": finalSig.toString('hex')
     };
 }
