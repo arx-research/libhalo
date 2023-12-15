@@ -7,7 +7,7 @@
 const Buffer = require('buffer/').Buffer;
 const ethers = require('ethers');
 const {HaloLogicError, HaloTagError} = require("./exceptions");
-const {convertSignature, mode, parseSig, parsePublicKeys, randomBuffer} = require("./util");
+const {convertSignature, mode, parseSig, parsePublicKeys, randomBuffer, SECP256k1_ORDER, BJJ_ORDER, sigToDer} = require("./util");
 const {FLAGS} = require("./flags");
 const {sha256} = require("js-sha256");
 const EC = require("elliptic").ec;
@@ -209,7 +209,7 @@ async function cmdSign(options, args) {
         return {
             "input": inputObj,
             "signature": {
-                "der": sig.toString('hex')
+                "der": sigToDer(parseSig(Buffer.from(sig, "hex"), BJJ_ORDER)).toString('hex')
             },
             "publicKey": publicKey.toString('hex')
         };
@@ -218,7 +218,7 @@ async function cmdSign(options, args) {
     if (publicKey) {
         return {
             "input": inputObj,
-            "signature": convertSignature(digestBuf.toString('hex'), sig.toString('hex'), publicKey.toString('hex')),
+            "signature": convertSignature(digestBuf.toString('hex'), sig, publicKey.toString('hex'), SECP256k1_ORDER),
             "publicKey": publicKey.toString('hex'),
             "etherAddress": ethers.utils.computeAddress('0x' + publicKey.toString('hex'))
         };
@@ -226,7 +226,7 @@ async function cmdSign(options, args) {
         return {
             "input": inputObj,
             "signature": {
-                "der": sig.toString('hex')
+                "der": sigToDer(parseSig(Buffer.from(sig, "hex"), SECP256k1_ORDER)).toString('hex')
             }
         };
     }
@@ -252,6 +252,10 @@ async function cmdSignRandom(options, args) {
 
     let counter = digest.readUInt32BE(0);
 
+    if (args.keyNo >= 0x60) {
+        signature = sigToDer(parseSig(signature, BJJ_ORDER));
+    }
+
     return {
         "counter": counter,
         "payload": digest.toString('hex'),
@@ -270,6 +274,10 @@ async function cmdSignChallenge(options, args) {
     let signature = resBuf.slice(0, sigLen);
     let publicKey = resBuf.slice(sigLen, sigLen + 65);
     let attestSig = resBuf.slice(sigLen + 65);
+
+    if (args.keyNo >= 0x60) {
+        signature = sigToDer(parseSig(signature, BJJ_ORDER));
+    }
 
     return {
         "signature": signature.toString('hex'),
@@ -363,11 +371,17 @@ async function cmdGenKey(options, args) {
         let sig1 = sig.slice(0, 2 + sig1Length);
         let sig2 = sig.slice(2 + sig1Length);
 
+        let curveOrder = SECP256k1_ORDER;
+
+        if (args.keyNo >= 0x60) {
+            curveOrder = BJJ_ORDER;
+        }
+
         let candidates = [];
 
         for (let i = 0; i < 2; i++) {
-            candidates.push(ec.recoverPubKey(msg1, parseSig(sig1), i).encode('hex'));
-            candidates.push(ec.recoverPubKey(msg2, parseSig(sig2), i).encode('hex'));
+            candidates.push(ec.recoverPubKey(msg1, parseSig(sig1, curveOrder), i).encode('hex'));
+            candidates.push(ec.recoverPubKey(msg2, parseSig(sig2, curveOrder), i).encode('hex'));
         }
 
         let bestPk = Buffer.from(mode(candidates), 'hex');

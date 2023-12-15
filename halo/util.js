@@ -13,6 +13,9 @@ const BN = require('bn.js').BN;
 
 const ec = new EC('secp256k1');
 
+const SECP256k1_ORDER = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
+const BJJ_ORDER = 0x060c89ce5c263405370a08b6d0302b0bab3eedb83920ee0a677297dc392126f1n;
+
 function hex2arr(hexString) {
     return new Uint8Array(
         hexString.match(/.{1,2}/g).map(
@@ -55,7 +58,7 @@ function parsePublicKeys(buffer) {
     return out;
 }
 
-function parseSig(res) {
+function parseSig(res, curveOrder) {
     if (res[0] !== 0x30 || res[2] !== 0x02) {
         throw new HaloLogicError("Unable to parse signature, unexpected header (1).");
     }
@@ -77,8 +80,8 @@ function parseSig(res) {
     let rn = BigInt('0x' + r.toString('hex'));
     let sn = BigInt('0x' + s.toString('hex'));
 
-    // SECP256k1 order constant
-    let curveOrder = 115792089237316195423570985008687907852837564279074904382605163141518161494337n;
+    rn %= curveOrder;
+    sn %= curveOrder;
 
     if (sn > curveOrder / 2n) {
         // malleable signature, not compliant with Ethereum's EIP-2
@@ -92,9 +95,27 @@ function parseSig(res) {
     };
 }
 
-function convertSignature(digest, signature, publicKey) {
+function sigToDer(sig) {
+    let r = BigInt('0x' + sig.r);
+    let s = BigInt('0x' + sig.s);
+
+    let padR = r.toString(16).length % 2 ? '0' : '';
+    let padS = s.toString(16).length % 2 ? '0' : '';
+
+    let encR = padR + r.toString(16);
+    let encS = padS + s.toString(16);
+
+    let lenR = Buffer.from([encR.length / 2]).toString('hex');
+    let lenS = Buffer.from([encS.length / 2]).toString('hex');
+
+    let hdr = Buffer.from([0x30, (encR.length / 2) + (encS.length / 2) + 4]).toString('hex');
+
+    return Buffer.from(hdr + '02' + lenR + encR + '02' + lenS + encS, 'hex');
+}
+
+function convertSignature(digest, signature, publicKey, curveOrder) {
     signature = Buffer.from(signature, "hex");
-    let fixedSig = parseSig(signature);
+    let fixedSig = parseSig(signature, curveOrder);
 
     let recoveryParam = null;
 
@@ -130,11 +151,11 @@ function convertSignature(digest, signature, publicKey) {
     };
 }
 
-function recoverPublicKey(digest, signature) {
+function recoverPublicKey(digest, signature, curveOrder) {
     let out = [];
 
     signature = Buffer.from(signature, "hex");
-    let fixedSig = parseSig(signature);
+    let fixedSig = parseSig(signature, curveOrder);
 
     for (let i = 0; i < 2; i++) {
         out.push(ec.recoverPubKey(new BN(digest, 16), fixedSig, i).encode('hex'));
@@ -155,9 +176,12 @@ function randomBuffer() {
 }
 
 module.exports = {
+    SECP256k1_ORDER,
+    BJJ_ORDER,
     hex2arr,
     arr2hex,
     parseSig,
+    sigToDer,
     convertSignature,
     parsePublicKeys,
     recoverPublicKey,

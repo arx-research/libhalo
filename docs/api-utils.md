@@ -97,13 +97,13 @@ Take the signed message digest and the resulting signature, compute two public k
 All parameters should be hex-encoded strings.
 
 ```javascript
-haloRecoverPublicKey(digest, derSignature);
+haloRecoverPublicKey(digest, derSignature, curveOrder);
 ```
 
 **Example usage:**
 ```javascript
 import {execHaloCmdWeb} from '@arx-research/libhalo/api/web.js';
-import {haloRecoverPublicKey} from '@arx-research/libhalo/api/common.js';
+import {haloRecoverPublicKey, SECP256k1_ORDER} from '@arx-research/libhalo/api/common.js';
 
 const KEY_NO = 1;
 
@@ -116,14 +116,15 @@ let signRes = await execHaloCmdWeb({
 
 // this will return two public keys
 // one of them will be actually the tag's public key
-console.log(haloRecoverPublicKey(signRes.input.digest, signRes.signature.der));
+console.log(haloRecoverPublicKey(signRes.input.digest, signRes.signature.der, SECP256k1_ORDER));
 ```
 
 **Example function call:**
 ```javascript
 haloRecoverPublicKey(
     "bcf83051a4d206c6e43d7eaa4c75429737ac0d5ee08ee68430443bd815e6ac05",
-    "3046022100fb2ee8172a6cb2615276bcc7e7a56f1c299b93192b3af61406ffd8356c730309022100e4f501b6768ddb5ff62498eae066b9cad77fe3ecb961162050ed57ea7df7a855"
+    "3046022100fb2ee8172a6cb2615276bcc7e7a56f1c299b93192b3af61406ffd8356c730309022100e4f501b6768ddb5ff62498eae066b9cad77fe3ecb961162050ed57ea7df7a855",
+    SECP256k1_ORDER
 );
 ```
 
