@@ -102,15 +102,27 @@ function sigToDer(sig) {
     let padR = r.toString(16).length % 2 ? '0' : '';
     let padS = s.toString(16).length % 2 ? '0' : '';
 
-    let encR = padR + r.toString(16);
-    let encS = padS + s.toString(16);
+    let encR = Buffer.from(padR + r.toString(16), 'hex');
+    let encS = Buffer.from(padS + s.toString(16), 'hex');
 
-    let lenR = Buffer.from([encR.length / 2]).toString('hex');
-    let lenS = Buffer.from([encS.length / 2]).toString('hex');
+    if (encR[0] & 0x80) {
+        // add zero to avoid interpreting this as negative integer
+        encR = Buffer.concat([Buffer.from([0x00]), encR]);
+    }
 
-    let hdr = Buffer.from([0x30, (encR.length / 2) + (encS.length / 2) + 4]).toString('hex');
+    if (encS[0] & 0x80) {
+        // add zero to avoid interpreting this as negative integer
+        encS = Buffer.concat([Buffer.from([0x00]), encS]);
+    }
 
-    return Buffer.from(hdr + '02' + lenR + encR + '02' + lenS + encS, 'hex');
+    encR = Buffer.concat([Buffer.from([0x02, encR.length]), encR]);
+    encS = Buffer.concat([Buffer.from([0x02, encS.length]), encS]);
+
+    return Buffer.concat([
+        Buffer.from([0x30, encR.length + encS.length]),
+        encR,
+        encS
+    ]);
 }
 
 function convertSignature(digest, signature, publicKey, curveOrder) {
