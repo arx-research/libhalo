@@ -15,6 +15,8 @@
 * [Command: set_password](#command-set_password)
 * [Command: unset_password](#command-unset_password)
 * [Command: get_data_struct](#command-get_data_struct)
+* [Command: get_graffiti](#command-get_graffiti)
+* [Command: store_graffiti](#command-store_graffiti)
 * [Command: version (only for PCSC/React Native)](#command-version)
 * [Command: read_ndef (only for PCSC/React Native)](#command-read_ndef)
 * [Command: pcsc_detect (only with CLI tool)](#command-pcsc_detect)
@@ -862,6 +864,7 @@ Where the acceptable object types are:
 * `keySlotFailedAuthCtr` - failed password authentication counter of the particular key slot;
 * `latchValue` - value of the latch (possible object IDs: 1, 2);
 * `latchAttest` - attest signature of the latch;
+* `graffiti` - value of the rewritable data slot (possible object IDs: 1);
 * `firmwareVersion` - HaLo firmware version (object ID: 1 - core version; object ID: 2 - addons version);
 
 ### Return value
@@ -893,6 +896,31 @@ Response:
 ### Errors
 
 This command doesn't throw expected errors.
+
+## Command: get_graffiti
+
+Gets data stored in the rewritable static string slot.
+
+### Arguments
+
+* `slotNo` (int) - number of the data slot to be fetched (currently supported: 1)
+
+### Return value
+
+* `data` (str) - the fetched ASCII string
+
+## Command: store_graffiti
+
+Stores the new data in the rewritable static string slot. This data will also be displayed in the dynamic URL.
+
+### Arguments
+
+* `slotNo` (int) - number of the data slot to be fetched (currently supported: 1)
+* `data` (string) - ASCII string containing from 0 to 32 characters, supported charset: `A-Z`, `a-z`, `0-9`, `-_.`
+
+### Return value
+
+* `status` (string) - value `ok`
 
 ## Command: version
 
