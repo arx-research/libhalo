@@ -678,8 +678,16 @@ async function cmdGetDataStruct(options, args) {
         "keySlotFailedAuthCtr": 0x04,
         "latchValue":           0x20,
         "latchAttest":          0x21,
+        "graffiti":             0x22,
         "firmwareVersion":      0xF0
     };
+
+    const SPECIAL_MSG = {
+        0x01: "keySlotOutOfBounds",
+        0x02: "keySlotNotGenerated",
+        0x03: "latchNotSet",
+        0x04: "latchAttestNotSet"
+    }
 
     let data = Buffer.alloc(0);
 
@@ -715,11 +723,27 @@ async function cmdGetDataStruct(options, args) {
         let item = specItems.pop();
 
         let len = res[0];
-        let data = res.slice(1, len + 1);
-        let value = data.toString('hex');
+        let data;
+        let value;
 
-        if (!data.length) {
-            value = null;
+        if (len === 0xFF) { // no value returned, special message
+            len = 1;
+
+            let msgCode = res.slice(1, 2)[0];
+            let specialMsg = SPECIAL_MSG[msgCode];
+
+            if (specialMsg) {
+                value = {"error": specialMsg};
+            } else {
+                value = {"error": 'unknown_' + msgCode.toString()};
+            }
+        } else {
+            data = res.slice(1, len + 1);
+            value = data.toString('hex');
+
+            if (!data.length) {
+                value = null;
+            }
         }
 
         out[item[0] + ':' + item[1]] = value;
@@ -730,6 +754,34 @@ async function cmdGetDataStruct(options, args) {
         isPartial: specItems.length !== 0,
         data: out
     };
+}
+
+async function cmdGetGraffiti(options, args) {
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_GET_GRAFFITI]),
+        Buffer.from([args.slotNo])
+    ]);
+
+    let resp = await options.exec(payload);
+    let res = Buffer.from(resp.result, "hex");
+
+    return {
+        "data": res.slice(1).toString('ascii')
+    }
+}
+
+async function cmdStoreGraffiti(options, args) {
+    let payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_STORE_GRAFFITI]),
+        Buffer.from([args.slotNo]),
+        Buffer.from(args.data, 'ascii')
+    ]);
+
+    await options.exec(payload);
+
+    return {
+        "status": "ok"
+    }
 }
 
 module.exports = {
@@ -753,4 +805,6 @@ module.exports = {
     cmdImportKeyInit,
     cmdImportKey,
     cmdGetDataStruct,
+    cmdGetGraffiti,
+    cmdStoreGraffiti,
 };
