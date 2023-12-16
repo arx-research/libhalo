@@ -351,6 +351,28 @@ getDataStructParser.add_argument("-s", "--spec", {
     required: true
 });
 
+let getGraffitiParser = subparsers.add_parser("get_graffiti", {help: "Get graffiti data from the tag."});
+getGraffitiParser.add_argument("-n", "--slot-no", {
+    dest: 'slotNo',
+    type: 'int',
+    help: "Target data slot number.",
+    required: true
+});
+
+let storeGraffitiParser = subparsers.add_parser("store_graffiti", {help: "Store graffiti data to the tag."});
+storeGraffitiParser.add_argument("-n", "--slot-no", {
+    dest: 'slotNo',
+    type: 'int',
+    help: "Target data slot number.",
+    required: true
+});
+storeGraffitiParser.add_argument("--data", {
+    dest: 'data',
+    help: "Data to be stored (ASCII string).",
+    required: true,
+    default: ''
+});
+
 subparsers.add_parser("pcsc_detect", {help: "Detect PC/SC readers and HaLo tags (for debugging)."});
 
 function parseArgs() {
