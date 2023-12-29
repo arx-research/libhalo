@@ -150,6 +150,16 @@ export default function App() {
 }
 ```
 
+## Test the application
+
+Generate native project for your platform:
+
+```
+npx expo run:android
+# or
+npx expo run:ios
+```
+
 ## Example project
 
 Please check GitHub [arx-research/libhalo-example-expo](https://github.com/arx-research/libhalo-example-expo) project for the complete project example.
