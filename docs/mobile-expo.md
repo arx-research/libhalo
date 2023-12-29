@@ -2,6 +2,24 @@
 
 You can use LibHaLo within your Expo mobile application for Android/iOS smartphones.
 
+## Note about Expo Go
+
+**Important:** Since LibHaLo relies on the `react-native-nfc-manager` and its native module, it is not possible
+to use standard "Expo Go" app.
+
+You need to use a personal build of Expo Go ("development build") in order to include the required native dependencies
+that are necessary in order to perform NFC interaction. You can read more in the ["Add custom native code"](https://docs.expo.dev/workflow/customizing/) article of Expo docs.
+
+This guide will provide a step-by-step walkthrough over the entire process.
+
+## Create expo app
+
+Use the following command if you don't have an app already:
+
+```
+npx create-expo-app DemoAppWithHalo
+```
+
 ## Adding the dependencies
 
 These steps are common for both Android and iOS applications:
