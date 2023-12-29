@@ -37,15 +37,16 @@ Installation of additional software is not required on the user's side.
 * [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
 * [Interactive examples of using LibHaLo on web](https://halo-demos.arx.org/examples/)
 
-### (React Native) execHaloCmdRN
+### (React Native/Expo) execHaloCmdRN
 ```
 async function execHaloCmdRN(nfcManager, command, options)
 ```
 
-For React Native mobile applications (Android/iOS) based on `react-native-nfc-manager` library: scan the HaLo tag presented to the smartphone, execute the HaLo command and return the result.
+For React Native/Expo mobile applications (Android/iOS) based on `react-native-nfc-manager` library: scan the HaLo tag presented to the smartphone, execute the HaLo command and return the result.
 
 **Guides:**
-* [Using libhalo within a React Native mobile application for Android/iOS](https://github.com/arx-research/libhalo/blob/master/docs/mobile-react-native.md)
+* [Using libhalo within a React Native application for Android/iOS](https://github.com/arx-research/libhalo/blob/master/docs/mobile-react-native.md)
+* [Using libhalo within an Expo mobile application for Android/iOS](https://github.com/arx-research/libhalo/blob/master/docs/mobile-expo.md)
 * [Documentation of the execHaloCmdRN API](https://github.com/arx-research/libhalo/blob/master/docs/api-react-native.md)
 * [Documentation of the utility functions exposed by LibHaLo](https://github.com/arx-research/libhalo/blob/master/docs/api-utils.md)
 * [Interactive examples of using LibHaLo on web](https://halo-demos.arx.org/examples/)
