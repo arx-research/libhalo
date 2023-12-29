@@ -75,7 +75,7 @@ NfcManager.start();
 
 function App() {
   // button pressed routine
-  async function readNdef() {
+  async function performHaloInteraction() {
     try {
       await NfcManager.requestTechnology(NfcTech.IsoDep);
       const tag = await NfcManager.getTag();
@@ -95,7 +95,7 @@ function App() {
 
   return (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <TouchableOpacity style={{padding: 100, backgroundColor: '#FF00FF'}} onPress={readNdef}>
+      <TouchableOpacity style={{padding: 100, backgroundColor: '#FF00FF'}} onPress={performHaloInteraction}>
         <Text>Click here and tap the tag</Text>
       </TouchableOpacity>
     </View>
