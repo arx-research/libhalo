@@ -95,7 +95,7 @@ async function cmdSign(options, args) {
             throw new HaloLogicError("Invalid message format specified. Valid formats: text, hex.");
         }
 
-        digestBuf = Buffer.from(ethers.utils.hashMessage(messageBuf).slice(2), "hex");
+        digestBuf = Buffer.from(ethers.utils.hashMessage('0x' + messageBuf.toString('hex')).slice(2), "hex");
     } else if (args.hasOwnProperty("typedData") && typeof args.typedData !== "undefined") {
         let hashStr;
 
