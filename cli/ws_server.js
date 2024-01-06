@@ -10,6 +10,7 @@ const path = require("path");
 const os = require("os");
 const util = require("util");
 const {execHaloCmdPCSC} = require("../api/desktop");
+const {getBuildInfo} = require("./version");
 
 let wss = null;
 
@@ -18,6 +19,8 @@ let currentState = null;
 
 let jwtSigningKey = randomBuffer().toString('hex');
 let userConsentOrigins = new Set();
+
+let buildInfo = getBuildInfo();
 
 function generateHandle() {
     return randomBuffer().toString('base64');
@@ -324,7 +327,13 @@ function wsCreateServer(args, getReaderNames) {
         sendToCurrentWs(ws, {
             "event": "ws_connected",
             "uid": null,
-            "data": {}
+            "data": {
+                "server_version": {
+                    tag_name: buildInfo.tagName,
+                    commit_id: buildInfo.commitId,
+                    version: buildInfo.version
+                }
+            }
         });
 
         let readerNames = getReaderNames();

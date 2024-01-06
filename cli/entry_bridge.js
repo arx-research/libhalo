@@ -6,6 +6,7 @@
 
 const {parseArgs} = require('./args_bridge.js');
 const {runHalo} = require("./cli");
+const {printVersionInfo} = require("./version");
 
 let args = parseArgs();
 
@@ -13,4 +14,5 @@ if (!args) {
     process.exit(0);
 }
 
+printVersionInfo();
 runHalo("server", args);

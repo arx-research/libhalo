@@ -141,9 +141,9 @@ function runHalo(entryMode, args) {
             console.error('Command execution failed.');
         } else if (code !== "done") {
             if (output === "color") {
-                console.error("NFC card or compatible PC/SC reader not found.");
+                console.error("HaLo tag or compatible PC/SC reader not found.");
             } else {
-                console.log(JSON.stringify({"_error": "NFC card or compatible PC/SC reader not found."}));
+                console.log(JSON.stringify({"_error": "HaLo tag or compatible PC/SC reader not found."}));
             }
         }
 

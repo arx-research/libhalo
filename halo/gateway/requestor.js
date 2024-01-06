@@ -94,6 +94,7 @@ class HaloGateway {
         let waitPromise = this.waitForWelcomePacket();
         await this.ws.open();
         let welcomeMsg = await waitPromise;
+        let serverVersion = welcomeMsg.serverVersion;
 
         /**
          * URL format in the QR Code:
@@ -116,7 +117,8 @@ class HaloGateway {
 
         return {
             execURL: execURL,
-            qrCode: qrCode
+            qrCode: qrCode,
+            serverVersion: serverVersion
         };
     }
 

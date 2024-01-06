@@ -82,7 +82,7 @@ Where the `event` key is a string representing the name of particular event.
 
 Possible incoming events are the following:
 
-* `ws_connected` - welcome event sent by the server;
+* `ws_connected` - welcome event sent by the server, contains server's version information in `data.server_version`;
 * `reader_added` - a new NFC reader was detected, the reader's name will be provided as `data.reader_name`; 
 * `reader_removed` - the existing NFC reader was disconnected, the reader's name will be provided as `data.reader_name`;
 * `handle_added` - a reader has detected new HaLo tag (`data.reader_name` - reader's name, `data.handle` - random value, a handle to the connected tag);

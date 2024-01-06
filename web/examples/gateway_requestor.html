@@ -22,6 +22,11 @@
             font-size: 10px;
             color: gray;
         }
+
+        #server-ver {
+            font-size: 10px;
+            color: gray;
+        }
     </style>
 </head>
 <body>
@@ -48,8 +53,9 @@
     <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
     <img id="qr" src="data:," alt>
     <div class="qr-link-container">
-        <a href="about:blank" id="qr-link"></a>
+        <a href="about:blank" target="_blank" id="qr-link"></a>
     </div>
+    <div id="server-ver"></div>
 
     <script type="text/javascript">
         // generate random message on load
@@ -79,6 +85,8 @@
                 document.getElementById('qr').src = pairInfo.qrCode;
                 document.getElementById('qr-link').href = pairInfo.execURL;
                 document.getElementById('qr-link').innerText = pairInfo.execURL;
+                document.getElementById('server-ver').innerText =
+                    'Server version: ' + pairInfo.serverVersion.tagName + '; ' + pairInfo.serverVersion.commitId;
                 log('Please scan the QR code presented below with your smartphone.');
             } catch (e) {
                 document.getElementById('pairSignBtn').disabled = false;

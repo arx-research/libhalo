@@ -34,7 +34,8 @@
     "outputPath": "dist",
     "assets": [
       "node_modules/@pokusew/pcsclite/build/Release/pcsclite.node",
-      "assets/**"
+      "assets/**",
+      "halotools_version.json"
     ]
   },
   "type": "commonjs",
