@@ -172,8 +172,8 @@ jobs:
             out_name: halo-tools-linux-x64.tgz
           - os: windows-latest
             out_name: halo-tools-win-x64.zip
-          - os: macos-latest
-            out_name: halo-tools-macos-x64.pkg
+          # - os: macos-latest
+          #   out_name: halo-tools-macos-x64.pkg
     name: Sign halo-tools and release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
