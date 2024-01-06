@@ -6,6 +6,7 @@ const { readFileSync, writeFileSync } = require('fs');
 const { need, system } = require('pkg-fetch');
 const package_json = require('./package.json');
 const crypto = require("crypto");
+const {parseGitHubRef, getProductInfo} = require("./version_helper");
 
 const {
     hostArch,
@@ -95,39 +96,16 @@ async function fixBinary(name, bin_name, version) {
     fs.appendFileSync('node_modules\\pkg-fetch\\lib-es5\\expected.js', '\n/** PATCHED **/ if (process.env.PKG_PATCHED_BIN === "1") {exports.EXPECTED_HASHES[\'' + nodeHashKey + '\'] = \'' + fileHash + '\';}');
 }
 
-let name = null;
-let binName = null;
+async function doFixWinBinary(productType) {
+    let {name, binName} = getProductInfo(productType);
+    let {version} = parseGitHubRef();
+    console.log('Using version', version);
+    await fixBinary(name, binName, version);
 
-if (process.argv.length < 3) {
-    throw Error("Binary type not specified in argv.");
-} else if (process.argv[2] === "cli") {
-    name = 'HaLo CLI';
-    binName = 'halocli.exe';
-} else if (process.argv[2] === "bridge") {
-    name = 'HaLo Bridge Server';
-    binName = 'halo-bridge.exe';
-} else if (process.argv[2] === "gateway") {
-    name = 'HaLo Gateway Server';
-    binName = 'halo-gateway.exe';
-} else {
-    throw Error("Unknown binary type specified.");
+    // run pkg with:
+    // $env:PKG_PATCHED_BIN = 1
+    // $env:PKG_CACHE_PATH = './.pkg-cache/'
+    // $env:PKG_IGNORE_TAG = 1
 }
 
-let tagName = process.env.GITHUB_REF_NAME;
-let version = null;
-
-if (tagName && tagName.startsWith('halotools-v')) {
-    let vStr = tagName.split('-v')[1];
-    let vStr2 = vStr.split('.');
-    version = [parseInt(vStr2[0]), parseInt(vStr2[1]), parseInt(vStr2[2]), 0];
-} else {
-    version = [0, 0, 0, 0];
-}
-
-console.log('Using version', version);
-fixBinary(name, binName, version);
-
-// run pkg with:
-// $env:PKG_PATCHED_BIN = 1
-// $env:PKG_CACHE_PATH = './.pkg-cache/'
-// $env:PKG_IGNORE_TAG = 1
+module.exports = {doFixWinBinary};

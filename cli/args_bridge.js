@@ -5,6 +5,7 @@
  */
 
 const {ArgumentParser} = require("argparse");
+const {printVersionInfo} = require("./version");
 
 const parser = new ArgumentParser({
     description: 'HaLo Bridge Server'
@@ -41,6 +42,7 @@ parser.add_argument("--non-interactive", {
 });
 
 function parseArgs() {
+    printVersionInfo();
     return parser.parse_args();
 }
 
