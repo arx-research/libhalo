@@ -2,12 +2,9 @@ const fs = require("fs");
 const {dirname} = require("./util");
 
 function getVersionInfo() {
-    console.log('debug: opening file');
-    if (fs.existsSync('halotools_version.json')) {
-        console.log('debug: opened');
+    if (fs.existsSync(dirname + '/halotools_version.json')) {
         return JSON.parse(fs.readFileSync(dirname + '/halotools_version.json', 'utf-8'));
     } else {
-        console.log('debug: no such file');
         return null;
     }
 }
