@@ -6,6 +6,7 @@
 
 const {ArgumentParser} = require("argparse");
 const {JSONParseAction} = require("./actions");
+const {printVersionInfo} = require("./version");
 
 const parser = new ArgumentParser({
     description: 'HaLo - Command Line Tool for PC/SC'
@@ -381,6 +382,7 @@ function parseArgs() {
     let args = parser.parse_args();
 
     if (!args.name) {
+        printVersionInfo();
         parser.print_help();
         return null;
     }
