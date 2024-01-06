@@ -15,7 +15,7 @@ function getBuildInfo() {
     return {
         tagName: versionInfo ? versionInfo.tagName : 'SNAPSHOT',
         commitId: versionInfo ? versionInfo.commitId : 'SNAPSHOT',
-        version: [0, 0, 0, 0]
+        version: versionInfo ? versionInfo.version : [0, 0, 0, 0]
     };
 }
 
