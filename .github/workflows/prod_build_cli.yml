@@ -92,7 +92,6 @@ jobs:
         run: |
           cd cli
           node build/ci_scripts.js --platform linux --product cli
-          cat halotools_version.json
           node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halocli entry_cli.js
           node build/ci_scripts.js --platform linux --product bridge
           node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.js
