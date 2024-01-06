@@ -6,7 +6,6 @@
 
 const {ArgumentParser} = require("argparse");
 const {JSONParseAction} = require("./actions");
-const {printVersionInfo} = require("./version");
 
 const parser = new ArgumentParser({
     description: 'HaLo - Command Line Tool for PC/SC'
@@ -16,6 +15,8 @@ parser.add_argument("-o", "--output", {help: "Output format, either: color (defa
 const subparsers = parser.add_subparsers({help: 'command', dest: 'name'});
 
 subparsers.add_parser("version", {help: "Get tag version."});
+
+subparsers.add_parser("cli_version", {help: "Get halocli build version."});
 
 if (process.env.__UNSAFE_ENABLE_TESTS === "1") {
     let testParser = subparsers.add_parser("test", {help: "Run test suite against the tag. Please do not use this command."});
@@ -377,7 +378,6 @@ storeGraffitiParser.add_argument("--data", {
 subparsers.add_parser("pcsc_detect", {help: "Detect PC/SC readers and HaLo tags (for debugging)."});
 
 function parseArgs() {
-    printVersionInfo();
     let args = parser.parse_args();
 
     if (!args.name) {

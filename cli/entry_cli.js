@@ -6,10 +6,12 @@
 
 const {parseArgs} = require('./args_cli.js');
 const {runHalo} = require("./cli");
+const {printVersionInfo} = require("./version");
 
 let args = parseArgs();
 
-if (!args) {
+if (!args || args.name === "cli_version") {
+    printVersionInfo();
     process.exit(0);
 }
 

@@ -5,7 +5,6 @@
  */
 
 const {ArgumentParser} = require("argparse");
-const {printVersionInfo} = require("./version");
 
 const parser = new ArgumentParser({
     description: 'HaLo Gateway Server'
@@ -24,7 +23,6 @@ parser.add_argument("-p", "--listen-port", {
 });
 
 function parseArgs() {
-    printVersionInfo();
     return parser.parse_args();
 }
 

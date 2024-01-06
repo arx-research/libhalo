@@ -5,13 +5,17 @@
  */
 
 const crypto = require('crypto').webcrypto;
-const {parseArgs} = require('./args_gateway.js');
 const express = require("express");
-const {WebSocketServer} = require("ws");
+const {WebSocketServer} = require('ws');
 const queryString = require('query-string');
-const {dirname} = require("./util");
 const nunjucks = require("nunjucks");
 const {parse} = require("url");
+
+const {parseArgs} = require('./args_gateway.js');
+const {printVersionInfo, getBuildInfo} = require("./version");
+const {dirname} = require("./util");
+
+let buildInfo = getBuildInfo();
 
 const REQUESTOR_SESS_LIMIT = 10 * 60 * 1000;
 const MAX_SESSION_LIMIT = 1000;
@@ -92,7 +96,8 @@ function processRequestor(ws, req) {
 
     ws.send(JSON.stringify({
         "type": "welcome",
-        "sessionId": sessionId
+        "sessionId": sessionId,
+        "serverVersion": buildInfo
     }));
 }
 
@@ -222,4 +227,5 @@ function createServer(args) {
     console.log('HaLo Gateway server is listening...');
 }
 
+printVersionInfo();
 createServer(args);

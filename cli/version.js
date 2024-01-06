@@ -9,6 +9,16 @@ function getVersionInfo() {
     }
 }
 
+function getBuildInfo() {
+    let versionInfo = getVersionInfo();
+
+    return {
+        tagName: 'SNAPSHOT',
+        commitId: versionInfo ? versionInfo.commitId : 'SNAPSHOT',
+        version: [0, 0, 0, 0]
+    };
+}
+
 function printVersionInfo() {
     let versionInfo = getVersionInfo();
 
@@ -17,4 +27,4 @@ function printVersionInfo() {
     }
 }
 
-module.exports = {getVersionInfo, printVersionInfo};
+module.exports = {getVersionInfo, printVersionInfo, getBuildInfo};
