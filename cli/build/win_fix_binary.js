@@ -4,7 +4,7 @@ const { readFileSync, writeFileSync } = require('fs');
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
 const { need, system } = require('pkg-fetch');
-const package_json = require('./package.json');
+const package_json = require('../package.json');
 const crypto = require("crypto");
 const {parseGitHubRef, getProductInfo} = require("./version_helper");
 
