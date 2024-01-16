@@ -86,16 +86,22 @@ async function cmdSign(options, args) {
         if (args.format === "text") {
             messageBuf = Buffer.from(args.message);
         } else if (!args.format || args.format === "hex") {
-            messageBuf = Buffer.from(args.message, "hex");
+            let msg = args.message;
 
-            if (args.message.length !== messageBuf.length * 2) {
+            if (msg.startsWith("0x")) {
+                msg = msg.substring(2);
+            }
+
+            messageBuf = Buffer.from(msg, "hex");
+
+            if (msg.length !== messageBuf.length * 2) {
                 throw new HaloLogicError("Failed to decode command.message parameter. If you want to sign text instead of bytes, please use command.format = 'text'.");
             }
         } else {
             throw new HaloLogicError("Invalid message format specified. Valid formats: text, hex.");
         }
 
-        digestBuf = Buffer.from(ethers.utils.hashMessage('0x' + messageBuf.toString('hex')).slice(2), "hex");
+        digestBuf = Buffer.from(ethers.utils.hashMessage([...messageBuf]).slice(2), "hex");
     } else if (args.hasOwnProperty("typedData") && typeof args.typedData !== "undefined") {
         let hashStr;
 
