@@ -14,6 +14,7 @@ const EC = require("elliptic").ec;
 const CMD = require('./cmdcodes').CMD_CODES;
 const pbkdf2 = require('pbkdf2');
 const crypto = require('crypto-browserify');
+const {KEY_FLAGS} = require("./keyflags");
 
 const ec = new EC('secp256k1');
 
@@ -485,16 +486,11 @@ async function cmdGetKeyInfo(options, args) {
     let resp = await options.exec(payload);
     let res = Buffer.from(resp.result, "hex");
 
-    let keyFlags = res.slice(1, 2);
-
-    if ((keyFlags[0] & 0x03) !== keyFlags[0]) {
-        throw new HaloLogicError("Unsupported key flags reported: " + keyFlags[0] + " (base 10).");
-    }
-
+    let keyFlags = res.slice(1, 2)[0];
     let failedAuthCtr = 0;
     let off = 2;
 
-    if ((keyFlags[0] & 0x02) === 0x02) {
+    if (keyFlags & KEY_FLAGS.KEYFLG_CONTAINS_AUTH_CTR) {
         // key info contains failed auth counter
         off = 3;
         failedAuthCtr = res.slice(2, 3)[0];
@@ -505,7 +501,11 @@ async function cmdGetKeyInfo(options, args) {
 
     return {
         keyState: {
-            isPasswordProtected: (keyFlags[0] & 0x01) === 0x01,
+            isPasswordProtected: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_PWD_PROTECTED),
+            hasMandatoryPassword: !!(keyFlags & KEY_FLAGS.KEYFLG_MANDATORY_PASSWORD),
+            rawSignCommandNotUsed: !!(keyFlags & KEY_FLAGS.KEYFLG_SIGN_NOT_USED),
+            isImported: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_IMPORTED),
+            isExported: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_EXPORTED),
             failedAuthCounter: failedAuthCtr
         },
         publicKey: publicKey.toString('hex'),
