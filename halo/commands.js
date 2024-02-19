@@ -762,8 +762,10 @@ async function cmdGetDataStruct(options, args) {
                 value = {"error": 'unknown_' + msgCode.toString()};
             }
         } else {
+            const encoding = item[0] !== "graffiti" ? "hex" : "utf-8";
+
             data = res.slice(1, len + 1);
-            value = data.toString('hex');
+            value = data.toString(encoding);
 
             if (!data.length) {
                 value = null;
