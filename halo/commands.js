@@ -580,6 +580,24 @@ async function cmdReplacePassword(options, args) {
     return {"status": "ok"};
 }
 
+async function _internalLoadPK(options, payload) {
+    let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
+    let res = Buffer.from(resp.result, "hex");
+
+    if (res[0] !== 0x01) {
+        throw new HaloLogicError("Unsupported protocol version reported by the HaLo tag.");
+    }
+
+    let sigLen = res[2] + 2;
+    let data = res.slice(1, sigLen + 1 + 65);
+    let rootPK = res.slice(sigLen + 1 + 65);
+
+    return {
+        "data": data.toString('hex'),
+        "rootPublicKey": rootPK.toString('hex')
+    }
+}
+
 async function cmdGetTransportPK(options, args) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
@@ -589,16 +607,7 @@ async function cmdGetTransportPK(options, args) {
         Buffer.from([CMD.CRED_CMD_GET_TRANSPORT_PK_ATT])
     ]);
 
-    let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
-    let res = Buffer.from(resp.result, "hex");
-
-    if (res[0] !== 0x01) {
-        throw new HaloLogicError("Unsupported protocol version reported by the HaLo tag.");
-    }
-
-    return {
-        "data": res.slice(1).toString('hex')
-    }
+    return await _internalLoadPK(options, payload);
 }
 
 async function cmdLoadTransportPK(options, args) {
@@ -611,16 +620,7 @@ async function cmdLoadTransportPK(options, args) {
         Buffer.from(args.data, 'hex')
     ]);
 
-    let resp = await options.exec(payload, {pcscExecLayer: "u2f"});
-    let res = Buffer.from(resp.result, "hex");
-
-    if (res[0] !== 0x01) {
-        throw new HaloLogicError("Unsupported protocol version reported by the HaLo tag.");
-    }
-
-    return {
-        "data": res.slice(1).toString('hex')
-    }
+    return await _internalLoadPK(options, payload);
 }
 
 async function cmdExportKey(options, args) {
