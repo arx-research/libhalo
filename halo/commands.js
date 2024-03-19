@@ -324,7 +324,10 @@ async function cmdCfgNDEF(options, args) {
     ]);
     await options.exec(payload);
 
-    return {"status": "ok"};
+    return {
+        "status": "ok",
+        "cfgBytes": flagBuf.toString('hex').toUpperCase()
+    };
 }
 
 async function cmdGenKey(options, args) {
