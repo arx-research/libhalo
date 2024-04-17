@@ -38,7 +38,7 @@ async function execHaloCmdRN(nfcManager, command, options) {
 
     if (command.name === "read_ndef") {
         let wrappedTransceive = async (payload) => Buffer.from(await nfcManager.isoDepHandler.transceive([...payload]));
-        return await readNDEF(wrappedTransceive, {allowCache: true});
+        return await readNDEF(wrappedTransceive);
     } else {
         return await execHaloCmd(command, {
             method: 'nfc-manager',

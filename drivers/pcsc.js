@@ -63,7 +63,7 @@ async function getVersion(reader) {
     if (versionRes.slice(-2).compare(Buffer.from([0x90, 0x00])) !== 0) {
         // GET_FV_VERSION command not supported, fallback to NDEF
         let wrappedTransceive = async (payload) => await transceive(reader, payload, {noCheck: true});
-        let url = await readNDEF(wrappedTransceive, {allowCache: true});
+        let url = await readNDEF(wrappedTransceive);
 
         if (!url.qs.v) {
             return '01.C1.000001.00000000';
@@ -198,7 +198,7 @@ async function execHaloCmdPCSC(command, reader) {
     } else if (command.name === "read_ndef") {
         // PCSC-specific NDEF reader command
         let wrappedTransceive = async (payload) => await transceive(reader, payload, {noCheck: true});
-        return await readNDEF(wrappedTransceive, {allowCache: true});
+        return await readNDEF(wrappedTransceive);
     } else if (command.name === "full_gen_key") {
         await selectCore(reader);
 
