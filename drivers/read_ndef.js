@@ -8,15 +8,7 @@ const Buffer = require('buffer/').Buffer;
 const queryString = require('query-string');
 const {HaloLogicError} = require("../halo/exceptions");
 
-let cachedResult = null;
-
-async function readNDEF(transceive, options) {
-    options = options || {};
-
-    if (options.allowCache && cachedResult) {
-        return cachedResult;
-    }
-
+async function readNDEF(transceive) {
     let resSelect = await transceive(Buffer.from("00A4040007D276000085010100", "hex"));
 
     if (resSelect.compare(Buffer.from([0x90, 0x00])) !== 0) {
@@ -85,16 +77,10 @@ async function readNDEF(transceive, options) {
     fullBuf = fullBuf.slice(4 + skipLen, 4 + skipLen + lengthData);
     let parsed = queryString.parseUrl(fullBuf.toString());
 
-    let out = {
+    return {
         url: parsed.url,
         qs: {...parsed.query}
     };
-
-    if (options.allowCache) {
-        cachedResult = out;
-    }
-
-    return out;
 }
 
 module.exports = {readNDEF};
