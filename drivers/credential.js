@@ -4,13 +4,19 @@
  * License: MIT
  */
 
-const {HaloTagError, HaloLogicError, NFCOperationError, NFCMethodNotSupported} = require("../halo/exceptions");
+const {HaloTagError, NFCOperationError, NFCMethodNotSupported} = require("../halo/exceptions");
 const {ERROR_CODES} = require("../halo/errors");
-const {arr2hex} = require("../halo/util");
+const {arr2hex, isWebDebugEnabled} = require("../halo/util");
 
 const FLAG_USE_NEW_MODE = 0x00;
 
 async function execCredential(request, options) {
+    const webDebug = isWebDebugEnabled();
+
+    if (webDebug) {
+        console.log('[libhalo] execCredential() request:', arr2hex(request));
+    }
+
     if (!window.isSecureContext) {
         throw new NFCMethodNotSupported("This method can be invoked only in the secure context (HTTPS).");
     }
@@ -42,6 +48,10 @@ async function execCredential(request, options) {
         "signal": ctrl.signal
     };
 
+    if (webDebug) {
+        console.log('[libhalo] execCredential() req:', u2fReq);
+    }
+
     let u2fRes;
 
     options.statusCallback("init", {
@@ -53,11 +63,19 @@ async function execCredential(request, options) {
     try {
         u2fRes = await navigator.credentials.get(u2fReq);
     } catch (e) {
+        if (webDebug) {
+            console.log('[libhalo] execCredential() exception:', e);
+        }
+
         if (e.name === "NotSupportedError") {
             throw new NFCMethodNotSupported("The call threw NotSupportedError. Please update your browser.");
         } else {
             throw new NFCOperationError("Failed to execute command. " + e.name + ": " + e.message);
         }
+    }
+
+    if (webDebug) {
+        console.log('[libhalo] execCredential() res:', u2fRes);
     }
 
     options.statusCallback("scanned", {
@@ -70,12 +88,20 @@ async function execCredential(request, options) {
     let resBuf = new Uint8Array(res);
 
     if (resBuf.length === 2 && resBuf[0] === 0xE1) {
+        if (webDebug) {
+            console.log('[libhalo] execCredential() command fail:', arr2hex(resBuf));
+        }
+
         if (ERROR_CODES.hasOwnProperty(resBuf[1])) {
             let err = ERROR_CODES[resBuf[1]];
             throw new HaloTagError(err[0], err[1]);
         } else {
             throw new HaloTagError("Command returned an unknown error: " + arr2hex(resBuf));
         }
+    }
+
+    if (webDebug) {
+        console.log('[libhalo] execCredential() command result:', arr2hex(resBuf));
     }
 
     return await new Promise((resolve, reject) => {

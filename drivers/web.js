@@ -3,6 +3,7 @@ const {execCredential} = require("./credential");
 const {execWebNFC} = require("./webnfc");
 const {execHaloCmd} = require("./common");
 const {emulatedPromptStatusCallback} = require("../web/soft_prompt");
+const {isWebDebugEnabled} = require("../halo/util");
 
 let isCallRunning = null;
 
@@ -62,6 +63,11 @@ async function execHaloCmdWeb(command, options) {
     options.statusCallback = makeDefault(options.statusCallback, defaultStatusCallback);
 
     command = command ? Object.assign({}, command) : {};
+
+    if (isWebDebugEnabled()) {
+        console.log('[libhalo] execHaloCmdWeb() command:', command);
+        console.log('[libhalo] execHaloCmdWeb() options:', options);
+    }
 
     try {
         let cmdOpts = {};

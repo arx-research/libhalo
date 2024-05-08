@@ -108,6 +108,15 @@ Please check [documentation of the available commands (HaLo Command Set)](/docs/
 * **NFCOperationError**: There was a low-level failure during NFC interaction. Check `ex.message` for more details.
 
 
+# Debugging through the developer's console
+In case when you are suspecting some bugs related with LibHaLo or HaLo cards themselves and need a more detailed debugging, it is possible
+to enable additional debug printouts for the web drivers.
+
+Debug printouts are enabled by executing the following code, either in your application using LibHaLo or straight in the developer's console prompt itself:
+```
+localStorage.setItem('DEBUG_LIBHALO_WEB', '1')
+```
+
 # Helper methods exclusive to the web environment
 
 ## haloGetDefaultMethod()
