@@ -11,7 +11,7 @@ const {
     NFCPermissionRequestDenied,
     NFCAbortedError
 } = require("../halo/exceptions");
-const {arr2hex, hex2arr} = require("../halo/util");
+const {arr2hex, hex2arr, isWebDebugEnabled} = require("../halo/util");
 
 let ndef = null;
 let ctrl = null;
@@ -53,15 +53,30 @@ async function checkWebNFCPermission() {
 }
 
 async function execWebNFC(request, options) {
+    const webDebug = isWebDebugEnabled();
+
+    if (webDebug) {
+        console.log('[libhalo] execWebNFC() request:', arr2hex(request));
+        console.log('[libhalo] execWebNFC() checking WebNFC permission')
+    }
+
     let isWebNFCGranted;
 
     try {
         isWebNFCGranted = await checkWebNFCPermission();
     } catch (e) {
+        if (webDebug) {
+            console.log('[libhalo] execWebNFC() internal error checking WebNFC permission:', e);
+        }
+
         throw new NFCMethodNotSupported("Internal error when checking WebNFC permission: " + e.toString());
     }
 
     if (!isWebNFCGranted) {
+        if (webDebug) {
+            console.log('[libhalo] execWebNFC() WebNFC permission is denied');
+        }
+
         throw new NFCPermissionRequestDenied("NFC permission request denied by the user.");
     }
 
@@ -75,6 +90,10 @@ async function execWebNFC(request, options) {
         try {
             ndef = new NDEFReader();
         } catch (e) {
+            if (webDebug) {
+                console.log('[libhalo] execWebNFC() failed createing NDEFReader');
+            }
+
             if (e instanceof ReferenceError) {
                 throw new NFCMethodNotSupported("Method is not supported by the browser or device.");
             } else {
@@ -112,6 +131,10 @@ async function execWebNFC(request, options) {
                 });
             }
 
+            if (webDebug) {
+                console.log('[libhalo] execWebNFC() performing write:', request);
+            }
+
             await ndef.write({
                 records: [{recordType: "unknown", data: request}]
             }, {
@@ -119,6 +142,10 @@ async function execWebNFC(request, options) {
             });
             break;
         } catch (e) {
+            if (webDebug) {
+                console.log('[libhalo] execWebNFC() write exception:', e);
+            }
+
             if (e.name === "NotAllowedError") {
                 throw new NFCPermissionRequestDenied("NFC permission request denied by the user.");
             } else if (e.name === "AbortError") {
@@ -127,6 +154,10 @@ async function execWebNFC(request, options) {
                 writeStatus = "nfc-write-error";
             }
         }
+    }
+
+    if (webDebug) {
+        console.log('[libhalo] execWebNFC() performing read');
     }
 
     await ndef.scan({signal: ctrl.signal});
@@ -139,14 +170,26 @@ async function execWebNFC(request, options) {
 
     return new Promise((resolve, reject) => {
         ctrl.signal.addEventListener('abort', () => {
+            if (webDebug) {
+                console.log('[libhalo] execWebNFC() operation aborted during read');
+            }
+
             reject(new NFCAbortedError("Operation restarted by the user or webpage minimized (during read)."));
         });
 
         if (ctrl.signal.aborted) {
+            if (webDebug) {
+                console.log('[libhalo] execWebNFC() operation aborted during read');
+            }
+
             reject(new NFCAbortedError("Operation restarted by the user or webpage minimized (during read)."));
         }
 
         ndef.onreadingerror = (event) => {
+            if (webDebug) {
+                console.log('[libhalo] execWebNFC() read error');
+            }
+
             options.statusCallback("retry", {
                 execMethod: "webnfc",
                 execStep: "nfc-read-error",
@@ -155,10 +198,18 @@ async function execWebNFC(request, options) {
         };
 
         ndef.onreading = (event) => {
+            if (webDebug) {
+                console.log('[libhalo] execWebNFC() read event received, parsing');
+            }
+
             try {
                 let out = {};
                 let decoded = new TextDecoder("utf-8").decode(event.message.records[0].data);
                 let url = new URL(decoded);
+
+                if (webDebug) {
+                    console.log('[libhalo] execWebNFC() read result url:', url);
+                }
 
                 for (let k of url.searchParams.keys()) {
                     out[k] = url.searchParams.get(k);
@@ -167,6 +218,10 @@ async function execWebNFC(request, options) {
                 let resBuf = hex2arr(out.res);
 
                 if (resBuf[0] === 0xE1) {
+                    if (webDebug) {
+                        console.log('[libhalo] execWebNFC() command fail:', arr2hex(resBuf));
+                    }
+
                     if (ERROR_CODES.hasOwnProperty(resBuf[1])) {
                         let err = ERROR_CODES[resBuf[1]];
                         ndef.onreading = () => null;
@@ -192,6 +247,10 @@ async function execWebNFC(request, options) {
 
                 delete out['res'];
 
+                if (webDebug) {
+                    console.log('[libhalo] execWebNFC() command result:', arr2hex(resBuf));
+                }
+
                 setTimeout(() => {
                     resolve({
                         result: arr2hex(resBuf),
@@ -199,6 +258,10 @@ async function execWebNFC(request, options) {
                     });
                 }, 1);
             } catch (e) {
+                if (webDebug) {
+                    console.log('[libhalo] execWebNFC() parse error:', e);
+                }
+
                 options.statusCallback("retry", {
                     execMethod: "webnfc",
                     execStep: "nfc-parse-error",

@@ -187,6 +187,10 @@ function randomBuffer() {
     return Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
 }
 
+function isWebDebugEnabled() {
+    return window.localStorage.getItem("DEBUG_LIBHALO_WEB") === "1";
+}
+
 module.exports = {
     SECP256k1_ORDER,
     BJJ_ORDER,
@@ -198,5 +202,6 @@ module.exports = {
     parsePublicKeys,
     recoverPublicKey,
     mode,
-    randomBuffer
+    randomBuffer,
+    isWebDebugEnabled
 };
