@@ -50,7 +50,7 @@ jobs:
         include:
           - os: ubuntu-latest
           - os: windows-latest
-          - os: macos-latest
+          - os: macos-13
     name: Build halo-tools (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: create_release
@@ -60,7 +60,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y libpcsclite-dev
       - name: Install native dependencies (MacOS)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         run: |
           brew install python@3.11
           brew unlink python@3.11
@@ -129,7 +129,7 @@ jobs:
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.js
       - name: Package HaLo CLI tool (MacOS)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         shell: bash
         run: |
           cd cli
@@ -173,7 +173,7 @@ jobs:
             out_name: halo-tools-linux-x64.tgz
           - os: windows-latest
             out_name: halo-tools-win-x64.zip
-          - os: macos-latest
+          - os: macos-13
             out_name: halo-tools-macos-x64.pkg
     name: Sign halo-tools and release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -236,13 +236,13 @@ jobs:
         run: |
           Compress-Archive -Path halocli.exe,halo-bridge.exe,halo-gateway.exe halo-tools-win-x64.zip
       - name: Load signing credentials (Mac OS)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
         with:
           p12-file-base64: ${{ secrets.MACOS_SIGN_P12 }}
           p12-password: ${{ secrets.MACOS_SIGN_P12_PASSWORD }}
       - name: Sign application (Mac OS)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         run: |
           mkdir -p root/usr/local/bin/
           mkdir -p root/Applications/
@@ -260,11 +260,11 @@ jobs:
           chmod +x "./root/Applications/HaLo CLI Bridge Server.app/Contents/MacOS/halocli_bridge_launcher"
           pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --scripts "macos_pkgbuild_scripts/" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halo-tools-macos-x64.pkg
       - name: Notarize application for Mac OS
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         run: |
           xcrun notarytool submit "--apple-id=${{ secrets.MACOS_NOTARIZE_APPLE_ID }}" "--password=${{ secrets.MACOS_NOTARIZE_PASSWORD }}" "--team-id=${{ secrets.MACOS_NOTARIZE_TEAM_ID }}" --progress --wait ./halo-tools-macos-x64.pkg
       - name: Staple notarized application (Mac OS)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         run: |
           xcrun stapler staple ./halo-tools-macos-x64.pkg
           rm -rf ./root/
