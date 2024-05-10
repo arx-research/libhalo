@@ -1,0 +1,10 @@
+name: Test MacOS runner
+
+on: [push]
+
+jobs:
+  macos_test:
+    runs-on: macos-latest
+    steps:
+      - run: |
+          uname -a
