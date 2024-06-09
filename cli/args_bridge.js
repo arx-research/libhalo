@@ -39,6 +39,9 @@ parser.add_argument("--non-interactive", {
     action: "store_true",
     "default": false
 });
+parser.add_argument("--reader", {
+    help: "Name of the PC/SC reader to be used."
+});
 
 function parseArgs() {
     return parser.parse_args();
