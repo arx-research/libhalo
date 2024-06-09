@@ -38,14 +38,21 @@ async function checkCard(reader) {
 
 function runHalo(entryMode, args) {
     nfc.on('reader', reader => {
+        reader.autoProcessing = false;
+
+        reader.on('error', err => {
+            console.log(`${reader.reader.name} an error occurred`, err);
+        });
+
+        if (args.reader && args.reader !== reader.reader.name) {
+            return;
+        }
 
         if (args.name === "pcsc_detect") {
             console.log('Detected PC/SC reader:', reader.reader.name);
         } else if (entryMode === "server") {
             wsEventReaderConnected(reader);
         }
-
-        reader.autoProcessing = false;
 
         reader.on('card', card => {
             if (entryMode === "server") {
@@ -121,11 +128,6 @@ function runHalo(entryMode, args) {
                 wsEventReaderDisconnected(reader);
             }
         });
-
-        reader.on('error', err => {
-            console.log(`${reader.reader.name} an error occurred`, err);
-        });
-
     });
 
     nfc.on('error', err => {

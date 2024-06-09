@@ -12,6 +12,7 @@ const parser = new ArgumentParser({
     description: 'HaLo - Command Line Tool for PC/SC'
 });
 parser.add_argument("-o", "--output", {help: "Output format, either: color (default, better for humans), json (better for scripts).", "default": "color"});
+parser.add_argument("--reader", {help: "Name of the PC/SC reader to be used."});
 
 const subparsers = parser.add_subparsers({help: 'command', dest: 'name'});
 
