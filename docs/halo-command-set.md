@@ -860,8 +860,8 @@ The `spec` value is expected to be formatted as:
 Where the acceptable object types are:
 * `publicKey` - the uncompressed public key corresponding to the particular key slot;
 * `publicKeyAttest` - the public key's attest signature;
-* `keySlotFlags` - status flags corresponding to the particular key slot;
-* `keySlotFailedAuthCtr` - failed password authentication counter of the particular key slot;
+* `keySlotFlags` - status flags corresponding to the particular key slot (returned as an object);
+* `keySlotFailedAuthCtr` - failed password authentication counter of the particular key slot (returned as a number);
 * `latchValue` - value of the latch (possible object IDs: 1, 2);
 * `latchAttest` - attest signature of the latch;
 * `graffiti` - value of the rewritable data slot (possible object IDs: 1);
