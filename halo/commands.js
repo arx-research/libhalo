@@ -14,7 +14,7 @@ const EC = require("elliptic").ec;
 const CMD = require('./cmdcodes').CMD_CODES;
 const pbkdf2 = require('pbkdf2');
 const crypto = require('crypto-browserify');
-const {KEY_FLAGS} = require("./keyflags");
+const {KEY_FLAGS, parseKeyFlags} = require("./keyflags");
 
 const ec = new EC('secp256k1');
 
@@ -504,11 +504,7 @@ async function cmdGetKeyInfo(options, args) {
 
     return {
         keyState: {
-            isPasswordProtected: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_PWD_PROTECTED),
-            hasMandatoryPassword: !!(keyFlags & KEY_FLAGS.KEYFLG_MANDATORY_PASSWORD),
-            rawSignCommandNotUsed: !!(keyFlags & KEY_FLAGS.KEYFLG_SIGN_NOT_USED),
-            isImported: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_IMPORTED),
-            isExported: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_EXPORTED),
+            ...parseKeyFlags(keyFlags),
             failedAuthCounter: failedAuthCtr
         },
         publicKey: publicKey.toString('hex'),
@@ -764,6 +760,11 @@ async function cmdGetDataStruct(options, args) {
             } else {
                 value = {"error": 'unknown_' + msgCode.toString()};
             }
+        } else if (item[0] === "keySlotFlags") {
+            let keyFlags = res.slice(1, len + 1)[0];
+            value = parseKeyFlags(keyFlags);
+        } else if (item[0] === "keySlotFailedAuthCtr") {
+            value = res.slice(1, len + 1)[0];
         } else {
             const encoding = item[0] !== "graffiti" ? "hex" : "utf-8";
 

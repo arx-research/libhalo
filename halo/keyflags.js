@@ -13,4 +13,14 @@ const KEY_FLAGS = {
     KEYFLG_IS_EXPORTED:        0x20
 }
 
-module.exports = {KEY_FLAGS};
+function parseKeyFlags(keyFlags) {
+    return {
+        isPasswordProtected: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_PWD_PROTECTED),
+        hasMandatoryPassword: !!(keyFlags & KEY_FLAGS.KEYFLG_MANDATORY_PASSWORD),
+        rawSignCommandNotUsed: !!(keyFlags & KEY_FLAGS.KEYFLG_SIGN_NOT_USED),
+        isImported: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_IMPORTED),
+        isExported: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_EXPORTED)
+    };
+}
+
+module.exports = {KEY_FLAGS, parseKeyFlags};
