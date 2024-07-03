@@ -9,12 +9,15 @@ function haloCreateWs(url) {
     });
 }
 
-function runHealthCheck(url, openTimeout) {
+function runHealthCheck(url, openTimeout, createWebSocket) {
     return new Promise((resolve, reject) => {
         let closeTimeout = null;
 
         const pingUrl = url.includes('?') ? (url + '&ping=1') : (url + '?ping=1');
-        const wsp = new WebSocketAsPromised(pingUrl, {timeout: openTimeout});
+        const wsp = new WebSocketAsPromised(pingUrl, {
+            timeout: openTimeout,
+            createWebSocket: createWebSocket
+        });
 
         wsp.onClose.addListener(event => {
             if (event.code === 4090) {
@@ -41,13 +44,13 @@ function runHealthCheck(url, openTimeout) {
     });
 }
 
-function createChecks(wsPort, wssPort) {
+function createChecks(wsPort, wssPort, createWebSocket) {
     // detect Firefox
-    const isFirefox = window.hasOwnProperty("InternalError");
+    const isFirefox = typeof window !== "undefined" && window.hasOwnProperty("InternalError");
     const openTimeout = isFirefox ? 10000 : 5000;
 
     let checks = [
-        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws', openTimeout)
+        runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws', openTimeout, createWebSocket)
     ];
 
     if (!isFirefox) {
@@ -55,7 +58,7 @@ function createChecks(wsPort, wssPort) {
         // A call to wss:// endpoint with incorrect certificate could hang the request
         // for many seconds until it actually fails, and this would hang all remaining WS requests too.
         // We need to skip this check on Firefox to avoid race conditions and have reasonable performance.
-        checks.push(runHealthCheck('wss://halo-bridge.internal:' + wssPort + '/ws', openTimeout));
+        checks.push(runHealthCheck('wss://halo-bridge.internal:' + wssPort + '/ws', openTimeout, createWebSocket));
     }
 
     return checks;
@@ -74,9 +77,12 @@ async function haloFindBridge(options) {
 
     const wsPort = options.wsPort;
     const wssPort = options.wssPort;
+    const createWebSocket = options.createWebSocket
+        ? options.createWebSocket
+        : (url) => new WebSocket(url);
 
     if (options.diagnose) {
-        let res = await Promise.allSettled(createChecks(wsPort, wssPort));
+        let res = await Promise.allSettled(createChecks(wsPort, wssPort, createWebSocket));
         let urls = [];
         let errors = [];
 
@@ -94,7 +100,7 @@ async function haloFindBridge(options) {
         };
     } else {
         try {
-            return await Promise.any(createChecks(wsPort, wssPort));
+            return await Promise.any(createChecks(wsPort, wssPort, createWebSocket));
         } catch (e) {
             throw new Error("Unable to locate halo bridge.");
         }

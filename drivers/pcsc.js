@@ -5,11 +5,18 @@
  */
 
 const {readNDEF} = require("./read_ndef");
-const {HaloLogicError} = require("../halo/exceptions");
+const {HaloLogicError, NFCOperationError} = require("../halo/exceptions");
 const {execHaloCmd, checkErrors} = require("./common");
 
 async function selectCore(reader) {
-    let res = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
+    let res;
+
+    try {
+        res = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
+    } catch (e) {
+        throw new NFCOperationError(e.message);
+    }
+
     let statusCheck = res.slice(-2).compare(Buffer.from([0x91, 0x00])) !== 0;
 
     if (!statusCheck) {
@@ -35,7 +42,14 @@ async function transceive(reader, command, options) {
     options = options || {};
 
     let start = performance.now();
-    let res = await reader.transmit(command, 255);
+    let res;
+
+    try {
+        res = await reader.transmit(command, 255);
+    } catch (e) {
+        throw new NFCOperationError(e.message);
+    }
+
     let end = performance.now();
 
     if (process.env.DEBUG_PCSC === "1") {

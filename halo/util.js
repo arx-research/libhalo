@@ -188,7 +188,13 @@ function randomBuffer() {
 }
 
 function isWebDebugEnabled() {
-    return window.localStorage.getItem("DEBUG_LIBHALO_WEB") === "1";
+    return window && window.localStorage && window.localStorage.getItem("DEBUG_LIBHALO_WEB") === "1";
+}
+
+function webDebug(...args) {
+    if (isWebDebugEnabled()) {
+        console.log(...args);
+    }
 }
 
 module.exports = {
@@ -203,5 +209,6 @@ module.exports = {
     recoverPublicKey,
     mode,
     randomBuffer,
-    isWebDebugEnabled
+    isWebDebugEnabled,
+    webDebug,
 };

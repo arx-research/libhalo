@@ -5,6 +5,7 @@
  */
 
 const {HaloGateway} = require("../halo/gateway/requestor");
+const {HaloBridge} = require("../halo/bridge");
 const {haloFindBridge} = require("../web/web_utils");
 const {haloGateExecutorCreateWs, haloGateExecutorUserConfirm, haloGateExecutorSetHost} = require("../halo/gateway/executor");
 const {execHaloCmdWeb, detectMethod} = require("../drivers/web");
@@ -26,4 +27,7 @@ module.exports = {
     haloGateExecutorSetHost,
     haloGateExecutorCreateWs,
     haloGateExecutorUserConfirm,
+
+    // for web usage with bridge
+    HaloBridge
 };
