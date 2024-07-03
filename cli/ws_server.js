@@ -11,6 +11,7 @@ const os = require("os");
 const util = require("util");
 const {execHaloCmdPCSC} = require("../api/desktop");
 const {getBuildInfo} = require("./version");
+const {NFCOperationError} = require("../halo/exceptions");
 
 let wss = null;
 
@@ -256,7 +257,14 @@ function wsCreateServer(args, getReaderNames) {
         }
 
         let permitted = false;
-        let originHostname = new URL(req.headers.origin).hostname;
+        let originHostname;
+
+        try {
+            originHostname = new URL(req.headers.origin).hostname;
+        } catch (e) {
+            ws.close(4003, "Failed to parse origin URL.");
+            return;
+        }
 
         if (args.allowOrigins) {
             let allowedOrigins = args.allowOrigins.split(';');
@@ -298,7 +306,7 @@ function wsCreateServer(args, getReaderNames) {
             if (packet.type === "exec_halo") {
                 try {
                     if (!currentState || packet.handle !== currentState.handle) {
-                        throw new Error("Invalid handle.");
+                        throw new NFCOperationError("Invalid handle.");
                     }
 
                     let res = await execHaloCmdPCSC(packet.command, currentState.reader);
@@ -315,7 +323,9 @@ function wsCreateServer(args, getReaderNames) {
                         "uid": packet.uid,
                         "data": {
                             "exception": {
-                                "message": String(e),
+                                "kind": e.constructor.name,
+                                "name": e.name,
+                                "message": e.message,
                                 "stack": e.stack
                             }
                         }

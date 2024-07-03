@@ -3,6 +3,7 @@ const WebSocketAsPromised = require("websocket-as-promised");
 const crypto = require("crypto");
 const {JWEUtil} = require("../jwe_util");
 const {HaloLogicError, HaloTagError} = require("../exceptions");
+const {webDebug} = require("../util");
 
 function makeQR(url) {
     return new Promise((resolve, reject) => {
@@ -137,7 +138,10 @@ class HaloGateway {
     }
 
     async execHaloCmd(command) {
+        webDebug('[halo-requestor] called execHaloCmd()', command);
+
         if (this.isRunning) {
+            webDebug('[halo-requestor] rejecting a call, there is already a call pending');
             throw new Error("Can not make multiple calls to execHaloCmd() in parallel.");
         }
 
@@ -145,6 +149,7 @@ class HaloGateway {
         let nonce = crypto.randomBytes(8).toString('hex');
 
         try {
+            webDebug('[halo-requestor] sending request to execute command', nonce, command);
             let res = await this.ws.sendRequest({
                 "type": "request_cmd",
                 "payload": await this.jweUtil.encrypt({
@@ -154,6 +159,7 @@ class HaloGateway {
             });
 
             if (res.type !== "result_cmd") {
+                webDebug('[halo-requestor] unexpected packet type received', res);
                 throw new Error("Unexpected packet type.");
             }
 
@@ -163,18 +169,23 @@ class HaloGateway {
             try {
                 out = await this.jweUtil.decrypt(res.payload);
             } catch (e) {
+                webDebug('[halo-requestor] failed to validate or decrypt response JWE', e);
                 throw new Error("Failed to validate or decrypt response packet.");
             }
 
             if (out.nonce !== nonce) {
+                webDebug('[halo-requestor] mismatched nonce in reply JWE');
                 throw new Error("Mismatched nonce in reply.");
             }
 
             let resolution = out.response;
 
             if (resolution.status === "success") {
+                webDebug('[halo-requestor] returning with success', resolution.output);
                 return resolution.output;
             } else if (resolution.status === "exception") {
+                webDebug('[halo-requestor] command exception occurred');
+
                 let e;
 
                 switch (resolution.exception.kind) {
@@ -191,8 +202,10 @@ class HaloGateway {
                 }
 
                 e.stackOnExecutor = resolution.exception.stack;
+                webDebug('[halo-requestor] throwing exception as call result', e);
                 throw e;
             } else {
+                webDebug('[halo-requestor] unexpected status received');
                 throw new Error("Unexpected status received.");
             }
         } finally {
