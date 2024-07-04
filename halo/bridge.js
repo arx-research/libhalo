@@ -1,5 +1,6 @@
+const queryString = require("query-string");
 const WebSocketAsPromised = require("websocket-as-promised");
-const {HaloLogicError, HaloTagError, NFCOperationError} = require("./exceptions");
+const {HaloLogicError, HaloTagError, NFCOperationError, NFCBadTransportError, NFCAbortedError, NFCBridgeConsentError} = require("./exceptions");
 const {haloFindBridge} = require("../web/web_utils");
 const {webDebug} = require("./util");
 
@@ -10,6 +11,7 @@ class HaloBridge {
         this.isRunning = false;
         this.lastCommand = null;
         this.lastHandle = null;
+        this.url = null;
 
         this.createWebSocket = options.createWebSocket
             ? options.createWebSocket
@@ -19,11 +21,17 @@ class HaloBridge {
     waitForWelcomePacket() {
         return new Promise((resolve, reject) => {
             let welcomeWaitTimeout = setTimeout(() => {
-                reject(new Error("Server doesn't send ws_connected packet for 6 seconds after accepting the connection."));
+                reject(new NFCBadTransportError("Server doesn't send ws_connected packet for 6 seconds after accepting the connection."));
             }, 6000);
 
             this.ws.onClose.addListener((event) => {
-                reject(new Error("WebSocket closed when waiting for ws_connected packet. Reason: [" + event.code + "] " + event.reason));
+                if (event.code === 4002) {
+                    // no user consent
+                    reject(new NFCBridgeConsentError());
+                } else {
+                    reject(new NFCBadTransportError("WebSocket closed when waiting for ws_connected packet. " +
+                        "Reason: [" + event.code + "] " + event.reason));
+                }
             });
 
             this.ws.onUnpackedMessage.addListener(data => {
@@ -36,9 +44,9 @@ class HaloBridge {
     }
 
     async connect() {
-        let url = await haloFindBridge({createWebSocket: this.createWebSocket});
+        this.url = await haloFindBridge({createWebSocket: this.createWebSocket});
 
-        this.ws = new WebSocketAsPromised(url, {
+        this.ws = new WebSocketAsPromised(this.url, {
             createWebSocket: url => this.createWebSocket(url),
             packMessage: data => JSON.stringify(data),
             unpackMessage: data => JSON.parse(data),
@@ -64,9 +72,26 @@ class HaloBridge {
         };
     }
 
+    getConsentURL(websiteURL, options) {
+        if (!this.url) {
+            return null;
+        }
+
+        return this.url
+            .replace('ws://', 'http://')
+            .replace('wss://', 'https://')
+            .replace('/ws', '/consent?' + queryString.stringify({'website': websiteURL, ...options}));
+    }
+
+    async close() {
+        if (this.ws && this.ws.isOpened) {
+            await this.ws.close();
+        }
+    }
+
     async waitForHandle() {
         if (!this.ws.isOpened) {
-            throw new Error("Bridge is not open.");
+            throw new NFCBadTransportError("Bridge is not open.");
         }
 
         if (this.lastHandle) {
@@ -89,7 +114,7 @@ class HaloBridge {
                 this.ws.onUnpackedMessage.removeListener(msgListener);
                 this.ws.onClose.removeListener(closeListener);
 
-                reject(new Error("Bridge disconnected."));
+                reject(new NFCBadTransportError("Bridge server has disconnected."));
             };
 
             this.ws.onUnpackedMessage.addListener(msgListener);
@@ -102,7 +127,7 @@ class HaloBridge {
 
         if (this.isRunning) {
             webDebug('[halo-bridge] rejecting a call, there is already a call pending');
-            throw new Error("Can not make multiple calls to execHaloCmd() in parallel.");
+            throw new NFCAbortedError("Can not make multiple calls to execHaloCmd() in parallel.");
         }
 
         this.isRunning = true;
@@ -112,11 +137,18 @@ class HaloBridge {
             let handle = await this.waitForHandle();
 
             webDebug('[halo-bridge] sending request to execute command', handle);
-            let res = await this.ws.sendRequest({
-                "type": "exec_halo",
-                "handle": handle,
-                "command": command
-            });
+            let res;
+
+            try {
+                res = await this.ws.sendRequest({
+                    "type": "exec_halo",
+                    "handle": handle,
+                    "command": command
+                });
+            } catch (e) {
+                webDebug('[halo-bridge] exception when trying to sendRequest', e);
+                throw new NFCBadTransportError('Failed to send request: ' + e.toString());
+            }
 
             if (res.event === "exec_success") {
                 webDebug('[halo-bridge] returning with success', res);

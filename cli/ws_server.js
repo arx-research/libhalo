@@ -231,7 +231,7 @@ function wsCreateServer(args, getReaderNames) {
         let url = new URL(req.body.website);
         userConsentOrigins.add(url.protocol + '//' + url.host);
 
-        res.redirect(req.body.website);
+        res.render('consent_close.html');
     });
 
     server.on('upgrade', (request, socket, head) => {

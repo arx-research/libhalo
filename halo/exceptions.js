@@ -71,11 +71,34 @@ class NFCOperationError extends Error {
     }
 }
 
+/**
+ * The currently used transport (HaLo Bridge/Gateway) has failed permanently (for instance due to disconnect),
+ * and can no longer be used without creating a completely new instance first.
+ */
+class NFCBadTransportError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "NFCBadTransportError";
+    }
+}
+
+/**
+ * The current origin is not on the HaLo Bridge's allow list.
+ */
+class NFCBridgeConsentError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "NFCBridgeConsentError";
+    }
+}
+
 module.exports = {
     HaloTagError,
     HaloLogicError,
     NFCPermissionRequestDenied,
     NFCMethodNotSupported,
     NFCAbortedError,
-    NFCOperationError
+    NFCOperationError,
+    NFCBadTransportError,
+    NFCBridgeConsentError
 };
