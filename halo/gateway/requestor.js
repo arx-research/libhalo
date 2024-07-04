@@ -2,7 +2,7 @@ const QRCode = require("qrcode");
 const WebSocketAsPromised = require("websocket-as-promised");
 const crypto = require("crypto");
 const {JWEUtil} = require("../jwe_util");
-const {HaloLogicError, HaloTagError, NFCBadTransportError, NFCAbortedError} = require("../exceptions");
+const {HaloLogicError, HaloTagError, NFCBadTransportError, NFCAbortedError, NFCOperationError} = require("../exceptions");
 const {webDebug} = require("../util");
 
 function makeQR(url) {
@@ -233,6 +233,9 @@ class HaloGateway {
                         break;
                     case 'HaloTagError':
                         e = new HaloTagError(resolution.exception.name, resolution.exception.message);
+                        break;
+                    case 'NFCOperationError':
+                        e = new NFCOperationError(resolution.exception.message);
                         break;
                     default:
                         e = new Error("Unexpected exception occurred while executing the command. " +
