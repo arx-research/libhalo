@@ -231,7 +231,7 @@ function wsCreateServer(args, getReaderNames) {
         let url = new URL(req.body.website);
         userConsentOrigins.add(url.protocol + '//' + url.host);
 
-        res.redirect(req.body.website);
+        res.render('consent_close.html');
     });
 
     server.on('upgrade', (request, socket, head) => {
@@ -278,9 +278,9 @@ function wsCreateServer(args, getReaderNames) {
             permitted = true;
         }
 
-        if (originHostname === "127.0.0.1" || originHostname === "localhost" || originHostname === "halo-bridge.internal") {
-            permitted = true;
-        }
+        //if (originHostname === "127.0.0.1" || originHostname === "localhost" || originHostname === "halo-bridge.internal") {
+        //    permitted = true;
+        //} FIXME
 
         if (!permitted) {
             ws.close(4002, "Origin is not on the allow list and there was no user's consent.");

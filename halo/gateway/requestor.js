@@ -2,7 +2,7 @@ const QRCode = require("qrcode");
 const WebSocketAsPromised = require("websocket-as-promised");
 const crypto = require("crypto");
 const {JWEUtil} = require("../jwe_util");
-const {HaloLogicError, HaloTagError} = require("../exceptions");
+const {HaloLogicError, HaloTagError, NFCBadTransportError, NFCAbortedError} = require("../exceptions");
 const {webDebug} = require("../util");
 
 function makeQR(url) {
@@ -21,6 +21,8 @@ class HaloGateway {
     constructor(gatewayServer, options) {
         this.jweUtil = new JWEUtil();
         this.isRunning = false;
+        this.hasExecutor = false;
+        this.closeTimeout = null;
 
         this.lastCommand = null;
         this.gatewayServer = gatewayServer;
@@ -63,9 +65,28 @@ class HaloGateway {
         });
 
         this.ws.onUnpackedMessage.addListener(data => {
-            if (data.type === "executor_connected" && this.lastCommand) {
-                // existing executor connection was replaced, repeat last command
-                this.ws.sendPacked(this.lastCommand);
+            if (data.type === "executor_connected") {
+                if (this.lastCommand) {
+                    // existing executor connection was replaced, repeat last command
+                    this.ws.sendPacked(this.lastCommand);
+                }
+
+                this.hasExecutor = true;
+
+                if (this.closeTimeout !== null) {
+                    clearTimeout(this.closeTimeout);
+                    this.closeTimeout = null;
+                }
+
+                webDebug('[halo-requestor] executor had connected');
+            } else if (data.type === "executor_disconnected") {
+                this.hasExecutor = false;
+
+                if (this.closeTimeout === null) {
+                    this.closeTimeout = setTimeout(() => this.ws.close(), 3000);
+                }
+
+                webDebug('[halo-requestor] executor had disconnected');
             }
         });
     }
@@ -73,11 +94,11 @@ class HaloGateway {
     waitForWelcomePacket() {
         return new Promise((resolve, reject) => {
             let welcomeWaitTimeout = setTimeout(() => {
-                reject(new Error("Server doesn't send welcome packet for 6 seconds after accepting the connection."));
+                reject(new NFCBadTransportError("Server doesn't send welcome packet for 6 seconds after accepting the connection."));
             }, 6000);
 
             this.ws.onClose.addListener((event) => {
-                reject(new Error("WebSocket closed when waiting for welcome packet. Reason: [" + event.code + "] " + event.reason));
+                reject(new NFCBadTransportError("WebSocket closed when waiting for welcome packet. Reason: [" + event.code + "] " + event.reason));
             });
 
             this.ws.onUnpackedMessage.addListener(data => {
@@ -93,8 +114,9 @@ class HaloGateway {
         let sharedKey = await this.jweUtil.generateKey();
 
         let waitPromise = this.waitForWelcomePacket();
-        await this.ws.open();
-        let welcomeMsg = await waitPromise;
+        const promiseRes = await Promise.all([this.ws.open(), waitPromise]);
+        const welcomeMsg = promiseRes[1];
+
         let serverVersion = welcomeMsg.serverVersion;
 
         /**
@@ -126,7 +148,7 @@ class HaloGateway {
     waitConnected() {
         return new Promise((resolve, reject) => {
             this.ws.onClose.addListener((event) => {
-                reject(new Error("WebSocket closed when waiting for executor to connect. Reason: [" + event.code + "] " + event.reason));
+                reject(new NFCBadTransportError("WebSocket closed when waiting for executor to connect. Reason: [" + event.code + "] " + event.reason));
             });
 
             this.ws.onUnpackedMessage.addListener(data => {
@@ -142,7 +164,17 @@ class HaloGateway {
 
         if (this.isRunning) {
             webDebug('[halo-requestor] rejecting a call, there is already a call pending');
-            throw new Error("Can not make multiple calls to execHaloCmd() in parallel.");
+            throw new NFCAbortedError("Can not make multiple calls to execHaloCmd() in parallel.");
+        }
+
+        if (!this.ws.isOpened) {
+            webDebug('[halo-requestor] rejecting a call, socket is not open');
+            throw new NFCBadTransportError("Unable to execute command, there is no connection open.");
+        }
+
+        if (!this.hasExecutor) {
+            webDebug('[halo-requestor] rejecting a call, there is no executor connected');
+            throw new NFCBadTransportError("Unable to execute command, there is no executor connected.");
         }
 
         this.isRunning = true;
@@ -150,17 +182,24 @@ class HaloGateway {
 
         try {
             webDebug('[halo-requestor] sending request to execute command', nonce, command);
-            let res = await this.ws.sendRequest({
-                "type": "request_cmd",
-                "payload": await this.jweUtil.encrypt({
-                    nonce,
-                    command
-                })
-            });
+            let res;
+
+            try {
+                res = await this.ws.sendRequest({
+                    "type": "request_cmd",
+                    "payload": await this.jweUtil.encrypt({
+                        nonce,
+                        command
+                    })
+                });
+            } catch (e) {
+                webDebug('[halo-requestor] exception when trying to sendRequest', e);
+                throw new NFCBadTransportError('Failed to send request: ' + e.toString());
+            }
 
             if (res.type !== "result_cmd") {
                 webDebug('[halo-requestor] unexpected packet type received', res);
-                throw new Error("Unexpected packet type.");
+                throw new NFCBadTransportError("Unexpected packet type.");
             }
 
             this.lastCommand = null;
@@ -170,12 +209,12 @@ class HaloGateway {
                 out = await this.jweUtil.decrypt(res.payload);
             } catch (e) {
                 webDebug('[halo-requestor] failed to validate or decrypt response JWE', e);
-                throw new Error("Failed to validate or decrypt response packet.");
+                throw new NFCBadTransportError("Failed to validate or decrypt response packet.");
             }
 
             if (out.nonce !== nonce) {
                 webDebug('[halo-requestor] mismatched nonce in reply JWE');
-                throw new Error("Mismatched nonce in reply.");
+                throw new NFCBadTransportError("Mismatched nonce in reply.");
             }
 
             let resolution = out.response;
@@ -206,10 +245,16 @@ class HaloGateway {
                 throw e;
             } else {
                 webDebug('[halo-requestor] unexpected status received');
-                throw new Error("Unexpected status received.");
+                throw new NFCBadTransportError("Unexpected status received.");
             }
         } finally {
             this.isRunning = false;
+        }
+    }
+
+    async close() {
+        if (this.ws && this.ws.isOpened) {
+            await this.ws.close();
         }
     }
 }

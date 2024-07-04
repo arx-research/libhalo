@@ -188,7 +188,7 @@ function randomBuffer() {
 }
 
 function isWebDebugEnabled() {
-    return window && window.localStorage && window.localStorage.getItem("DEBUG_LIBHALO_WEB") === "1";
+    return typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("DEBUG_LIBHALO_WEB") === "1";
 }
 
 function webDebug(...args) {

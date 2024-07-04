@@ -10,7 +10,9 @@ const {
     NFCPermissionRequestDenied,
     NFCMethodNotSupported,
     NFCAbortedError,
-    NFCOperationError
+    NFCOperationError,
+    NFCBadTransportError,
+    NFCBridgeConsentError
 } = require("../halo/exceptions");
 const {
     parsePublicKeys, convertSignature, recoverPublicKey, sigToDer,
@@ -37,5 +39,7 @@ module.exports = {
     NFCPermissionRequestDenied,
     NFCMethodNotSupported,
     NFCAbortedError,
-    NFCOperationError
+    NFCOperationError,
+    NFCBadTransportError,
+    NFCBridgeConsentError
 };

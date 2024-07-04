@@ -134,7 +134,11 @@ function processExecutor(ws, req, sessionId) {
 
     ws.on('error', console.error);
 
-    ws.on('message', function message(data) {
+    ws.on('close', () => {
+        sobj.requestor.send(JSON.stringify({"type": "executor_disconnected"}));
+    });
+
+    ws.on('message', (data) => {
         let obj = JSON.parse(data);
 
         if (obj.type === "keepalive") {

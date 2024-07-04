@@ -1,4 +1,5 @@
 const WebSocketAsPromised = require('websocket-as-promised');
+const {NFCBadTransportError} = require("../halo/exceptions");
 
 function haloCreateWs(url) {
     return new WebSocketAsPromised(url, {
@@ -27,7 +28,7 @@ function runHealthCheck(url, openTimeout, createWebSocket) {
 
                 resolve(url);
             } else {
-                reject(new Error("Unexpected WebSocket close code: " + event.code));
+                reject(new NFCBadTransportError("Unexpected WebSocket close code: " + event.code));
             }
         });
 
@@ -35,7 +36,7 @@ function runHealthCheck(url, openTimeout, createWebSocket) {
             .then(() => {
                 closeTimeout = setTimeout(() => {
                     wsp.close();
-                    reject(new Error('WebSocket didn\'t close as expected.'));
+                    reject(new NFCBadTransportError('WebSocket didn\'t close as expected.'));
                 }, 2000);
             })
             .catch((err) => {
@@ -102,7 +103,7 @@ async function haloFindBridge(options) {
         try {
             return await Promise.any(createChecks(wsPort, wssPort, createWebSocket));
         } catch (e) {
-            throw new Error("Unable to locate halo bridge.");
+            throw new NFCBadTransportError("Unable to locate halo bridge.");
         }
     }
 }
