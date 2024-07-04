@@ -278,9 +278,9 @@ function wsCreateServer(args, getReaderNames) {
             permitted = true;
         }
 
-        //if (originHostname === "127.0.0.1" || originHostname === "localhost" || originHostname === "halo-bridge.internal") {
-        //    permitted = true;
-        //} FIXME
+        if (originHostname === "127.0.0.1" || originHostname === "localhost" || originHostname === "halo-bridge.internal") {
+            permitted = true;
+        }
 
         if (!permitted) {
             ws.close(4002, "Origin is not on the allow list and there was no user's consent.");
