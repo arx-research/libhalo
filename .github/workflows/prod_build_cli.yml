@@ -99,18 +99,18 @@ jobs:
         shell: bash
         run: |
           cd cli
-          node build/ci_scripts.js --platform linux --product cli
+          node build_scripts/ci_scripts.js --platform linux --product cli
           node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.js
-          node build/ci_scripts.js --platform linux --product bridge
+          node build_scripts/ci_scripts.js --platform linux --product bridge
           node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
-          node build/ci_scripts.js --platform linux --product gateway
+          node build_scripts/ci_scripts.js --platform linux --product gateway
           node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
       - name: Package HaLo CLI tool (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
         run: |
           cd cli
-          node build/ci_scripts.js --platform windows --product cli
+          node build_scripts/ci_scripts.js --platform windows --product cli
           cat halotools_version.json
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
@@ -121,7 +121,7 @@ jobs:
         shell: bash
         run: |
           cd cli
-          node build/ci_scripts.js --platform windows --product bridge
+          node build_scripts/ci_scripts.js --platform windows --product bridge
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
@@ -131,7 +131,7 @@ jobs:
         shell: bash
         run: |
           cd cli
-          node build/ci_scripts.js --platform windows --product gateway
+          node build_scripts/ci_scripts.js --platform windows --product gateway
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
@@ -141,11 +141,11 @@ jobs:
         shell: bash
         run: |
           cd cli
-          node build/ci_scripts.js --platform macos --product cli
+          node build_scripts/ci_scripts.js --platform macos --product cli
           node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halocli entry_cli.bundle.js
-          node build/ci_scripts.js --platform macos --product bridge
+          node build_scripts/ci_scripts.js --platform macos --product bridge
           node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
-          node build/ci_scripts.js --platform macos --product gateway
+          node build_scripts/ci_scripts.js --platform macos --product gateway
           node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
           mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
