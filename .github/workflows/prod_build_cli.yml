@@ -48,9 +48,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          #- os: ubuntu-latest
           - os: windows-latest
-          - os: macos-13
+          #- os: macos-13
     name: Build halo-tools (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: create_release
@@ -91,17 +91,18 @@ jobs:
         run: |
           cd cli
           ../node_modules/.bin/webpack
+          mv dist_webpack/* .
       - name: Package HaLo CLI tool (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           cd cli
           node build/ci_scripts.js --platform linux --product cli
-          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halocli dist_webpack/entry_cli.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.js
           node build/ci_scripts.js --platform linux --product bridge
-          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-bridge dist_webpack/entry_bridge.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
           node build/ci_scripts.js --platform linux --product gateway
-          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-gateway dist_webpack/entry_gateway.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
       - name: Package HaLo CLI tool (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
@@ -112,7 +113,7 @@ jobs:
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halocli.exe dist_webpack/entry_cli.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halocli.exe entry_cli.bundle.js
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
@@ -122,7 +123,7 @@ jobs:
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halo-bridge.exe dist_webpack/entry_bridge.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.bundle.js
       - name: Package HaLo Gateway tool (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
@@ -132,18 +133,18 @@ jobs:
           export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halo-gateway.exe dist_webpack/entry_gateway.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.bundle.js
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.os == 'macos-13'
         shell: bash
         run: |
           cd cli
           node build/ci_scripts.js --platform macos --product cli
-          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halocli dist_webpack/entry_cli.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halocli entry_cli.bundle.js
           node build/ci_scripts.js --platform macos --product bridge
-          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halo-bridge dist_webpack/entry_bridge.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
           node build/ci_scripts.js --platform macos --product gateway
-          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halo-gateway dist_webpack/entry_gateway.bundle.js
+          node_modules/.bin/pkg --compress GZip -t node18-macos-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
           mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
           mv "Entitlements.plist" "dist/Entitlements.plist"
@@ -174,12 +175,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            out_name: halo-tools-linux-x64.tgz
+          #- os: ubuntu-latest
+          #  out_name: halo-tools-linux-x64.tgz
           - os: windows-latest
             out_name: halo-tools-win-x64.zip
-          - os: macos-13
-            out_name: halo-tools-macos-x64.pkg
+          #- os: macos-13
+          #  out_name: halo-tools-macos-x64.pkg
     name: Sign halo-tools and release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
