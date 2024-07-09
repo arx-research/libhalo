@@ -1,12 +1,12 @@
-const path = require("path");
-const fs = require("fs");
-const { readFileSync, writeFileSync } = require('fs');
+import path from "path";
+import fs from "fs";
+import { readFileSync, writeFileSync } from 'fs';
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
-const { need, system } = require('pkg-fetch');
-const package_json = require('../package.json');
-const crypto = require("crypto");
-const {parseGitHubRef, getProductInfo} = require("./version_helper");
+import { need, system } from '@yao-pkg/pkg-fetch';
+import package_json from '../package.json' assert { type: "json" };
+import crypto from "crypto";
+import {parseGitHubRef, getProductInfo} from "./version_helper.js";
 
 const {
     hostArch,
@@ -93,7 +93,7 @@ async function fixBinary(name, bin_name, version) {
     writeFileSync(outPath, Buffer.from(executable.generate()));
     const fileHash = await computeSha256(outPath);
 
-    fs.appendFileSync('node_modules\\pkg-fetch\\lib-es5\\expected.js', '\n/** PATCHED **/ if (process.env.PKG_PATCHED_BIN === "1") {exports.EXPECTED_HASHES[\'' + nodeHashKey + '\'] = \'' + fileHash + '\';}');
+    fs.appendFileSync('node_modules\\@yao-pkg\\pkg-fetch\\lib-es5\\expected.js', '\n/** PATCHED **/ if (process.env.PKG_PATCHED_BIN === "1") {exports.EXPECTED_HASHES[\'' + nodeHashKey + '\'] = \'' + fileHash + '\';}');
 }
 
 async function doFixWinBinary(productType) {
@@ -108,4 +108,4 @@ async function doFixWinBinary(productType) {
     // $env:PKG_IGNORE_TAG = 1
 }
 
-module.exports = {doFixWinBinary};
+export {doFixWinBinary};

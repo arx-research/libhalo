@@ -4,30 +4,10 @@
  * License: MIT
  */
 
-const {
-    arr2hex, hex2arr
-} = require("../halo/util");
-const {__runTestSuite} = require("../halo/tests");
-const {haloCreateWs} = require("./web_utils");
+import * as all_exports from "./web_apis.js";
 
-module.exports = {
-    // libhalo web APIs
-    ...require('../api/common.js'),
-    ...require('../api/web.js'),
-
-    // extra utilities
-    arr2hex,
-    hex2arr,
-
-    // extra util for bridge demo
-    haloCreateWs,
-
-    // internal, do not use
-    __runTestSuite
-};
-
-if (window) {
-    Object.keys(module.exports).forEach((key) => {
-        window[key] = module.exports[key];
+if (typeof window !== "undefined") {
+    Object.keys(all_exports).forEach((key) => {
+        window[key] = all_exports[key];
     });
 }

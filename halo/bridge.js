@@ -1,8 +1,8 @@
-const queryString = require("query-string");
-const WebSocketAsPromised = require("websocket-as-promised");
-const {HaloLogicError, HaloTagError, NFCOperationError, NFCBadTransportError, NFCAbortedError, NFCBridgeConsentError} = require("./exceptions");
-const {haloFindBridge} = require("../web/web_utils");
-const {webDebug} = require("./util");
+import queryString from "query-string";
+import WebSocketAsPromised from "websocket-as-promised";
+import {HaloLogicError, HaloTagError, NFCOperationError, NFCBadTransportError, NFCAbortedError, NFCBridgeConsentError} from "./exceptions.js";
+import {haloFindBridge} from "../web/web_utils.js";
+import {webDebug} from "./util.js";
 
 class HaloBridge {
     constructor(options) {
@@ -188,6 +188,6 @@ class HaloBridge {
     }
 }
 
-module.exports = {
+export {
     HaloBridge
 };

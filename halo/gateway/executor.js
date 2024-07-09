@@ -1,7 +1,7 @@
-const {JWEUtil} = require("../jwe_util");
-const queryString = require("query-string");
-const WebSocketAsPromised = require("websocket-as-promised");
-const {execHaloCmdWeb} = require("../../drivers/web.js");
+import {JWEUtil} from "../jwe_util.js";
+import queryString from "query-string";
+import WebSocketAsPromised from "websocket-as-promised";
+import {execHaloCmdWeb} from "../../drivers/web.js";
 
 let gatewayServerHost = null;
 let currentCmd = null;
@@ -113,7 +113,7 @@ async function haloGateExecutorUserConfirm(logCallback) {
     });
 }
 
-module.exports = {
+export {
     haloGateExecutorSetHost,
     haloGateExecutorCreateWs,
     haloGateExecutorUserConfirm

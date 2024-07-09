@@ -4,19 +4,19 @@
  * License: MIT
  */
 
-const Buffer = require('buffer/').Buffer;
-const ethers = require('ethers');
-const {HaloLogicError, HaloTagError} = require("./exceptions");
-const {convertSignature, mode, parseSig, parsePublicKeys, randomBuffer, SECP256k1_ORDER, BJJ_ORDER, sigToDer} = require("./util");
-const {FLAGS} = require("./flags");
-const {sha256} = require("js-sha256");
-const EC = require("elliptic").ec;
-const CMD = require('./cmdcodes').CMD_CODES;
-const pbkdf2 = require('pbkdf2');
-const crypto = require('crypto-browserify');
-const {KEY_FLAGS, parseKeyFlags} = require("./keyflags");
+import {Buffer} from 'buffer/index.js';
+import {ethers} from 'ethers';
+import {HaloLogicError, HaloTagError} from "./exceptions.js";
+import {convertSignature, mode, parseSig, parsePublicKeys, randomBuffer, SECP256k1_ORDER, BJJ_ORDER, sigToDer} from "./util.js";
+import {FLAGS} from "./flags.js";
+import {sha256} from "js-sha256";
+import elliptic from 'elliptic';
+import {CMD_CODES as CMD} from './cmdcodes.js';
+import pbkdf2 from 'pbkdf2';
+import crypto from 'crypto-browserify';
+import {KEY_FLAGS, parseKeyFlags} from "./keyflags.js";
 
-const ec = new EC('secp256k1');
+const ec = new elliptic.ec('secp256k1');
 
 /**
  * NOTE: Since LibHaLo supports multiple driver backends which differ in their implementation and behavior,
@@ -814,7 +814,7 @@ async function cmdStoreGraffiti(options, args) {
     }
 }
 
-module.exports = {
+export {
     cmdSign,
     cmdSignRandom,
     cmdWriteLatch,

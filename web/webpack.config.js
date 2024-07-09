@@ -1,7 +1,14 @@
-const fs = require('fs');
-const webpack = require("webpack");
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-module.exports = {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+import fs from 'fs';
+import webpack from "webpack";
+import path from "path";
+
+export default {
     entry: {
         app: './weblib.js',
     },
@@ -12,9 +19,9 @@ module.exports = {
     target: 'web',
     resolve: {
         fallback: {
-            buffer: require.resolve('buffer/'),
-            crypto: require.resolve('crypto-browserify'),
-            stream: require.resolve('stream-browserify'),
+            buffer: path.resolve(__dirname, '../node_modules/buffer/index.js'),
+            crypto: path.resolve(__dirname, '../node_modules/crypto-browserify'),
+            stream: path.resolve(__dirname, '../node_modules/stream-browserify'),
         },
     },
     plugins: [

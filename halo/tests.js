@@ -4,10 +4,10 @@
  * License: MIT
  */
 
-const {HaloLogicError, HaloTagError} = require("../api/common");
-const EC = require('elliptic').ec;
+import {HaloLogicError, HaloTagError} from "../api/common.js";
+import elliptic from 'elliptic';
 
-const ec = new EC('secp256k1');
+const ec = new elliptic.ec('secp256k1');
 
 function assert(condition) {
     if (!condition) {
@@ -198,4 +198,4 @@ async function __runTestSuite(__unsafe, driver, exec) {
     };
 }
 
-module.exports = {__runTestSuite};
+export {__runTestSuite};

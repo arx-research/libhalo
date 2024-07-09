@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-const {Action, ArgumentError} = require("argparse");
+import {Action, ArgumentError} from "argparse";
 
 class JSONParseAction extends Action {
     constructor() {
@@ -20,4 +20,4 @@ class JSONParseAction extends Action {
     }
 }
 
-module.exports = {JSONParseAction};
+export {JSONParseAction};

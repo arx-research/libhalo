@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-const {ArgumentParser} = require("argparse");
-const {JSONParseAction} = require("./actions");
-const {printVersionInfo} = require("./version");
+import {ArgumentParser} from "argparse";
+import {JSONParseAction} from "./actions.js";
+import {printVersionInfo} from "./version.js";
 
 const parser = new ArgumentParser({
     description: 'HaLo - Command Line Tool for PC/SC'
@@ -396,4 +396,4 @@ function parseArgs() {
     return args;
 }
 
-module.exports = {parseArgs};
+export {parseArgs};

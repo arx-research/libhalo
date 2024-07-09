@@ -10,8 +10,8 @@ npm i --save @arx-research/libhalo
 Import the libraries:
 
 ```javascript
-const {NFC} = require('nfc-pcsc');
-const {execHaloCmdPCSC} = require('@arx-research/libhalo/api/desktop');
+import {NFC} from 'nfc-pcsc';
+import {execHaloCmdPCSC} from '@arx-research/libhalo/api/desktop';
 ```
 
 Implement basic code:

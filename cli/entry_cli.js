@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-const {parseArgs} = require('./args_cli.js');
-const {runHalo} = require("./cli");
-const {printVersionInfo, getVersionInfo} = require("./version");
+import {parseArgs} from './args_cli.js';
+import {runHalo} from "./cli.js";
+import {printVersionInfo, getVersionInfo} from "./version.js";
 
 let args = parseArgs();
 

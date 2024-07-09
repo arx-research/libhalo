@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-const {readNDEF} = require("./read_ndef");
-const {HaloLogicError, NFCOperationError} = require("../halo/exceptions");
-const {execHaloCmd, checkErrors} = require("./common");
+import {readNDEF} from "./read_ndef.js";
+import {HaloLogicError, NFCOperationError} from "../halo/exceptions.js";
+import {execHaloCmd, checkErrors} from "./common.js";
 
 async function selectCore(reader) {
     let res;
@@ -246,4 +246,4 @@ async function execHaloCmdPCSC(command, reader) {
     }
 }
 
-module.exports = {execHaloCmdPCSC};
+export {execHaloCmdPCSC};

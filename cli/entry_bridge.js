@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-const {parseArgs} = require('./args_bridge.js');
-const {runHalo} = require("./cli");
-const {printVersionInfo} = require("./version");
+import {parseArgs} from './args_bridge.js';
+import {runHalo} from "./cli.js";
+import {printVersionInfo} from "./version.js";
 
 let args = parseArgs();
 

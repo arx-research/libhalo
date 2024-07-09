@@ -4,14 +4,14 @@
  * License: MIT
  */
 
-const Buffer = require('buffer/').Buffer;
-const EC = require('elliptic').ec;
-const ethers = require('ethers');
-const {HaloLogicError} = require("./exceptions");
-const {webcrypto: crypto} = require("crypto");
-const BN = require('bn.js').BN;
+import {Buffer} from 'buffer/index.js';
+import elliptic from 'elliptic';
+import {ethers} from 'ethers';
+import {HaloLogicError} from "./exceptions.js";
+import crypto from "crypto";
+import {BN} from 'bn.js';
 
-const ec = new EC('secp256k1');
+const ec = new elliptic.ec('secp256k1');
 
 const SECP256k1_ORDER = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
 const BJJ_ORDER = 0x060c89ce5c263405370a08b6d0302b0bab3eedb83920ee0a677297dc392126f1n;
@@ -197,7 +197,7 @@ function webDebug(...args) {
     }
 }
 
-module.exports = {
+export {
     SECP256k1_ORDER,
     BJJ_ORDER,
     hex2arr,

@@ -48,4 +48,4 @@ const CMD_CODES = {
     "CRED_CMD_IMPORT_KEY": 0xAA,
 };
 
-module.exports = {CMD_CODES};
+export {CMD_CODES};

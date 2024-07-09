@@ -4,17 +4,17 @@
  * License: MIT
  */
 
-const {
+import {
     HaloLogicError,
     HaloTagError
-} = require("../halo/exceptions");
-const {
+} from "../halo/exceptions.js";
+import {
     cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm, cmdGenKeyFinalize,
     cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword, cmdReplacePassword, cmdGetKeyInfo,
     cmdGetTransportPK, cmdLoadTransportPK, cmdExportKey, cmdImportKey, cmdImportKeyInit, cmdGetDataStruct,
     cmdGetGraffiti, cmdStoreGraffiti
-} = require("../halo/commands");
-const {ERROR_CODES} = require("../halo/errors");
+} from "../halo/commands.js";
+import {ERROR_CODES} from "../halo/errors.js";
 
 async function execHaloCmd(command, options) {
     command = Object.assign({}, command);
@@ -83,7 +83,7 @@ function checkErrors(res) {
     }
 }
 
-module.exports = {
+export {
     execHaloCmd,
     checkErrors
 };

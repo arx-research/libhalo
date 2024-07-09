@@ -1,9 +1,9 @@
-const QRCode = require("qrcode");
-const WebSocketAsPromised = require("websocket-as-promised");
-const crypto = require("crypto");
-const {JWEUtil} = require("../jwe_util");
-const {HaloLogicError, HaloTagError, NFCBadTransportError, NFCAbortedError, NFCOperationError} = require("../exceptions");
-const {webDebug} = require("../util");
+import QRCode from "qrcode";
+import WebSocketAsPromised from "websocket-as-promised";
+import crypto from "crypto";
+import {JWEUtil} from "../jwe_util.js";
+import {HaloLogicError, HaloTagError, NFCBadTransportError, NFCAbortedError, NFCOperationError} from "../exceptions.js";
+import {webDebug} from "../util.js";
 
 function makeQR(url) {
     return new Promise((resolve, reject) => {
@@ -262,6 +262,6 @@ class HaloGateway {
     }
 }
 
-module.exports = {
+export {
     HaloGateway
 };

@@ -4,14 +4,14 @@
  * License: MIT
  */
 
-const {execHaloCmdPCSC} = require("../drivers/pcsc");
-const {HaloGateway} = require("../halo/gateway/requestor");
+import {execHaloCmdPCSC} from "../drivers/pcsc.js";
+import {HaloGateway} from "../halo/gateway/requestor.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
  * except the lib's index.js. The library's structure is subject to change in the next versions.
  */
-module.exports = {
+export {
     // for desktop usage
     execHaloCmdPCSC,
     HaloGateway

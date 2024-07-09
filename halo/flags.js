@@ -23,4 +23,4 @@ const FLAGS = {
     flagRNDSIGUseBJJ62: [1, 0x40]
 };
 
-module.exports = {FLAGS};
+export {FLAGS};

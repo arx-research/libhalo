@@ -37,4 +37,4 @@ function getProductInfo(productType) {
     return {name, binName};
 }
 
-module.exports = {parseGitHubRef, getProductInfo};
+export {parseGitHubRef, getProductInfo};

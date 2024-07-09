@@ -4,10 +4,10 @@
  * License: MIT
  */
 
-const {checkErrors, execHaloCmd} = require("./common");
-const {HaloLogicError} = require("../halo/exceptions");
-const {readNDEF} = require("./read_ndef");
-const Buffer = require('buffer/').Buffer;
+import {checkErrors, execHaloCmd} from "./common.js";
+import {HaloLogicError} from "../halo/exceptions.js";
+import {readNDEF} from "./read_ndef.js";
+import {Buffer} from 'buffer/index.js';
 
 async function execCoreCommandRN(nfcManager, command) {
     let selectCmd = [...Buffer.from("00A4040007481199130E9F0100", "hex")];
@@ -47,4 +47,4 @@ async function execHaloCmdRN(nfcManager, command, options) {
     }
 }
 
-module.exports = {execHaloCmdRN};
+export {execHaloCmdRN};

@@ -4,23 +4,23 @@
  * License: MIT
  */
 
-const {HaloGateway} = require("../halo/gateway/requestor");
-const {HaloBridge} = require("../halo/bridge");
-const {haloFindBridge} = require("../web/web_utils");
-const {haloGateExecutorCreateWs, haloGateExecutorUserConfirm, haloGateExecutorSetHost} = require("../halo/gateway/executor");
-const {execHaloCmdWeb, detectMethod} = require("../drivers/web");
-const {checkWebNFCPermission} = require("../drivers/webnfc");
+import {HaloGateway} from "../halo/gateway/requestor.js";
+import {HaloBridge} from "../halo/bridge.js";
+import {haloFindBridge} from "../web/web_utils.js";
+import {haloGateExecutorCreateWs, haloGateExecutorUserConfirm, haloGateExecutorSetHost} from "../halo/gateway/executor.js";
+import {execHaloCmdWeb, detectMethod} from "../drivers/web.js";
+import {checkWebNFCPermission} from "../drivers/webnfc.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
  * except the lib's index.js. The library's structure is subject to change in the next versions.
  */
-module.exports = {
+export {
     // for web usage
     execHaloCmdWeb,
     haloFindBridge,
-    haloGetDefaultMethod: detectMethod,
-    haloCheckWebNFCPermission: checkWebNFCPermission,
+    detectMethod as haloGetDefaultMethod,
+    checkWebNFCPermission as haloCheckWebNFCPermission,
 
     // for web usage with gateway
     HaloGateway,

@@ -4,21 +4,21 @@
  * License: MIT
  */
 
-const Buffer = require('buffer/').Buffer;
-const {NFC} = require('nfc-pcsc');
-const open = require('open');
+import {Buffer} from 'buffer/index.js';
+import {NFC} from 'nfc-pcsc';
+import open from 'open';
 
-const {__runTestSuite} = require("../halo/tests");
-const util = require("util");
-const {
+import {__runTestSuite} from "../halo/tests.js";
+import util from "util";
+import {
     wsEventCardDisconnected,
     wsCreateServer,
     wsEventCardConnected,
     wsEventReaderConnected,
     wsEventCardIncompatible,
     wsEventReaderDisconnected
-} = require("./ws_server");
-const {execHaloCmdPCSC} = require("../api/desktop");
+} from "./ws_server.js";
+import {execHaloCmdPCSC} from "../api/desktop.js";
 
 const nfc = new NFC();
 let stopPCSCTimeout = null;
@@ -174,4 +174,4 @@ function runHalo(entryMode, args) {
     }
 }
 
-module.exports = {runHalo};
+export {runHalo};

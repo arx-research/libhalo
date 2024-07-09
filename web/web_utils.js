@@ -1,5 +1,5 @@
-const WebSocketAsPromised = require('websocket-as-promised');
-const {NFCBadTransportError} = require("../halo/exceptions");
+import WebSocketAsPromised from 'websocket-as-promised';
+import {NFCBadTransportError} from "../halo/exceptions.js";
 
 function haloCreateWs(url) {
     return new WebSocketAsPromised(url, {
@@ -108,4 +108,4 @@ async function haloFindBridge(options) {
     }
 }
 
-module.exports = {haloCreateWs, haloFindBridge};
+export {haloCreateWs, haloFindBridge};
