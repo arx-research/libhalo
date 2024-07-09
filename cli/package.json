@@ -43,18 +43,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.0",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
     "nfc-pcsc": "^0.8.1",
-    "nunjucks": "^3.2.3",
-    "open": "^8.4.2",
-    "websocket-as-promised": "^2.0.1",
-    "ws": "^8.13.0"
+    "nunjucks": "^3.2.4",
+    "open": "^10.1.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@yao-pkg/pkg": "^5.12.0",
-    "resedit": "^2.0.0",
-    "webpack": "^5.76.2",
-    "webpack-cli": "^5.0.1"
+    "resedit": "^2.0.2",
+    "webpack": "^5.92.1",
+    "webpack-cli": "^5.1.4"
   }
 }

@@ -1,6 +1,5 @@
 # LibHaLo
 
-[![Integrity check](https://github.com/arx-research/libhalo/actions/workflows/prod_integrity_check.yml/badge.svg?branch=master)](https://github.com/arx-research/libhalo/actions/workflows/prod_integrity_check.yml)
 [![Release halocli tool](https://github.com/arx-research/libhalo/actions/workflows/prod_build_cli.yml/badge.svg)](https://github.com/arx-research/libhalo/actions/workflows/prod_build_cli.yml)
 [![Release libhalo.js](https://github.com/arx-research/libhalo/actions/workflows/prod_build_lib.yml/badge.svg)](https://github.com/arx-research/libhalo/actions/workflows/prod_build_lib.yml)
 

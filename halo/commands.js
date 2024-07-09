@@ -61,7 +61,7 @@ async function cmdGetPkeys(options, args) {
 
     for (let pkNo of Object.keys(publicKeys)) {
         compressedPublicKeys[pkNo] = ec.keyFromPublic(publicKeys[pkNo], 'hex').getPublic().encodeCompressed('hex');
-        etherAddresses[pkNo] = ethers.utils.computeAddress('0x' + publicKeys[pkNo]);
+        etherAddresses[pkNo] = ethers.computeAddress('0x' + publicKeys[pkNo]);
     }
 
     return {publicKeys, compressedPublicKeys, etherAddresses};
@@ -102,12 +102,12 @@ async function cmdSign(options, args) {
             throw new HaloLogicError("Invalid message format specified. Valid formats: text, hex.");
         }
 
-        digestBuf = Buffer.from(ethers.utils.hashMessage([...messageBuf]).slice(2), "hex");
+        digestBuf = Buffer.from(ethers.hashMessage(messageBuf).slice(2), "hex");
     } else if (args.hasOwnProperty("typedData") && typeof args.typedData !== "undefined") {
         let hashStr;
 
         try {
-            hashStr = ethers.utils._TypedDataEncoder.hash(args.typedData.domain, args.typedData.types, args.typedData.value);
+            hashStr = ethers.TypedDataEncoder.hash(args.typedData.domain, args.typedData.types, args.typedData.value);
         } catch (e) {
             throw new HaloLogicError("Unable to encode typed data. Please check if the data provided conforms to the required schema.");
         }
@@ -208,8 +208,8 @@ async function cmdSign(options, args) {
     } else if (args.typedData) {
         inputObj.typedData = args.typedData;
 
-        inputObj.primaryType = ethers.utils._TypedDataEncoder.getPrimaryType(args.typedData.types);
-        inputObj.domainHash = ethers.utils._TypedDataEncoder.hashDomain(args.typedData.domain).slice(2);
+        inputObj.primaryType = ethers.TypedDataEncoder.getPrimaryType(args.typedData.types);
+        inputObj.domainHash = ethers.TypedDataEncoder.hashDomain(args.typedData.domain).slice(2);
     }
 
     if (args.keyNo >= 0x60) {
@@ -227,7 +227,7 @@ async function cmdSign(options, args) {
             "input": inputObj,
             "signature": convertSignature(digestBuf.toString('hex'), sig, publicKey.toString('hex'), SECP256k1_ORDER),
             "publicKey": publicKey.toString('hex'),
-            "etherAddress": ethers.utils.computeAddress('0x' + publicKey.toString('hex'))
+            "etherAddress": ethers.computeAddress('0x' + publicKey.toString('hex'))
         };
     } else {
         return {
