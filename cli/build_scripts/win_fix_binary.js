@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs";
+import ResEdit from "resedit";
 import { readFileSync, writeFileSync } from 'fs';
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
@@ -27,9 +28,6 @@ function computeSha256(filePath) {
 }
 
 async function fixBinary(name, bin_name, version) {
-    // unable to normally require, this is ES6 module
-    const ResEdit = await import('resedit');
-
     if (package_json['pkg']['targets'].length !== 1) {
         throw Error("Only one pkg target is supported");
     }
@@ -88,12 +86,14 @@ async function fixBinary(name, bin_name, version) {
     }
 
     const nodeBinBase = path.basename(nodeBinPath);
-    const nodeHashKey = nodeBinBase.replace('fetched-', 'node-');
     const outPath = path.join(".pkg-cache", nodeBinBase);
     writeFileSync(outPath, Buffer.from(executable.generate()));
     const fileHash = await computeSha256(outPath);
 
-    fs.appendFileSync('node_modules\\@yao-pkg\\pkg-fetch\\lib-es5\\expected.js', '\n/** PATCHED **/ if (process.env.PKG_PATCHED_BIN === "1") {exports.EXPECTED_HASHES[\'' + nodeHashKey + '\'] = \'' + fileHash + '\';}');
+    const expectedShasPath = 'node_modules\\@yao-pkg\\pkg-fetch\\lib-es5\\expected-shas.json';
+    let expectedShas = JSON.parse(fs.readFileSync(expectedShasPath, 'utf-8'));
+    expectedShas[nodeBinBase] = fileHash;
+    fs.writeFileSync(expectedShasPath, JSON.stringify(expectedShas, null, 4), {encoding: 'utf-8'});
 }
 
 async function doFixWinBinary(productType) {
@@ -103,7 +103,6 @@ async function doFixWinBinary(productType) {
     await fixBinary(name, binName, version);
 
     // run pkg with:
-    // $env:PKG_PATCHED_BIN = 1
     // $env:PKG_CACHE_PATH = './.pkg-cache/'
     // $env:PKG_IGNORE_TAG = 1
 }
