@@ -230,7 +230,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2.1.0
         if: matrix.platform == 'windows'
         with:
-          skip_install: true
+          install_components: 'gcloud'
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
       - name: Sign application (Windows)
         if: matrix.platform == 'windows'
