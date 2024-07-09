@@ -156,7 +156,7 @@ jobs:
           cd cli/dist
           tar -pczf ../dist.tgz .
       - name: Install cosign
-        uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8
+        uses: sigstore/cosign-installer@v3.5.0
       - name: Sign output with cosign
         run: |
           echo y | cosign sign-blob ./cli/dist.tgz --output-certificate ./cli/dist.tgz-keyless.pem --output-signature ./cli/dist.tgz-keyless.sig
@@ -191,11 +191,11 @@ jobs:
     needs: build_cli_tool
     steps:
       - name: Download binary from artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: binary-${{ matrix.os }}
       - name: Install cosign
-        uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8
+        uses: sigstore/cosign-installer@v3.5.0
       - name: Validate signatures from previous stage
         shell: bash
         run: |
@@ -280,7 +280,7 @@ jobs:
           xcrun stapler staple ./halo-tools-macos-x64.pkg
           rm -rf ./root/
       - name: Download release upload URL
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-upload-url
       - name: Store release upload URL output
