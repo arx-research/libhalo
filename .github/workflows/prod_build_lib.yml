@@ -36,7 +36,7 @@ jobs:
       - name: Store release upload URL
         run: |
           echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: release-upload-url
           path: release-upload-url.txt
