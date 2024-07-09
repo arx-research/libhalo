@@ -117,8 +117,6 @@ jobs:
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halocli.exe entry_cli.bundle.js
-          find ./.pkg-cache/
-          find -type f ./.pkg-cache/ | xargs -I{} sha256sum {}
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
