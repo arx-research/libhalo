@@ -3,3 +3,5 @@
 /web/dist/
 /cli/node_modules/
 /cli/dist/
+/cli/dist_webpack/
+
