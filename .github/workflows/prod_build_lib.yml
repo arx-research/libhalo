@@ -30,7 +30,6 @@ jobs:
             Release contents:
             * `libhalo.js` - standalone JavaScript library for inclusion in classic HTML applications;
             * `libhalo.js.LICENSE` - license information;
-            * `libhalo-npm-hash.txt` - integrity hash of the package released to npmjs.com and GitHub Packages;
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
       - name: Store release upload URL
