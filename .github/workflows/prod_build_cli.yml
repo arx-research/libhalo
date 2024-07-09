@@ -101,11 +101,11 @@ jobs:
         run: |
           cd cli
           node ./build_scripts/ci_scripts.js --platform linux --product cli
-          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli dist_webpack/entry_cli.bundle.js
           node ./build_scripts/ci_scripts.js --platform linux --product bridge
-          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-bridge dist_webpack/entry_bridge.bundle.js
           node ./build_scripts/ci_scripts.js --platform linux --product gateway
-          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-gateway dist_webpack/entry_gateway.bundle.js
       - name: Package HaLo CLI tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
@@ -114,7 +114,7 @@ jobs:
           node ./build_scripts/ci_scripts.js --platform windows --product cli
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halocli.exe entry_cli.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halocli.exe dist_webpack/entry_cli.bundle.js
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
@@ -123,7 +123,7 @@ jobs:
           node ./build_scripts/ci_scripts.js --platform windows --product bridge
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-bridge.exe dist_webpack/entry_bridge.bundle.js
       - name: Package HaLo Gateway tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
@@ -132,18 +132,18 @@ jobs:
           node ./build_scripts/ci_scripts.js --platform windows --product gateway
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-gateway.exe dist_webpack/entry_gateway.bundle.js
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.platform == 'macos'
         shell: bash
         run: |
           cd cli
           node ./build_scripts/ci_scripts.js --platform macos --product cli
-          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halocli entry_cli.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halocli dist_webpack/entry_cli.bundle.js
           node ./build_scripts/ci_scripts.js --platform macos --product bridge
-          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-bridge dist_webpack/entry_bridge.bundle.js
           node ./build_scripts/ci_scripts.js --platform macos --product gateway
-          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-gateway dist_webpack/entry_gateway.bundle.js
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
           mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
           mv "Entitlements.plist" "dist/Entitlements.plist"
