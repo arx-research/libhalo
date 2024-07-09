@@ -54,7 +54,7 @@ jobs:
       - name: Install Node.JS
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - name: Install dependencies (root)
         run: |
           yarn install --frozen-lockfile --production=false
@@ -141,7 +141,7 @@ jobs:
       - name: Setup Node.JS
         uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: 20
           registry-url: 'https://registry.npmjs.org'
       - name: Run npm ci
         run: yarn install --frozen-lockfile --production=false
@@ -152,7 +152,7 @@ jobs:
       - name: Re-setup Node.JS with GitHub pkg
         uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: 20
           registry-url: https://npm.pkg.github.com/
       - name: Publish package to GitHub
         run: yarn publish
