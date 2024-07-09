@@ -102,19 +102,18 @@ jobs:
         shell: bash
         run: |
           cd cli/dist_webpack
-          node build_scripts/ci_scripts.js --platform linux --product cli
+          node ../build_scripts/ci_scripts.js --platform linux --product cli
           node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.js
-          node build_scripts/ci_scripts.js --platform linux --product bridge
+          node ../build_scripts/ci_scripts.js --platform linux --product bridge
           node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
-          node build_scripts/ci_scripts.js --platform linux --product gateway
+          node ../build_scripts/ci_scripts.js --platform linux --product gateway
           node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
       - name: Package HaLo CLI tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
         run: |
           cd cli/dist_webpack
-          node build_scripts/ci_scripts.js --platform windows --product cli
-          cat halotools_version.json
+          node ../build_scripts/ci_scripts.js --platform windows --product cli
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halocli.exe entry_cli.bundle.js
@@ -123,7 +122,7 @@ jobs:
         shell: bash
         run: |
           cd cli/dist_webpack
-          node build_scripts/ci_scripts.js --platform windows --product bridge
+          node ../build_scripts/ci_scripts.js --platform windows --product bridge
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.bundle.js
@@ -132,7 +131,7 @@ jobs:
         shell: bash
         run: |
           cd cli/dist_webpack
-          node build_scripts/ci_scripts.js --platform windows --product gateway
+          node ../build_scripts/ci_scripts.js --platform windows --product gateway
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.bundle.js
@@ -141,11 +140,11 @@ jobs:
         shell: bash
         run: |
           cd cli/dist_webpack
-          node build_scripts/ci_scripts.js --platform macos --product cli
+          node ../build_scripts/ci_scripts.js --platform macos --product cli
           node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halocli entry_cli.bundle.js
-          node build_scripts/ci_scripts.js --platform macos --product bridge
+          node ../build_scripts/ci_scripts.js --platform macos --product bridge
           node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
-          node build_scripts/ci_scripts.js --platform macos --product gateway
+          node ../build_scripts/ci_scripts.js --platform macos --product gateway
           node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
           mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
