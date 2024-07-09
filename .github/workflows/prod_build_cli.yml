@@ -96,7 +96,6 @@ jobs:
           mkdir dist_webpack/build
           cp node_modules/@pokusew/pcsclite/build/Release/pcsclite.node dist_webpack/build/pcsclite.node
           cp package.json dist_webpack/
-          cp halotools_version.json dist_webpack/
           cp -r assets dist_webpack/
       - name: Package HaLo CLI tool (Linux)
         if: matrix.platform == 'ubuntu'
