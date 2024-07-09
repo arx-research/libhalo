@@ -3,7 +3,7 @@ import fs from "fs";
 import { readFileSync, writeFileSync } from 'fs';
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
-import { need, system } from 'pkg-fetch';
+import { need, system } from '@yao-pkg/pkg-fetch';
 import package_json from '../package.json' assert { type: "json" };
 import crypto from "crypto";
 import {parseGitHubRef, getProductInfo} from "./version_helper.js";
@@ -93,7 +93,7 @@ async function fixBinary(name, bin_name, version) {
     writeFileSync(outPath, Buffer.from(executable.generate()));
     const fileHash = await computeSha256(outPath);
 
-    fs.appendFileSync('node_modules\\pkg-fetch\\lib-es5\\expected.js', '\n/** PATCHED **/ if (process.env.PKG_PATCHED_BIN === "1") {exports.EXPECTED_HASHES[\'' + nodeHashKey + '\'] = \'' + fileHash + '\';}');
+    fs.appendFileSync('node_modules\\@yao-pkg\\pkg-fetch\\lib-es5\\expected.js', '\n/** PATCHED **/ if (process.env.PKG_PATCHED_BIN === "1") {exports.EXPECTED_HASHES[\'' + nodeHashKey + '\'] = \'' + fileHash + '\';}');
 }
 
 async function doFixWinBinary(productType) {

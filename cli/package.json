@@ -52,7 +52,7 @@
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "pkg": "^5.8.1",
+    "@yao-pkg/pkg": "^5.12.0",
     "resedit": "^2.0.0",
     "webpack": "^5.76.2",
     "webpack-cli": "^5.0.1"

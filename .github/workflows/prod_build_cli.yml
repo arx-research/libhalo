@@ -48,9 +48,9 @@ jobs:
     strategy:
       matrix:
         include:
-          #- os: ubuntu-latest
-          - os: windows-latest
-          #- os: macos-13
+          - os: ubuntu-22.04
+          - os: windows-2022
+          - os: macos-14-large
     name: Build halo-tools (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: create_release
@@ -67,20 +67,20 @@ jobs:
           brew link --overwrite python@3.11
           brew install pcsc-lite
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Node.JS
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
       - name: Install dependencies (root)
         shell: bash
         run: |
-          npm --include=dev ci
+          yarn install --frozen-lockfile --production=false
       - name: Install dependencies (cli)
         shell: bash
         run: |
           cd cli
-          npm --include=dev ci
+          yarn install --frozen-lockfile --production=false
       - name: Build libhalo with webpack
         shell: bash
         run: |
@@ -177,12 +177,12 @@ jobs:
     strategy:
       matrix:
         include:
-          #- os: ubuntu-latest
-          #  out_name: halo-tools-linux-x64.tgz
-          - os: windows-latest
+          - os: ubuntu-22.04
+            out_name: halo-tools-linux-x64.tgz
+          - os: windows-2022
             out_name: halo-tools-win-x64.zip
-          #- os: macos-13
-          #  out_name: halo-tools-macos-x64.pkg
+          - os: macos-14-large
+            out_name: halo-tools-macos-x64.pkg
     name: Sign halo-tools and release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
