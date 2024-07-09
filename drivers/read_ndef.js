@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-const Buffer = require('buffer/').Buffer;
-const queryString = require('query-string');
-const {HaloLogicError} = require("../halo/exceptions");
+import {Buffer} from 'buffer/index.js';
+import queryString from 'query-string';
+import {HaloLogicError} from "../halo/exceptions.js";
 
 async function readNDEF(transceive) {
     let resSelect = await transceive(Buffer.from("00A4040007D276000085010100", "hex"));
@@ -83,4 +83,4 @@ async function readNDEF(transceive) {
     };
 }
 
-module.exports = {readNDEF};
+export {readNDEF};

@@ -1,7 +1,7 @@
-const Buffer = require('buffer/').Buffer;
-const crypto = require('crypto');
+import {Buffer} from 'buffer/index.js';
+import crypto from 'crypto';
 const subtle = crypto.webcrypto && crypto.webcrypto.subtle ? crypto.webcrypto.subtle : globalThis.crypto.subtle;
-const jose = require('jose');
+import * as jose from 'jose';
 
 class JWEUtil {
     constructor() {
@@ -60,4 +60,4 @@ class JWEUtil {
     }
 }
 
-module.exports = {JWEUtil};
+export {JWEUtil};

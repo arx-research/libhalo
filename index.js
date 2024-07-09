@@ -8,4 +8,4 @@
  * The LibHaLo API was moved to api/ subdirectory.
  * Please include the appropriate file for your platform.
  */
-module.exports = {};
+export {};

@@ -4,14 +4,14 @@
  * License: MIT
  */
 
-const {ERROR_CODES} = require("../halo/errors");
-const {
+import {ERROR_CODES} from "../halo/errors.js";
+import {
     HaloTagError,
     NFCMethodNotSupported,
     NFCPermissionRequestDenied,
     NFCAbortedError
-} = require("../halo/exceptions");
-const {arr2hex, hex2arr, isWebDebugEnabled} = require("../halo/util");
+} from "../halo/exceptions.js";
+import {arr2hex, hex2arr, isWebDebugEnabled} from "../halo/util.js";
 
 let ndef = null;
 let ctrl = null;
@@ -272,7 +272,7 @@ async function execWebNFC(request, options) {
     });
 }
 
-module.exports = {
+export {
     checkWebNFCPermission,
     execWebNFC
 };

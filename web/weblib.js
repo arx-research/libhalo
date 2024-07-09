@@ -4,17 +4,17 @@
  * License: MIT
  */
 
-const {
+import {
     arr2hex, hex2arr
-} = require("../halo/util");
-const {__runTestSuite} = require("../halo/tests");
-const {haloCreateWs} = require("./web_utils");
+} from "../halo/util.js";
+import {__runTestSuite} from "../halo/tests.js";
+import {haloCreateWs} from "./web_utils.js";
 
-module.exports = {
-    // libhalo web APIs
-    ...require('../api/common.js'),
-    ...require('../api/web.js'),
+// libhalo web APIs
+export * from '../api/common.js';
+export * from '../api/web.js';
 
+export {
     // extra utilities
     arr2hex,
     hex2arr,
@@ -26,8 +26,8 @@ module.exports = {
     __runTestSuite
 };
 
-if (window) {
-    Object.keys(module.exports).forEach((key) => {
-        window[key] = module.exports[key];
-    });
-}
+// FIXME if (window) {
+//    Object.keys(module.exports).forEach((key) => {
+//        window[key] = module.exports[key];
+//    });
+// }

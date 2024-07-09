@@ -4,16 +4,16 @@
  * License: MIT
  */
 
-const crypto = require('crypto').webcrypto;
-const express = require("express");
-const {WebSocketServer} = require('ws');
-const queryString = require('query-string');
-const nunjucks = require("nunjucks");
-const {parse} = require("url");
+import {webcrypto as crypto} from 'crypto';
+import express from "express";
+import {WebSocketServer} from 'ws';
+import queryString from 'query-string';
+import nunjucks from "nunjucks";
+import {parse} from "url";
 
-const {parseArgs} = require('./args_gateway.js');
-const {printVersionInfo, getBuildInfo} = require("./version");
-const {dirname} = require("./util");
+import {parseArgs} from './args_gateway.js';
+import {printVersionInfo, getBuildInfo} from "./version.js";
+import {dirname} from "./util.js";
 
 let buildInfo = getBuildInfo();
 

@@ -1,9 +1,9 @@
-const {NFCAbortedError, NFCMethodNotSupported} = require("../halo/exceptions");
-const {execCredential} = require("./credential");
-const {execWebNFC} = require("./webnfc");
-const {execHaloCmd} = require("./common");
-const {emulatedPromptStatusCallback} = require("../web/soft_prompt");
-const {isWebDebugEnabled} = require("../halo/util");
+import {NFCAbortedError, NFCMethodNotSupported} from "../halo/exceptions.js";
+import {execCredential} from "./credential.js";
+import {execWebNFC} from "./webnfc.js";
+import {execHaloCmd} from "./common.js";
+import {emulatedPromptStatusCallback} from "../web/soft_prompt.js";
+import {isWebDebugEnabled} from "../halo/util.js";
 
 let isCallRunning = null;
 
@@ -104,7 +104,7 @@ async function execHaloCmdWeb(command, options) {
     }
 }
 
-module.exports = {
+export {
     execHaloCmdWeb,
     detectMethod
 };

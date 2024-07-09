@@ -32,4 +32,4 @@ let ERROR_CODES = {
     0x19: ["ERROR_CODE_OP_LIMIT_EXCEEDED", "Command locked for security reasons. Too many repetitions of the command."]
 };
 
-module.exports = {ERROR_CODES};
+export {ERROR_CODES};

@@ -92,7 +92,7 @@ class NFCBridgeConsentError extends Error {
     }
 }
 
-module.exports = {
+export {
     HaloTagError,
     HaloLogicError,
     NFCPermissionRequestDenied,

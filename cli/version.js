@@ -1,5 +1,5 @@
-const fs = require("fs");
-const {dirname} = require("./util");
+import fs from "fs";
+import {dirname} from "./util.js";
 
 function getVersionInfo() {
     if (fs.existsSync(dirname + '/halotools_version.json')) {
@@ -27,4 +27,4 @@ function printVersionInfo() {
     }
 }
 
-module.exports = {getVersionInfo, printVersionInfo, getBuildInfo};
+export {getVersionInfo, printVersionInfo, getBuildInfo};

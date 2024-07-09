@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-const {HaloTagError, NFCOperationError, NFCMethodNotSupported} = require("../halo/exceptions");
-const {ERROR_CODES} = require("../halo/errors");
-const {arr2hex, isWebDebugEnabled} = require("../halo/util");
+import {HaloTagError, NFCOperationError, NFCMethodNotSupported} from "../halo/exceptions.js";
+import {ERROR_CODES} from "../halo/errors.js";
+import {arr2hex, isWebDebugEnabled} from "../halo/util.js";
 
 const FLAG_USE_NEW_MODE = 0x00;
 
@@ -114,6 +114,6 @@ async function execCredential(request, options) {
     });
 }
 
-module.exports = {
+export {
     execCredential
 };

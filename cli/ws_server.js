@@ -1,17 +1,17 @@
-const express = require('express');
-const nunjucks = require("nunjucks");
-const {WebSocketServer} = require('ws');
-const crypto = require('crypto').webcrypto;
-const {dirname, randomBuffer} = require("./util");
-const jwt = require('jsonwebtoken');
-const https = require("https");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
-const util = require("util");
-const {execHaloCmdPCSC} = require("../api/desktop");
-const {getBuildInfo} = require("./version");
-const {NFCOperationError} = require("../halo/exceptions");
+import express from 'express';
+import nunjucks from "nunjucks";
+import {WebSocketServer} from 'ws';
+import {webcrypto as crypto} from 'crypto';
+import {dirname, randomBuffer} from "./util.js";
+import jwt from 'jsonwebtoken';
+import https from "https";
+import fs from "fs";
+import path from "path";
+import os from "os";
+import util from "util";
+import {execHaloCmdPCSC} from "../api/desktop.js";
+import {getBuildInfo} from "./version.js";
+import {NFCOperationError} from "../halo/exceptions.js";
 
 let wss = null;
 
@@ -383,7 +383,7 @@ function wsCreateServer(args, getReaderNames) {
     return {hasTLS: !!serverTLS};
 }
 
-module.exports = {
+export {
     wsCreateServer,
     wsEventCardConnected,
     wsEventCardIncompatible,

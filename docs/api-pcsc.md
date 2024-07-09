@@ -2,7 +2,7 @@
 
 ## Importing the method
 ```javascript
-const {execHaloCmdPCSC} = require('@arx-research/libhalo/api/desktop');
+import {execHaloCmdPCSC} from '@arx-research/libhalo/api/desktop';
 // or
 import {execHaloCmdPCSC} from '@arx-research/libhalo/api/desktop.js';
 ```

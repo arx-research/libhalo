@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-const {ArgumentParser} = require("argparse");
+import {ArgumentParser} from "argparse";
 
 const parser = new ArgumentParser({
     description: 'HaLo Gateway Server'
@@ -26,4 +26,4 @@ function parseArgs() {
     return parser.parse_args();
 }
 
-module.exports = {parseArgs};
+export {parseArgs};

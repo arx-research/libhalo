@@ -1,5 +1,4 @@
-const crypto = require('crypto').webcrypto;
-const {randomBuffer} = require("../halo/util");
+import {randomBuffer} from "../halo/util.js";
 
 let dirname;
 
@@ -9,4 +8,4 @@ if (process.pkg && process.pkg.entrypoint) {
     dirname = '.';
 }
 
-module.exports = {dirname, randomBuffer};
+export {dirname, randomBuffer};

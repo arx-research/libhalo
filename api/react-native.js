@@ -4,13 +4,13 @@
  * License: MIT
  */
 
-const {execHaloCmdRN} = require("../drivers/nfc_manager");
+import {execHaloCmdRN} from "../drivers/nfc_manager.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
  * except the lib's index.js. The library's structure is subject to change in the next versions.
  */
-module.exports = {
+export {
     // for usage with react-native-nfc-manager
     execHaloCmdRN
 };

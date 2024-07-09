@@ -190,6 +190,6 @@ function emulatedPromptStatusCallback(status, statusObj) {
     rdiv.style.display = status !== 'finished' ? 'block' : 'none';
 }
 
-module.exports = {
+export {
     emulatedPromptStatusCallback
 };

@@ -23,4 +23,4 @@ function parseKeyFlags(keyFlags) {
     };
 }
 
-module.exports = {KEY_FLAGS, parseKeyFlags};
+export {KEY_FLAGS, parseKeyFlags};

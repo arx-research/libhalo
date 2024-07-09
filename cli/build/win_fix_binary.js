@@ -1,12 +1,12 @@
-const path = require("path");
-const fs = require("fs");
-const { readFileSync, writeFileSync } = require('fs');
+import path from "path";
+import fs from "fs";
+import { readFileSync, writeFileSync } from 'fs';
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
-const { need, system } = require('pkg-fetch');
-const package_json = require('../package.json');
-const crypto = require("crypto");
-const {parseGitHubRef, getProductInfo} = require("./version_helper");
+import { need, system } from 'pkg-fetch';
+import package_json from '../package.json';
+import crypto from "crypto";
+import {parseGitHubRef, getProductInfo} from "./version_helper.js";
 
 const {
     hostArch,
@@ -108,4 +108,4 @@ async function doFixWinBinary(productType) {
     // $env:PKG_IGNORE_TAG = 1
 }
 
-module.exports = {doFixWinBinary};
+export {doFixWinBinary};

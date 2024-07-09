@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-const {
+import {
     HaloTagError,
     HaloLogicError,
     NFCPermissionRequestDenied,
@@ -13,22 +13,22 @@ const {
     NFCOperationError,
     NFCBadTransportError,
     NFCBridgeConsentError
-} = require("../halo/exceptions");
-const {
+} from "../halo/exceptions.js";
+import {
     parsePublicKeys, convertSignature, recoverPublicKey, sigToDer,
     SECP256k1_ORDER, BJJ_ORDER
-} = require("../halo/util");
+} from "../halo/util.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
  * except the lib's index.js. The library's structure is subject to change in the next versions.
  */
-module.exports = {
+export {
     // exported utils
-    haloParsePublicKeys: parsePublicKeys,
-    haloConvertSignature: convertSignature,
-    haloRecoverPublicKey: recoverPublicKey,
-    haloSignatureToDer: sigToDer,
+    parsePublicKeys as haloParsePublicKeys,
+    convertSignature as haloConvertSignature,
+    recoverPublicKey as haloRecoverPublicKey,
+    sigToDer as haloSignatureToDer,
 
     SECP256k1_ORDER,
     BJJ_ORDER,
