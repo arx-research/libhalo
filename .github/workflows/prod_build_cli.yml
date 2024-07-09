@@ -93,14 +93,16 @@ jobs:
         run: |
           cd cli
           ../node_modules/.bin/webpack
-          mv dist_webpack/* .
-          mkdir build
-          cp node_modules/@pokusew/pcsclite/build/Release/pcsclite.node build/pcsclite.node
+          mkdir dist_webpack/build
+          cp node_modules/@pokusew/pcsclite/build/Release/pcsclite.node dist_webpack/build/pcsclite.node
+          cp package.json dist_webpack/
+          cp halotools_version.json dist_webpack/
+          cp -r assets dist_webpack/
       - name: Package HaLo CLI tool (Linux)
         if: matrix.platform == 'ubuntu'
         shell: bash
         run: |
-          cd cli
+          cd cli/dist_webpack
           node build_scripts/ci_scripts.js --platform linux --product cli
           node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.js
           node build_scripts/ci_scripts.js --platform linux --product bridge
@@ -111,7 +113,7 @@ jobs:
         if: matrix.platform == 'windows'
         shell: bash
         run: |
-          cd cli
+          cd cli/dist_webpack
           node build_scripts/ci_scripts.js --platform windows --product cli
           cat halotools_version.json
           export PKG_CACHE_PATH='./.pkg-cache/'
@@ -121,7 +123,7 @@ jobs:
         if: matrix.platform == 'windows'
         shell: bash
         run: |
-          cd cli
+          cd cli/dist_webpack
           node build_scripts/ci_scripts.js --platform windows --product bridge
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
@@ -130,7 +132,7 @@ jobs:
         if: matrix.platform == 'windows'
         shell: bash
         run: |
-          cd cli
+          cd cli/dist_webpack
           node build_scripts/ci_scripts.js --platform windows --product gateway
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
@@ -139,7 +141,7 @@ jobs:
         if: matrix.platform == 'macos'
         shell: bash
         run: |
-          cd cli
+          cd cli/dist_webpack
           node build_scripts/ci_scripts.js --platform macos --product cli
           node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halocli entry_cli.bundle.js
           node build_scripts/ci_scripts.js --platform macos --product bridge
@@ -152,8 +154,8 @@ jobs:
       - name: Compress dist files
         shell: bash
         run: |
-          cd cli/dist
-          tar -pczf ../dist.tgz .
+          cd cli/dist_webpack/dist
+          tar -pczf ../../dist.tgz .
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.5.0
       - name: Sign output with cosign
