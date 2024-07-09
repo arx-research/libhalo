@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs";
-import ResEdit from "resedit";
+import * as ResEdit from "resedit";
 import { readFileSync, writeFileSync } from 'fs';
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
