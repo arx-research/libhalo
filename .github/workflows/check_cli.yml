@@ -16,7 +16,7 @@ on:
 
 jobs:
   check_cli_tool:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Install native dependencies (Linux)
         run: |

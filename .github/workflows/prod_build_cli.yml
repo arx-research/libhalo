@@ -8,7 +8,7 @@ on:
 jobs:
   create_release:
     name: Create halo-tools release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Prepare version number
         id: parse_version
@@ -49,18 +49,21 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
+            platform: ubuntu
           - os: windows-2022
+            platform: windows
           - os: macos-14-large
+            platform: macos
     name: Build halo-tools (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: create_release
     steps:
       - name: Install native dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.platform == 'ubuntu'
         run: |
           sudo apt-get update && sudo apt-get install -y libpcsclite-dev
       - name: Install native dependencies (MacOS)
-        if: matrix.os == 'macos-13'
+        if: matrix.platform == 'macos'
         run: |
           brew install python@3.11
           brew unlink python@3.11
@@ -95,7 +98,7 @@ jobs:
           mkdir build
           cp node_modules/@pokusew/pcsclite/build/Release/pcsclite.node build/pcsclite.node
       - name: Package HaLo CLI tool (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.platform == 'ubuntu'
         shell: bash
         run: |
           cd cli
@@ -106,7 +109,7 @@ jobs:
           node build_scripts/ci_scripts.js --platform linux --product gateway
           node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
       - name: Package HaLo CLI tool (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         shell: bash
         run: |
           cd cli
@@ -117,7 +120,7 @@ jobs:
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halocli.exe entry_cli.bundle.js
       - name: Package HaLo Bridge tool (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         shell: bash
         run: |
           cd cli
@@ -127,7 +130,7 @@ jobs:
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.bundle.js
       - name: Package HaLo Gateway tool (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         shell: bash
         run: |
           cd cli
@@ -137,7 +140,7 @@ jobs:
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.bundle.js
       - name: Package HaLo CLI tool (MacOS)
-        if: matrix.os == 'macos-13'
+        if: matrix.platform == 'macos'
         shell: bash
         run: |
           cd cli
@@ -179,10 +182,13 @@ jobs:
         include:
           - os: ubuntu-22.04
             out_name: halo-tools-linux-x64.tgz
+            platform: ubuntu
           - os: windows-2022
             out_name: halo-tools-win-x64.zip
+            platform: windows
           - os: macos-14-large
             out_name: halo-tools-macos-x64.pkg
+            platform: macos
     name: Sign halo-tools and release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
@@ -201,56 +207,56 @@ jobs:
         run: |
           tar -xopf dist.tgz
       - name: Compress application (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.platform == 'ubuntu'
         run: |
           chmod +x halocli
           chmod +x halo-bridge
           chmod +x halo-gateway
           tar -pczf halo-tools-linux-x64.tgz halocli halo-bridge halo-gateway
       - name: Write certificate file (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
         with:
           path: ./chain.cer
           write-mode: overwrite
           contents: ${{ vars.WINDOWS_CODE_SIGN_CERT_CHAIN }}
       - name: Download jsign and verify (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         shell: bash
         run: |
           curl -s -L -o jsign.jar https://github.com/ebourg/jsign/releases/download/4.2/jsign-4.2.jar
           echo "290377fc4f593256200b3ea4061b7409e8276255f449d4c6de7833faf0850cc1 jsign.jar" > jsign.sum
           sha256sum -c jsign.sum
       - name: Authenticate with gcloud (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d
         with:
           credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
       - name: Set up Cloud SDK (Windows)
         uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         with:
           install_components: 'gcloud'
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
       - name: Sign application (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         shell: bash
         run: |
           java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
           java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halo-bridge.exe
           java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halo-gateway.exe
       - name: Compress application (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         run: |
           Compress-Archive -Path halocli.exe,halo-bridge.exe,halo-gateway.exe halo-tools-win-x64.zip
       - name: Load signing credentials (Mac OS)
-        if: matrix.os == 'macos-13'
+        if: matrix.platform == 'macos'
         uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
         with:
           p12-file-base64: ${{ secrets.MACOS_SIGN_P12 }}
           p12-password: ${{ secrets.MACOS_SIGN_P12_PASSWORD }}
       - name: Sign application (Mac OS)
-        if: matrix.os == 'macos-13'
+        if: matrix.platform == 'macos'
         run: |
           mkdir -p root/usr/local/bin/
           mkdir -p root/Applications/
@@ -268,11 +274,11 @@ jobs:
           chmod +x "./root/Applications/HaLo CLI Bridge Server.app/Contents/MacOS/halocli_bridge_launcher"
           pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --scripts "macos_pkgbuild_scripts/" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halo-tools-macos-x64.pkg
       - name: Notarize application for Mac OS
-        if: matrix.os == 'macos-13'
+        if: matrix.platform == 'macos'
         run: |
           xcrun notarytool submit "--apple-id=${{ secrets.MACOS_NOTARIZE_APPLE_ID }}" "--password=${{ secrets.MACOS_NOTARIZE_PASSWORD }}" "--team-id=${{ secrets.MACOS_NOTARIZE_TEAM_ID }}" --progress --wait ./halo-tools-macos-x64.pkg
       - name: Staple notarized application (Mac OS)
-        if: matrix.os == 'macos-13'
+        if: matrix.platform == 'macos'
         run: |
           xcrun stapler staple ./halo-tools-macos-x64.pkg
           rm -rf ./root/
