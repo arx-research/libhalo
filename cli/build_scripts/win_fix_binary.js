@@ -69,7 +69,7 @@ async function fixBinary(name, bin_name, version) {
     vi.outputToResourceEntries(res.entries);
 
     // Add icon
-    const iconFile = ResEdit.Data.IconFile.from(readFileSync("halo.ico"));
+    const iconFile = ResEdit.Data.IconFile.from(fs.readFileSync("halo.ico"));
     ResEdit.Resource.IconGroupEntry.replaceIconsForResource(
         res.entries,
         1,
