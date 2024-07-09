@@ -225,14 +225,14 @@ jobs:
           sha256sum -c jsign.sum
       - name: Authenticate with gcloud (Windows)
         if: matrix.platform == 'windows'
-        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d
+        uses: google-github-actions/auth@v2.1.3
         with:
           credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
       - name: Set up Cloud SDK (Windows)
-        uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587
+        uses: google-github-actions/setup-gcloud@v2.1.0
         if: matrix.platform == 'windows'
         with:
-          install_components: 'gcloud'
+          skip_install: true
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
       - name: Sign application (Windows)
         if: matrix.platform == 'windows'

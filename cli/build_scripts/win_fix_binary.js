@@ -1,12 +1,11 @@
+import crypto from "crypto";
 import path from "path";
 import fs from "fs";
 import * as ResEdit from "resedit";
-import { readFileSync, writeFileSync } from 'fs';
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
 import { need, system } from '@yao-pkg/pkg-fetch';
 import package_json from '../package.json' assert { type: "json" };
-import crypto from "crypto";
 import {parseGitHubRef, getProductInfo} from "./version_helper.js";
 
 const {
@@ -48,7 +47,7 @@ async function fixBinary(name, bin_name, version) {
     };
 
     // Modify .exe w/ ResEdit
-    const data = readFileSync(nodeBinPath);
+    const data = fs.readFileSync(nodeBinPath);
     const executable = ResEdit.NtExecutable.from(data);
     const res = ResEdit.NtExecutableResource.from(executable);
     const vi = ResEdit.Resource.VersionInfo.fromEntries(res.entries)[0];
@@ -87,15 +86,16 @@ async function fixBinary(name, bin_name, version) {
 
     const nodeBinBase = path.basename(nodeBinPath);
     const outPath = path.join(".pkg-cache", nodeBinBase);
-    writeFileSync(outPath, Buffer.from(executable.generate()));
+    fs.writeFileSync(outPath, Buffer.from(executable.generate()));
     const fileHash = await computeSha256(outPath);
 
     const expectedShasPath = 'node_modules\\@yao-pkg\\pkg-fetch\\lib-es5\\expected-shas.json';
-    let expectedShas = JSON.parse(fs.readFileSync(expectedShasPath, 'utf-8'));
+    let expectedShas = JSON.parse(fs.readFileSync(expectedShasPath, {encoding: 'utf8'}));
     expectedShas[nodeBinBase] = fileHash;
-    fs.writeFileSync(expectedShasPath, JSON.stringify(expectedShas, null, 4), {encoding: 'utf-8'});
+    fs.writeFileSync(expectedShasPath, JSON.stringify(expectedShas, null, 4), {encoding: 'utf8'});
 
     console.log('Updated the binary hash to: ' + fileHash);
+    console.log(expectedShas);
 }
 
 async function doFixWinBinary(productType) {
