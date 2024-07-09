@@ -323,6 +323,6 @@ jobs:
           asset_content_type: application/octet-stream
       - name: Delete binary artifact
         if: always()
-        uses: geekyeggo/delete-artifact@54ab544f12cdb7b71613a16a2b5a37a9ade990af
+        uses: geekyeggo/delete-artifact@v5.0.0
         with:
           name: binary-${{ matrix.os }}
