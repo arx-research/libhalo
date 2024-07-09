@@ -85,13 +85,14 @@ async function fixBinary(name, bin_name, version) {
     }
 
     const nodeBinBase = path.basename(nodeBinPath);
+    const nodeHashKey = nodeBinBase.replace('fetched-', 'node-');
     const outPath = path.join(".pkg-cache", nodeBinBase);
     fs.writeFileSync(outPath, Buffer.from(executable.generate()));
     const fileHash = await computeSha256(outPath);
 
     const expectedShasPath = 'node_modules\\@yao-pkg\\pkg-fetch\\lib-es5\\expected-shas.json';
     let expectedShas = JSON.parse(fs.readFileSync(expectedShasPath, {encoding: 'utf8'}));
-    expectedShas[nodeBinBase] = fileHash;
+    expectedShas[nodeHashKey] = fileHash;
     fs.writeFileSync(expectedShasPath, JSON.stringify(expectedShas, null, 4), {encoding: 'utf8'});
 
     console.log('Updated the binary hash to: ' + fileHash);
