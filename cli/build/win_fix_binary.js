@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'fs';
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
 import { need, system } from 'pkg-fetch';
-import package_json from '../package.json';
+import package_json from '../package.json' assert { type: "json" };
 import crypto from "crypto";
 import {parseGitHubRef, getProductInfo} from "./version_helper.js";
 
