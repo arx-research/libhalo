@@ -146,8 +146,8 @@ function convertSignature(digest, signature, publicKey, curveOrder) {
         + fixedSig.s
         + Buffer.from([27 + recoveryParam]).toString('hex');
 
-    let pkeyAddress = ethers.utils.computeAddress('0x' + publicKey);
-    let recoveredAddress = ethers.utils.recoverAddress('0x' + digest, finalSig);
+    let pkeyAddress = ethers.computeAddress('0x' + publicKey);
+    let recoveredAddress = ethers.recoverAddress('0x' + digest, finalSig);
 
     if (pkeyAddress !== recoveredAddress) {
         throw new HaloLogicError("Failed to correctly recover public key from the signature.");
