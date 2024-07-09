@@ -72,6 +72,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
       - name: Install dependencies (root)
         shell: bash
         run: |
@@ -91,7 +93,6 @@ jobs:
         run: |
           cd cli
           ../node_modules/.bin/webpack
-          mv dist_webpack/* .
           mkdir build
           cp node_modules/@pokusew/pcsclite/build/Release/pcsclite.node build/pcsclite.node
       - name: Package HaLo CLI tool (Linux)
@@ -99,54 +100,50 @@ jobs:
         shell: bash
         run: |
           cd cli
-          node build_scripts/ci_scripts.js --platform linux --product cli
-          node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.js
-          node build_scripts/ci_scripts.js --platform linux --product bridge
-          node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
-          node build_scripts/ci_scripts.js --platform linux --product gateway
-          node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
+          node ./build_scripts/ci_scripts.js --platform linux --product cli
+          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli dist_webpack/entry_cli.bundle.js
+          node ./build_scripts/ci_scripts.js --platform linux --product bridge
+          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-bridge dist_webpack/entry_bridge.bundle.js
+          node ./build_scripts/ci_scripts.js --platform linux --product gateway
+          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halo-gateway dist_webpack/entry_gateway.bundle.js
       - name: Package HaLo CLI tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
         run: |
           cd cli
-          node build_scripts/ci_scripts.js --platform windows --product cli
-          cat halotools_version.json
-          export PKG_PATCHED_BIN='1'
+          node ./build_scripts/ci_scripts.js --platform windows --product cli
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halocli.exe entry_cli.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halocli.exe dist_webpack/entry_cli.bundle.js
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
         run: |
           cd cli
-          node build_scripts/ci_scripts.js --platform windows --product bridge
-          export PKG_PATCHED_BIN='1'
+          node ./build_scripts/ci_scripts.js --platform windows --product bridge
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-bridge.exe dist_webpack/entry_bridge.bundle.js
       - name: Package HaLo Gateway tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
         run: |
           cd cli
-          node build_scripts/ci_scripts.js --platform windows --product gateway
-          export PKG_PATCHED_BIN='1'
+          node ./build_scripts/ci_scripts.js --platform windows --product gateway
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-gateway.exe dist_webpack/entry_gateway.bundle.js
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.platform == 'macos'
         shell: bash
         run: |
           cd cli
-          node build_scripts/ci_scripts.js --platform macos --product cli
-          node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halocli entry_cli.bundle.js
-          node build_scripts/ci_scripts.js --platform macos --product bridge
-          node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-bridge entry_bridge.bundle.js
-          node build_scripts/ci_scripts.js --platform macos --product gateway
-          node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-gateway entry_gateway.bundle.js
+          node ./build_scripts/ci_scripts.js --platform macos --product cli
+          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halocli dist_webpack/entry_cli.bundle.js
+          node ./build_scripts/ci_scripts.js --platform macos --product bridge
+          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-bridge dist_webpack/entry_bridge.bundle.js
+          node ./build_scripts/ci_scripts.js --platform macos --product gateway
+          ./node_modules/.bin/pkg --compress GZip -t node20-macos-x64 -c package.json -o dist/halo-gateway dist_webpack/entry_gateway.bundle.js
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
           mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
           mv "Entitlements.plist" "dist/Entitlements.plist"
@@ -226,14 +223,14 @@ jobs:
           sha256sum -c jsign.sum
       - name: Authenticate with gcloud (Windows)
         if: matrix.platform == 'windows'
-        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d
+        uses: google-github-actions/auth@v2.1.3
         with:
           credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
       - name: Set up Cloud SDK (Windows)
-        uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587
+        uses: google-github-actions/setup-gcloud@v2.1.0
         if: matrix.platform == 'windows'
         with:
-          install_components: 'gcloud'
+          skip_install: true
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
       - name: Sign application (Windows)
         if: matrix.platform == 'windows'

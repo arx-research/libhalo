@@ -1,11 +1,11 @@
+import crypto from "crypto";
 import path from "path";
 import fs from "fs";
-import { readFileSync, writeFileSync } from 'fs';
+import * as ResEdit from "resedit";
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
 import { need, system } from '@yao-pkg/pkg-fetch';
 import package_json from '../package.json' assert { type: "json" };
-import crypto from "crypto";
 import {parseGitHubRef, getProductInfo} from "./version_helper.js";
 
 const {
@@ -27,9 +27,6 @@ function computeSha256(filePath) {
 }
 
 async function fixBinary(name, bin_name, version) {
-    // unable to normally require, this is ES6 module
-    const ResEdit = await import('resedit');
-
     if (package_json['pkg']['targets'].length !== 1) {
         throw Error("Only one pkg target is supported");
     }
@@ -39,6 +36,7 @@ async function fixBinary(name, bin_name, version) {
     const nodeBinPath = await need({
         dryRun: false,
         forceBuild: false,
+        forceFetch: false,
         nodeRange: package_json['pkg']['targets'][0],
         platform: hostPlatform,
         arch: hostArch
@@ -50,7 +48,7 @@ async function fixBinary(name, bin_name, version) {
     };
 
     // Modify .exe w/ ResEdit
-    const data = readFileSync(nodeBinPath);
+    const data = fs.readFileSync(nodeBinPath);
     const executable = ResEdit.NtExecutable.from(data);
     const res = ResEdit.NtExecutableResource.from(executable);
     const vi = ResEdit.Resource.VersionInfo.fromEntries(res.entries)[0];
@@ -72,7 +70,7 @@ async function fixBinary(name, bin_name, version) {
     vi.outputToResourceEntries(res.entries);
 
     // Add icon
-    const iconFile = ResEdit.Data.IconFile.from(readFileSync("halo.ico"));
+    const iconFile = ResEdit.Data.IconFile.from(fs.readFileSync("halo.ico"));
     ResEdit.Resource.IconGroupEntry.replaceIconsForResource(
         res.entries,
         1,
@@ -83,17 +81,14 @@ async function fixBinary(name, bin_name, version) {
     // Regenerate and write to .exe
     res.outputResource(executable);
 
-    if (!fs.existsSync(".pkg-cache")){
+    if (!fs.existsSync(".pkg-cache")) {
         fs.mkdirSync(".pkg-cache");
     }
 
     const nodeBinBase = path.basename(nodeBinPath);
-    const nodeHashKey = nodeBinBase.replace('fetched-', 'node-');
-    const outPath = path.join(".pkg-cache", nodeBinBase);
-    writeFileSync(outPath, Buffer.from(executable.generate()));
-    const fileHash = await computeSha256(outPath);
-
-    fs.appendFileSync('node_modules\\@yao-pkg\\pkg-fetch\\lib-es5\\expected.js', '\n/** PATCHED **/ if (process.env.PKG_PATCHED_BIN === "1") {exports.EXPECTED_HASHES[\'' + nodeHashKey + '\'] = \'' + fileHash + '\';}');
+    const nodeBuiltKey = nodeBinBase.replace('fetched-', 'built-');
+    const outPath = path.join(".pkg-cache", nodeBuiltKey);
+    fs.writeFileSync(outPath, Buffer.from(executable.generate()));
 }
 
 async function doFixWinBinary(productType) {
@@ -103,7 +98,6 @@ async function doFixWinBinary(productType) {
     await fixBinary(name, binName, version);
 
     // run pkg with:
-    // $env:PKG_PATCHED_BIN = 1
     // $env:PKG_CACHE_PATH = './.pkg-cache/'
     // $env:PKG_IGNORE_TAG = 1
 }
