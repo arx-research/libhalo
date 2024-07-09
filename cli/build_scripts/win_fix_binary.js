@@ -36,6 +36,7 @@ async function fixBinary(name, bin_name, version) {
     const nodeBinPath = await need({
         dryRun: false,
         forceBuild: false,
+        forceFetch: false,
         nodeRange: package_json['pkg']['targets'][0],
         platform: hostPlatform,
         arch: hostArch
@@ -80,23 +81,14 @@ async function fixBinary(name, bin_name, version) {
     // Regenerate and write to .exe
     res.outputResource(executable);
 
-    if (!fs.existsSync(".pkg-cache")){
+    if (!fs.existsSync(".pkg-cache")) {
         fs.mkdirSync(".pkg-cache");
     }
 
     const nodeBinBase = path.basename(nodeBinPath);
-    const nodeHashKey = nodeBinBase.replace('fetched-', 'node-');
-    const outPath = path.join(".pkg-cache", nodeBinBase);
+    const nodeBuiltKey = nodeBinBase.replace('fetched-', 'built-');
+    const outPath = path.join(".pkg-cache", nodeBuiltKey);
     fs.writeFileSync(outPath, Buffer.from(executable.generate()));
-    const fileHash = await computeSha256(outPath);
-
-    const expectedShasPath = 'node_modules\\@yao-pkg\\pkg-fetch\\lib-es5\\expected-shas.json';
-    let expectedShas = JSON.parse(fs.readFileSync(expectedShasPath, {encoding: 'utf8'}));
-    expectedShas[nodeHashKey] = fileHash;
-    fs.writeFileSync(expectedShasPath, JSON.stringify(expectedShas, null, 4), {encoding: 'utf8'});
-
-    console.log('Updated the binary hash to: ' + fileHash);
-    console.log(expectedShas);
 }
 
 async function doFixWinBinary(productType) {
