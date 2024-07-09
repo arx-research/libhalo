@@ -94,6 +94,9 @@ async function fixBinary(name, bin_name, version) {
     let expectedShas = JSON.parse(fs.readFileSync(expectedShasPath, 'utf-8'));
     expectedShas[nodeBinBase] = fileHash;
     fs.writeFileSync(expectedShasPath, JSON.stringify(expectedShas, null, 4), {encoding: 'utf-8'});
+
+    console.log('Updated the binary hash to: ' + fileHash);
+    console.log(expectedShas);
 }
 
 async function doFixWinBinary(productType) {

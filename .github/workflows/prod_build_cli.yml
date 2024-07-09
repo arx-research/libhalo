@@ -112,17 +112,17 @@ jobs:
           cd cli
           node build_scripts/ci_scripts.js --platform windows --product cli
           cat halotools_version.json
-          export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halocli.exe entry_cli.bundle.js
+          find ./.pkg-cache/
+          find -type f ./.pkg-cache/ | xargs -I{} sha256sum {}
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.platform == 'windows'
         shell: bash
         run: |
           cd cli
           node build_scripts/ci_scripts.js --platform windows --product bridge
-          export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-bridge.exe entry_bridge.bundle.js
@@ -132,7 +132,6 @@ jobs:
         run: |
           cd cli
           node build_scripts/ci_scripts.js --platform windows --product gateway
-          export PKG_PATCHED_BIN='1'
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
           node_modules/.bin/pkg --compress GZip -t node20-win-x64 -c package.json -o dist/halo-gateway.exe entry_gateway.bundle.js
