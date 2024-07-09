@@ -19,6 +19,7 @@ export default {
     target: 'web',
     resolve: {
         fallback: {
+            vm: false,
             buffer: path.resolve(__dirname, '../node_modules/buffer/index.js'),
             crypto: path.resolve(__dirname, '../node_modules/crypto-browserify'),
             stream: path.resolve(__dirname, '../node_modules/stream-browserify'),

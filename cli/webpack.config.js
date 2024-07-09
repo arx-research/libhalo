@@ -16,6 +16,11 @@ export default {
     },
     mode: 'production',
     target: 'node',
+    resolve: {
+        fallback: {
+            vm: false
+        }
+    },
     optimization: {
         minimize: false
     }
