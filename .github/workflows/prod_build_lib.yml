@@ -16,12 +16,12 @@ jobs:
           ( echo -n "version=" && ( echo "$GITHUB_REF" | cut -f2 -d- | tr -d '\n' ) ) >> "$GITHUB_OUTPUT"
       - name: Draft release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: LibHaLo ${{ steps.parse_version.outputs.version }}
+          name: LibHaLo ${{ steps.parse_version.outputs.version }}
           draft: true
           prerelease: false
           body: |
@@ -63,7 +63,7 @@ jobs:
           cd web
           webpack
       - name: Download release upload URL
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-upload-url
       - name: Store release upload URL output
@@ -71,7 +71,7 @@ jobs:
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Install cosign
-        uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8
+        uses: sigstore/cosign-installer@v3.5.0
       - name: Sign libhalo.js with cosign
         run: |
           cd ./web/dist
@@ -129,7 +129,7 @@ jobs:
     needs: create_release
     steps:
       - name: Download release upload URL
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-upload-url
       - name: Store release upload URL output
