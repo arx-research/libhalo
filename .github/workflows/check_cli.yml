@@ -55,4 +55,4 @@ jobs:
       - name: Package HaLo CLI tool (Linux)
         run: |
           cd cli
-          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.js
+          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.cjs

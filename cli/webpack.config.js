@@ -11,7 +11,7 @@ export default {
         entry_gateway: './src.ts/entry_gateway.js',
     },
     output: {
-        filename: '[name].bundle.js',
+        filename: '[name].bundle.cjs',
         path: resolve(__dirname, 'dist_webpack')
     },
     mode: 'production',
