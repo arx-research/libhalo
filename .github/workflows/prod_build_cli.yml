@@ -79,6 +79,7 @@ jobs:
         run: |
           cd core
           yarn install --frozen-lockfile --production=false
+          ./node_modules/.bin/tsc
       - name: Install dependencies (cli)
         shell: bash
         run: |
