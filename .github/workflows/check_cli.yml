@@ -1,0 +1,58 @@
+name: Check halocli tool
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
+    branches:
+      - master
+
+jobs:
+  check_cli_tool:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install native dependencies (Linux)
+        run: |
+          sudo apt-get update && sudo apt-get install -y libpcsclite-dev
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Install Node.JS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies (root)
+        run: |
+          cd core
+          yarn install --frozen-lockfile --production=false
+      - name: Run tsc (root)
+        run: |
+          cd core
+          ./node_modules/.bin/tsc
+      - name: Run webpack (root)
+        run: |
+          cd core
+          ./node_modules/.bin/webpack
+      - name: Install dependencies (cli)
+        run: |
+          cd cli
+          yarn install --frozen-lockfile --production=false
+      - name: Run tsc (root)
+        run: |
+          cd cli
+          ./node_modules/.bin/tsc
+      - name: Run webpack (root)
+        run: |
+          cd cli
+          ./node_modules/.bin/webpack
+          mv dist_webpack/* .
+      - name: Package HaLo CLI tool (Linux)
+        run: |
+          cd cli
+          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.cjs

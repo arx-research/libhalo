@@ -1,0 +1,38 @@
+name: Check libhalo.js
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'cli/README.md'
+      - 'docs/**'
+    branches:
+      - master
+
+jobs:
+  check_js_lib:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Install Node.JS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies (root)
+        run: |
+          cd core
+          yarn install --frozen-lockfile --production=false
+      - name: Run tsc (root)
+        run: |
+          cd core
+          ./node_modules/.bin/tsc
+      - name: Run webpack (root)
+        run: |
+          cd core
+          ./node_modules/.bin/webpack
