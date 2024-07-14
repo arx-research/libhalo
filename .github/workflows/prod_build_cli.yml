@@ -88,12 +88,12 @@ jobs:
         shell: bash
         run: |
           cd core
-          ../node_modules/.bin/webpack
+          ./node_modules/.bin/webpack
       - name: Build halo-tools with webpack
         shell: bash
         run: |
           cd cli
-          ../node_modules/.bin/webpack
+          ./node_modules/.bin/webpack
           mv dist_webpack/* .
           mkdir build
           cp node_modules/@pokusew/pcsclite/build/Release/pcsclite.node build/pcsclite.node
