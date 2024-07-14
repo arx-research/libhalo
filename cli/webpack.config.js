@@ -12,7 +12,7 @@ export default {
     },
     output: {
         filename: '[name].bundle.js',
-        path: resolve(__dirname, 'webpack_dist')
+        path: resolve(__dirname, 'dist_webpack')
     },
     mode: 'production',
     target: 'node',
