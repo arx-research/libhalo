@@ -1,7 +1,6 @@
 import express from 'express';
 import nunjucks from "nunjucks";
 import {WebSocketServer} from 'ws';
-import {webcrypto as crypto} from 'crypto';
 import {dirname, randomBuffer} from "./util.js";
 import jwt from 'jsonwebtoken';
 import https from "https";
@@ -9,9 +8,9 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import util from "util";
-import {execHaloCmdPCSC} from "../api/desktop.js";
+import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
 import {getBuildInfo} from "./version.js";
-import {NFCOperationError} from "../halo/exceptions.js";
+import {NFCOperationError} from "@arx-research/libhalo/api/common";
 
 let wss = null;
 
