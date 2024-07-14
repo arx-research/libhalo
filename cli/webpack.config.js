@@ -30,7 +30,6 @@ export default {
         fallback: {
             vm: false,
             chokidar: false,
-            bufferutil: false,
             "utf-8-validate": false
         }
     },

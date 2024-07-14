@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@arx-research/libhalo": "../core",
+    "bufferutil": "^4.0.8",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "nfc-pcsc": "^0.8.1",
