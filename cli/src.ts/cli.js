@@ -8,7 +8,7 @@ import {Buffer} from 'buffer/index.js';
 import {NFC} from 'nfc-pcsc';
 import open from 'open';
 
-import {__runTestSuite} from "../halo/tests.js";
+import {__runTestSuite} from "@arx-research/libhalo/__tests";
 import util from "util";
 import {
     wsEventCardDisconnected,
@@ -18,7 +18,7 @@ import {
     wsEventCardIncompatible,
     wsEventReaderDisconnected
 } from "./ws_server.js";
-import {execHaloCmdPCSC} from "../api/desktop.js";
+import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
 
 const nfc = new NFC();
 let stopPCSCTimeout = null;

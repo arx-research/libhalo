@@ -1,7 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import { dirname as path_dirname } from 'node:path';
+import crypto from "crypto";
 
-import {randomBuffer} from "../halo/util.js";
+function randomBuffer() {
+    return Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
+}
 
 let dirname;
 

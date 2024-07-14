@@ -56,10 +56,11 @@ jobs:
           node-version: 20
       - name: Install dependencies (root)
         run: |
+          cd core
           yarn install --frozen-lockfile --production=false
       - name: Run webpack
         run: |
-          cd web
+          cd core
           webpack
       - name: Download release upload URL
         uses: actions/download-artifact@v4
@@ -73,7 +74,7 @@ jobs:
         uses: sigstore/cosign-installer@v3.5.0
       - name: Sign libhalo.js with cosign
         run: |
-          cd ./web/dist
+          cd ./core/dist
           echo y | cosign sign-blob ./libhalo.js --output-certificate ./libhalo.js-keyless.pem --output-signature ./libhalo.js-keyless.sig
           cosign verify-blob --cert ./libhalo.js-keyless.pem --signature ./libhalo.js-keyless.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./libhalo.js
       - name: Upload release asset (JS bundle)
@@ -83,7 +84,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./web/dist/libhalo.js
+          asset_path: ./core/dist/libhalo.js
           asset_name: libhalo.js
           asset_content_type: text/javascript
       - name: Upload release asset (LICENSE file)
@@ -93,7 +94,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./web/dist/libhalo.js.LICENSE.txt
+          asset_path: ./core/dist/libhalo.js.LICENSE.txt
           asset_name: libhalo.js.LICENSE.txt
           asset_content_type: text/plain
       - name: Upload release asset (cosign pem)
@@ -103,7 +104,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./web/dist/libhalo.js-keyless.pem
+          asset_path: ./core/dist/libhalo.js-keyless.pem
           asset_name: libhalo.js-keyless.pem
           asset_content_type: application/octet-stream
       - name: Upload release asset (cosign sig)
@@ -113,7 +114,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./web/dist/libhalo.js-keyless.sig
+          asset_path: ./core/dist/libhalo.js-keyless.sig
           asset_name: libhalo.js-keyless.sig
           asset_content_type: application/octet-stream
 
@@ -143,7 +144,10 @@ jobs:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
       - name: Run npm ci
-        run: yarn install --frozen-lockfile --production=false
+        run: |
+          cd core
+          yarn install --frozen-lockfile --production=false
+          ./node_modules/.bin/tsc
       - name: Publish package to npmjs
         run: yarn publish
         env:

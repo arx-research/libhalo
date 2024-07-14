@@ -1,3 +1,6 @@
-assets/static/*.js
-assets/static/*.js.*
-.pkg-cache/
+/node_modules/
+/lib.esm/
+
+/assets/static/*.js
+/assets/static/*.js.*
+/.pkg-cache/
