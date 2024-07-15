@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
@@ -16,7 +17,7 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "preserveSymlinks": true,
     "preserveWatchOutput": true,
     "pretty": false,
@@ -29,7 +30,7 @@
     "allowJs": true
   },
   "include": [
-    "./src.ts/**/*.tsx",
+    "./src.ts/**/*.ts",
     "./src.ts/**/*.js"
   ],
   "exclude": []

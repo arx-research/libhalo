@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 
 export default {
     entry: {
-        app: './src.ts/web/weblib.js',
+        app: './src.ts/web/weblib.tsx',
     },
     output: {
         filename: 'libhalo.js',
