@@ -146,4 +146,8 @@ export interface FindBridgeResult {
     errors: string[]
 }
 
+export type KeySlotNo = number;
+export type ASCIIString = string;
+export type HexString = string;
+
 export * from './types_webnfc.js';

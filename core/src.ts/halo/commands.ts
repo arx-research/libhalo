@@ -16,7 +16,15 @@ import elliptic from 'elliptic';
 import {CMD_CODES as CMD} from './cmdcodes.js';
 import pbkdf2 from 'pbkdf2';
 import {KEY_FLAGS, parseKeyFlags} from "./keyflags.js";
-import {ExecHaloCmdOptions, ExecReturnStruct, HaloCommandArgsObject, PublicKeyList} from "../types.js";
+import {
+    ASCIIString,
+    ExecHaloCmdOptions, ExecOptions,
+    ExecReturnStruct,
+    HaloCommandArgsObject, HexString,
+    KeySlotNo,
+    PublicKeyList
+} from "../types.js";
+import {TypedDataDomain, TypedDataField} from "ethers";
 
 const ec = new elliptic.ec('secp256k1');
 
@@ -49,7 +57,15 @@ function extractPublicKeyWebNFC(keyNo: number, resp: ExecReturnStruct) {
     return publicKey;
 }
 
-async function cmdGetPkeys(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+export interface HaloCmdGetPkeys {}
+
+export interface HaloResGetPkeys {
+    publicKeys: PublicKeyList
+    compressedPublicKeys: PublicKeyList
+    etherAddresses: PublicKeyList
+}
+
+async function cmdGetPkeys(options: ExecHaloCmdOptions, args: HaloCmdGetPkeys): Promise<HaloResGetPkeys> {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_GET_PKEYS])
     ]);
@@ -69,7 +85,67 @@ async function cmdGetPkeys(options: ExecHaloCmdOptions, args: HaloCommandArgsObj
     return {publicKeys, compressedPublicKeys, etherAddresses};
 }
 
-async function cmdSign(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+export interface BaseHaloCmdSign {
+    keyNo: KeySlotNo
+    format?: "text" | "hex"
+    password?: ASCIIString
+
+    legacySignCommand?: boolean
+}
+
+export interface HaloCmdSignVariant1 extends BaseHaloCmdSign {
+    digest: HexString
+    message?: undefined
+    typedData?: undefined
+}
+
+export interface HaloCmdSignVariant2 extends BaseHaloCmdSign {
+    digest?: undefined
+    message: HexString
+    typedData?: undefined
+}
+
+export interface HaloCmdSignVariant3 extends BaseHaloCmdSign {
+    digest?: undefined
+    message?: undefined
+    typedData: {
+        domain: TypedDataDomain
+        types: Record<string, Array<TypedDataField>>
+        value: Record<string, never>
+    }
+}
+
+export type HaloCmdSign = HaloCmdSignVariant1 | HaloCmdSignVariant2 | HaloCmdSignVariant3;
+
+export interface HaloResInputObj {
+    keyNo: KeySlotNo
+    digest: HexString
+    message?: HexString
+    typedData?: {
+        domain: TypedDataDomain
+        types: Record<string, Array<TypedDataField>>
+        value: Record<string, never>
+        primaryType: string
+        domainHash: string
+    }
+}
+
+export interface HaloResSign {
+    input: HaloResInputObj
+    signature: {
+        der: HexString
+        raw?: {
+            r: string
+            s: string
+            v: number
+        }
+        ether?: string
+    }
+    publicKey?: string
+    etherAddress?: string
+}
+
+async function cmdSign(options: ExecHaloCmdOptions, args: HaloCmdSign): Promise<HaloResSign> {
     const checks = [
         Object.prototype.hasOwnProperty.call(args, "digest") && typeof args.digest !== "undefined",
         Object.prototype.hasOwnProperty.call(args, "message") && typeof args.message !== "undefined",
@@ -200,14 +276,7 @@ async function cmdSign(options: ExecHaloCmdOptions, args: HaloCommandArgsObject)
         publicKey = extractPublicKeyWebNFC(args.keyNo, resp);
     }
 
-    const inputObj: {
-        keyNo: string
-        digest: string
-        message?: string | null
-        typedData?: unknown | null // TODO
-        primaryType?: string | null
-        domainHash?: string | null
-    } = {
+    const inputObj: HaloResInputObj = {
         "keyNo": args.keyNo,
         "digest": digestBuf.toString('hex')
     };
@@ -215,10 +284,11 @@ async function cmdSign(options: ExecHaloCmdOptions, args: HaloCommandArgsObject)
     if (messageBuf !== null) {
         inputObj.message = messageBuf.toString('hex');
     } else if (args.typedData) {
-        inputObj.typedData = args.typedData;
-
-        inputObj.primaryType = ethers.TypedDataEncoder.getPrimaryType(args.typedData.types);
-        inputObj.domainHash = ethers.TypedDataEncoder.hashDomain(args.typedData.domain).slice(2);
+        inputObj.typedData = {
+            primaryType: ethers.TypedDataEncoder.getPrimaryType(args.typedData.types),
+            domainHash: ethers.TypedDataEncoder.hashDomain(args.typedData.domain).slice(2),
+            ...args.typedData
+        };
     }
 
     if (args.keyNo >= 0x60) {
@@ -227,7 +297,7 @@ async function cmdSign(options: ExecHaloCmdOptions, args: HaloCommandArgsObject)
             "signature": {
                 "der": sigToDer(parseSig(Buffer.from(sig, "hex"), BJJ_ORDER)).toString('hex')
             },
-            "publicKey": publicKey ? publicKey.toString('hex') : null
+            "publicKey": publicKey ? publicKey.toString('hex') : undefined
         };
     }
 
@@ -248,7 +318,7 @@ async function cmdSign(options: ExecHaloCmdOptions, args: HaloCommandArgsObject)
     }
 }
 
-async function cmdWriteLatch(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdWriteLatch(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_LATCH_DATA, args.latchNo]),
         Buffer.from(args.data, "hex")
@@ -258,7 +328,7 @@ async function cmdWriteLatch(options: ExecHaloCmdOptions, args: HaloCommandArgsO
     return {"status": "ok"};
 }
 
-async function cmdSignRandom(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdSignRandom(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const resp = await options.exec(Buffer.from([CMD.SHARED_CMD_SIGN_RANDOM, args.keyNo]));
 
     const resBuf = Buffer.from(resp.result, 'hex');
@@ -282,7 +352,7 @@ async function cmdSignRandom(options: ExecHaloCmdOptions, args: HaloCommandArgsO
     };
 }
 
-async function cmdSignChallenge(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdSignChallenge(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const challengeBuf = Buffer.from(args.challenge, "hex");
     const resp = await options.exec(Buffer.from([CMD.SHARED_CMD_SIGN_CHALLENGE, args.keyNo, ...challengeBuf]));
 
@@ -306,7 +376,7 @@ async function cmdSignChallenge(options: ExecHaloCmdOptions, args: HaloCommandAr
     };
 }
 
-async function cmdCfgNDEF(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdCfgNDEF(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     if (args.flagHidePk1 && args.flagHidePk2) {
         throw new HaloLogicError("It's not allowed to use both flagHidePk1 and flagHidePk2.");
     }
@@ -339,7 +409,7 @@ async function cmdCfgNDEF(options: ExecHaloCmdOptions, args: HaloCommandArgsObje
     };
 }
 
-async function cmdGenKey(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdGenKey(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     if (!args.entropy) {
         if (options.method === "pcsc") {
             args.entropy = randomBuffer().toString("hex");
@@ -426,7 +496,7 @@ async function cmdGenKey(options: ExecHaloCmdOptions, args: HaloCommandArgsObjec
     }
 }
 
-async function cmdGenKeyConfirm(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdGenKeyConfirm(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_GENERATE_KEY_CONT]),
         Buffer.from([args.keyNo]),
@@ -445,7 +515,7 @@ async function cmdGenKeyConfirm(options: ExecHaloCmdOptions, args: HaloCommandAr
     };
 }
 
-async function cmdGenKeyFinalize(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdGenKeyFinalize(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     let payload;
 
     if (args.password) {
@@ -476,7 +546,7 @@ async function cmdGenKeyFinalize(options: ExecHaloCmdOptions, args: HaloCommandA
     };
 }
 
-async function cmdSetURLSubdomain(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdSetURLSubdomain(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_SET_URL_SUBDOMAIN]),
         Buffer.from([args.subdomain.length]),
@@ -489,7 +559,7 @@ async function cmdSetURLSubdomain(options: ExecHaloCmdOptions, args: HaloCommand
     return {"status": "ok"};
 }
 
-async function cmdGetKeyInfo(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdGetKeyInfo(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_GET_KEY_INFO]),
         Buffer.from([args.keyNo]),
@@ -521,7 +591,7 @@ async function cmdGetKeyInfo(options: ExecHaloCmdOptions, args: HaloCommandArgsO
     };
 }
 
-async function cmdSetPassword(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdSetPassword(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
 
     const payload = Buffer.concat([
@@ -535,7 +605,7 @@ async function cmdSetPassword(options: ExecHaloCmdOptions, args: HaloCommandArgs
     return {"status": "ok"};
 }
 
-async function cmdUnsetPassword(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdUnsetPassword(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
     const authHash = Buffer.from(sha256(Buffer.concat([
         Buffer.from([0x19]),
@@ -555,7 +625,7 @@ async function cmdUnsetPassword(options: ExecHaloCmdOptions, args: HaloCommandAr
     return {"status": "ok"};
 }
 
-async function cmdReplacePassword(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdReplacePassword(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     const curPassword = pbkdf2.pbkdf2Sync(args.currentPassword, 'HaLoChipSalt', 5000, 16, 'sha512');
     const newPassword = pbkdf2.pbkdf2Sync(args.newPassword, 'HaLoChipSalt', 5000, 16, 'sha512');
 
@@ -606,7 +676,7 @@ async function _internalLoadPK(options: ExecHaloCmdOptions, payload: Buffer) {
     }
 }
 
-async function cmdGetTransportPK(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdGetTransportPK(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
@@ -618,7 +688,7 @@ async function cmdGetTransportPK(options: ExecHaloCmdOptions, args: HaloCommandA
     return await _internalLoadPK(options, payload);
 }
 
-async function cmdLoadTransportPK(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdLoadTransportPK(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
@@ -631,7 +701,7 @@ async function cmdLoadTransportPK(options: ExecHaloCmdOptions, args: HaloCommand
     return await _internalLoadPK(options, payload);
 }
 
-async function cmdExportKey(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdExportKey(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
@@ -663,7 +733,7 @@ async function cmdExportKey(options: ExecHaloCmdOptions, args: HaloCommandArgsOb
     }
 }
 
-async function cmdImportKeyInit(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdImportKeyInit(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
@@ -681,7 +751,7 @@ async function cmdImportKeyInit(options: ExecHaloCmdOptions, args: HaloCommandAr
     }
 }
 
-async function cmdImportKey(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+async function cmdImportKey(options: ExecHaloCmdOptions, args: /* TODO */ HaloCommandArgsObject) {
     if (options.method !== "credential" && options.method !== "pcsc") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
@@ -699,9 +769,19 @@ async function cmdImportKey(options: ExecHaloCmdOptions, args: HaloCommandArgsOb
     }
 }
 
-async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
-    let specItems = args.spec.split(',');
-    specItems = specItems.map((item: string) => item.split(':', 2));
+export interface HaloCmdGetDataStruct {
+    spec: string
+}
+
+// TODO refactor
+export interface HaloResGetDataStruct {
+    isPartial: boolean
+    data: Record<string, unknown>
+}
+
+async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDataStruct): Promise<HaloResGetDataStruct> {
+    const specParts = args.spec.split(',');
+    let specItems = specParts.map((item: string) => item.split(':', 2));
 
     const TYPES: Record<string, number> = {
         "publicKey":            0x01,
@@ -749,11 +829,10 @@ async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCommandAr
     let res = Buffer.from(resp.result, "hex");
 
     specItems = specItems.reverse();
-    // TODO fix types here
     const out: Record<string, unknown> = {};
 
     while (res.length > 0) {
-        const item = specItems.pop();
+        const item = specItems.pop() as string[];
 
         let len = res[0];
         let data;
@@ -796,7 +875,15 @@ async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCommandAr
     };
 }
 
-async function cmdGetGraffiti(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+export interface HaloCmdGetGraffiti {
+    slotNo: number,
+}
+
+export interface HaloResGetGraffiti {
+    data: ASCIIString
+}
+
+async function cmdGetGraffiti(options: ExecHaloCmdOptions, args: HaloCmdGetGraffiti): Promise<HaloResGetGraffiti> {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_GET_GRAFFITI]),
         Buffer.from([args.slotNo])
@@ -810,7 +897,16 @@ async function cmdGetGraffiti(options: ExecHaloCmdOptions, args: HaloCommandArgs
     }
 }
 
-async function cmdStoreGraffiti(options: ExecHaloCmdOptions, args: HaloCommandArgsObject) {
+export interface HaloCmdStoreGraffiti {
+    slotNo: number,
+    data: ASCIIString
+}
+
+export interface HaloResStoreGraffiti {
+    status: "ok"
+}
+
+async function cmdStoreGraffiti(options: ExecHaloCmdOptions, args: HaloCmdStoreGraffiti): Promise<HaloResStoreGraffiti> {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_STORE_GRAFFITI]),
         Buffer.from([args.slotNo]),
