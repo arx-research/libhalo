@@ -203,17 +203,13 @@ async function cmdSign(options: ExecHaloCmdOptions, args: HaloCommandArgsObject)
     const inputObj: {
         keyNo: string
         digest: string
-        message: string | null
-        typedData: unknown | null // TODO
-        primaryType: string | null
-        domainHash: string | null
+        message?: string | null
+        typedData?: unknown | null // TODO
+        primaryType?: string | null
+        domainHash?: string | null
     } = {
         "keyNo": args.keyNo,
-        "digest": digestBuf.toString('hex'),
-        "message": null,
-        "typedData": null,
-        "primaryType": null,
-        "domainHash": null
+        "digest": digestBuf.toString('hex')
     };
 
     if (messageBuf !== null) {
