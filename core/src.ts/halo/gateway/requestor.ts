@@ -2,7 +2,14 @@ import QRCode from "qrcode";
 import WebSocketAsPromised from "websocket-as-promised";
 import crypto from "crypto";
 import {JWEUtil} from "../jwe_util.js";
-import {HaloLogicError, HaloTagError, NFCBadTransportError, NFCAbortedError, NFCOperationError} from "../exceptions.js";
+import {
+    HaloLogicError,
+    HaloTagError,
+    NFCBadTransportError,
+    NFCAbortedError,
+    NFCOperationError,
+    NFCGatewayUnexpectedError
+} from "../exceptions.js";
 import {webDebug} from "../util.js";
 import {GatewayWelcomeMsg, HaloCommandObject} from "../../types.js";
 
@@ -244,24 +251,20 @@ class HaloGateway {
 
                 switch (resolution.exception.kind) {
                     case 'HaloLogicError':
-                        e = new HaloLogicError(resolution.exception.message);
+                        e = new HaloLogicError(resolution.exception.message, resolution.exception.stack);
                         break;
                     case 'HaloTagError':
-                        e = new HaloTagError(resolution.exception.name, resolution.exception.message);
+                        e = new HaloTagError(resolution.exception.name, resolution.exception.message, resolution.exception.stack);
                         break;
                     case 'NFCOperationError':
-                        e = new NFCOperationError(resolution.exception.message);
+                        e = new NFCOperationError(resolution.exception.message, resolution.exception.stack);
                         break;
                     default:
-                        e = new Error("Unexpected exception occurred while executing the command. " +
-                            resolution.exception.name + ": " + resolution.exception.message);
+                        e = new NFCGatewayUnexpectedError("Unexpected exception occurred while executing the command. " +
+                            resolution.exception.name + ": " + resolution.exception.message, resolution.exception.stack);
                         break;
                 }
 
-                // TODO
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-expect-error
-                e.stackOnExecutor = resolution.exception.stack;
                 webDebug('[halo-requestor] throwing exception as call result', e);
                 throw e;
             } else {

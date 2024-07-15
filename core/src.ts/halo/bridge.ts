@@ -1,6 +1,14 @@
 import queryString from "query-string";
 import WebSocketAsPromised from "websocket-as-promised";
-import {HaloLogicError, HaloTagError, NFCOperationError, NFCBadTransportError, NFCAbortedError, NFCBridgeConsentError} from "./exceptions.js";
+import {
+    HaloLogicError,
+    HaloTagError,
+    NFCOperationError,
+    NFCBadTransportError,
+    NFCAbortedError,
+    NFCBridgeConsentError,
+    NFCBridgeUnexpectedError
+} from "./exceptions.js";
 import {haloFindBridge} from "../web/web_utils.js";
 import {webDebug} from "./util.js";
 import {BridgeEvent, BridgeHandleAdded, BridgeOptions, HaloCommandObject} from "../types.js";
@@ -178,26 +186,22 @@ class HaloBridge {
 
                 switch (res.data.exception.kind) {
                     case 'HaloLogicError':
-                        e = new HaloLogicError(res.data.exception.message);
+                        e = new HaloLogicError(res.data.exception.message, res.data.exception.stack);
                         break;
                     case 'HaloTagError':
-                        e = new HaloTagError(res.data.exception.name, res.data.exception.message);
+                        e = new HaloTagError(res.data.exception.name, res.data.exception.message, res.data.exception.stack);
                         break;
                     case 'NFCOperationError':
                         // allow some time for the PC/SC reader to re-poll for the card
                         await new Promise((resolve, reject) => setTimeout(resolve, 500));
-                        e = new NFCOperationError(res.data.exception.message);
+                        e = new NFCOperationError(res.data.exception.message, res.data.exception.stack);
                         break;
                     default:
-                        e = new Error("Unexpected exception occurred while executing the command. " +
-                            res.data.exception.name + ": " + res.data.exception.message);
+                        e = new NFCBridgeUnexpectedError("Unexpected exception occurred while executing the command. " +
+                            res.data.exception.name + ": " + res.data.exception.message, res.data.exception.stack);
                         break;
                 }
 
-                // TODO + similiar annotations
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-expect-error
-                e.stackOnExecutor = res.data.exception.stack;
                 webDebug('[halo-bridge] throwing exception as the call result', e);
                 throw e;
             } else {

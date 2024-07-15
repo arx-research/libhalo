@@ -1,7 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-// TODO
-
 /**
  * LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
  * Copyright by Arx Research, Inc., a Delaware corporation
@@ -10,6 +6,7 @@
 
 import {HaloLogicError, HaloTagError} from "../api/common.js";
 import elliptic from 'elliptic';
+import {HaloCommandObject, HaloResponseObject} from "../types.js";
 
 const ec = new elliptic.ec('secp256k1');
 
@@ -27,7 +24,7 @@ class SkipTest extends Error {
 }
 
 const tests = [
-    ["testLegacySign1", async function(driver: string, exec) {
+    ["testLegacySign1", async function(driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
         if (driver !== 'webnfc') {
             const resPkeys = await exec({
                 "name": "get_pkeys"
@@ -58,7 +55,7 @@ const tests = [
             assert(pk1.verify(digest, res.signature.der));
         }
     }],
-    ["testSign1", async function(driver, exec) {
+    ["testSign1", async function(driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
         const digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
 
         const res = await exec({
@@ -70,7 +67,7 @@ const tests = [
         const pk1 = ec.keyFromPublic(res.publicKey, 'hex');
         assert(pk1.verify(digest, res.signature.der));
     }],
-    ["testKeyGen3", async function(driver, exec) {
+    ["testKeyGen3", async function(driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
         let resGenKey;
 
         try {
@@ -105,7 +102,7 @@ const tests = [
 
         assert(resGenKeyConfirm.status === "ok");
     }],
-    ["testSign3", async function(driver, exec) {
+    ["testSign3", async function(driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
         const digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
 
         const res = await exec({
@@ -117,7 +114,7 @@ const tests = [
         const pk3 = ec.keyFromPublic(res.publicKey, 'hex');
         assert(pk3.verify(digest, res.signature.der));
     }],
-    ["testSign1Typed", async function(driver, exec) {
+    ["testSign1Typed", async function(driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
         const domain = {
             name: 'Ether Mail',
             version: '1',
@@ -163,7 +160,7 @@ const tests = [
     }]
 ];
 
-async function __runTestSuite(__unsafe, driver, exec) {
+async function __runTestSuite(__unsafe: {__this_is_unsafe: true}, driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
     if (!__unsafe.__this_is_unsafe) {
         throw new HaloLogicError("This method is used for internal testing, shouldn't be invoked directly.");
     }
@@ -176,7 +173,8 @@ async function __runTestSuite(__unsafe, driver, exec) {
         console.log(testObj[0]);
 
         try {
-            await testObj[1](driver, exec);
+            const testFunc = testObj[1] as (driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) => Promise<void>;
+            await testFunc(driver, exec);
             console.log(testObj[0], 'PASSED');
             passed.push(testObj[0]);
         } catch (e) {

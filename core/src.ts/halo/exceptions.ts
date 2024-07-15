@@ -9,9 +9,12 @@
  * The "name" property will contain the exact error name (e.g. ERROR_CODE_INVALID_KEY_NO).
  */
 class HaloTagError extends Error {
-    constructor(name: string, message: string) {
+    public stackOnExecutor: string | undefined;
+
+    constructor(name: string, message: string, stackOnExecutor?: string) {
         super("The NFC tag encountered an error when executing command: " + message);
         this.name = name;
+        this.stackOnExecutor = stackOnExecutor;
     }
 }
 
@@ -20,9 +23,12 @@ class HaloTagError extends Error {
  * Check "message" property for the detailed information.
  */
 class HaloLogicError extends Error {
-    constructor(message: string) {
+    public stackOnExecutor: string | undefined;
+
+    constructor(message: string, stackOnExecutor?: string) {
         super(message);
         this.name = "HaloLogicError";
+        this.stackOnExecutor = stackOnExecutor;
     }
 }
 
@@ -65,9 +71,12 @@ class NFCAbortedError extends Error {
  * Check "message" property for more details.
  */
 class NFCOperationError extends Error {
-    constructor(message: string) {
+    public stackOnExecutor: string | undefined;
+
+    constructor(message: string, stackOnExecutor?: string) {
         super(message);
         this.name = "NFCOperationError";
+        this.stackOnExecutor = stackOnExecutor;
     }
 }
 
@@ -92,6 +101,30 @@ class NFCBridgeConsentError extends Error {
     }
 }
 
+/**
+ * Bridge has encountered an internal unexpected error.
+ */
+class NFCBridgeUnexpectedError extends Error {
+    public stackOnExecutor: string;
+
+    constructor(message: string, stackOnExecutor: string) {
+        super(message);
+        this.stackOnExecutor = stackOnExecutor;
+    }
+}
+
+/**
+ * Gateway has encountered an internal unexpected error.
+ */
+class NFCGatewayUnexpectedError extends Error {
+    public stackOnExecutor: string;
+
+    constructor(message: string, stackOnExecutor: string) {
+        super(message);
+        this.stackOnExecutor = stackOnExecutor;
+    }
+}
+
 export {
     HaloTagError,
     HaloLogicError,
@@ -100,5 +133,7 @@ export {
     NFCAbortedError,
     NFCOperationError,
     NFCBadTransportError,
-    NFCBridgeConsentError
+    NFCBridgeConsentError,
+    NFCBridgeUnexpectedError,
+    NFCGatewayUnexpectedError,
 };

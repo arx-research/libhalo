@@ -7,7 +7,11 @@
 import {readNDEF} from "./read_ndef.js";
 import {HaloLogicError, NFCOperationError} from "../halo/exceptions.js";
 import {execHaloCmd, checkErrors} from "./common.js";
-import {ExecCoreCommandOptions, ExecHaloCmdOptions, HaloCommandObject, Reader} from "../types.js";
+import {
+    ExecHaloCmdOptions, ExecOptions,
+    HaloCommandObject,
+    Reader
+} from "../types.js";
 import {Buffer} from 'buffer/index.js';
 
 async function selectCore(reader: Reader) {
@@ -40,7 +44,7 @@ async function selectU2FLayer(reader: Reader) {
     }
 }
 
-async function transceive(reader: Reader, command: Buffer, options: ExecCoreCommandOptions) {
+async function transceive(reader: Reader, command: Buffer, options: ExecOptions) {
     options = options || {};
 
     const start = performance.now();
@@ -124,7 +128,7 @@ function unwrapResultFromU2F(res: Buffer) {
     return res.slice(5);
 }
 
-async function execCoreCommand(reader: Reader, command: Buffer, options?: ExecCoreCommandOptions) {
+async function execCoreCommand(reader: Reader, command: Buffer, options?: ExecOptions) {
     options = Object.assign({}, options);
 
     let cmdBuf;

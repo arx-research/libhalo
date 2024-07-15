@@ -38,14 +38,12 @@ export interface PublicKeyList {
 
 export interface ExecReturnStruct {
     result: string
-    // TODO
-    // eslint-disable-next-line
-    extra: any
+    extra: Record<string, string>
 }
 
 export interface ExecHaloCmdOptions {
     method: "credential" | "pcsc" | "webnfc" | "nfc-manager"
-    exec: (command: Buffer, options?: ExecCoreCommandOptions) => Promise<ExecReturnStruct>
+    exec: (command: Buffer, options?: ExecOptions) => Promise<ExecReturnStruct>
 }
 
 export interface ExecOptions {
@@ -71,8 +69,7 @@ export interface RNNFCManager {
     isoDepHandler: RNNFCManagerIsoDepHandler
 }
 
-// TODO needs verification
-export interface ExecCoreCommandOptions {
+export interface ExecOptions {
     noCheck?: boolean
     pcscExecLayer?: "u2f"
 }
