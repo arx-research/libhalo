@@ -19,14 +19,17 @@ export default {
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
+                test: /\.ts$/,
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
         ],
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.ts', '.js'],
+        extensionAlias: {
+            '.js': ['.js', '.ts'],
+        },
         fallback: {
             vm: false,
             chokidar: false,

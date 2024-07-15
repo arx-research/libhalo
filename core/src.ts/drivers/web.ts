@@ -12,7 +12,6 @@ import {
     StatusCallbackDetails
 } from "../types.js";
 import {Buffer} from 'buffer/index.js';
-import {NDEFReader} from "../types_webnfc.js";
 
 let isCallRunning = false;
 
@@ -34,7 +33,9 @@ function makeDefault<Type>(curValue: Type | null | undefined, defaultValue: Type
  */
 function detectMethod() {
     try {
-        new NDEFReader();
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        new window.NDEFReader();
     } catch (e) {
         // WebNFC not supported
         return "credential";

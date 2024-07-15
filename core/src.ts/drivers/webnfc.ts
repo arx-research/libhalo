@@ -13,7 +13,7 @@ import {
 } from "../halo/exceptions.js";
 import {arr2hex, hex2arr, isWebDebugEnabled} from "../halo/util.js";
 import {ExecOptions, ExecReturnStruct} from "../types.js";
-import {NDEFReader} from "../types_webnfc.js";
+import type {NDEFReader} from "../types_webnfc.js";
 import {Buffer} from 'buffer/index.js';
 
 let ndef: NDEFReader | null = null;
@@ -42,7 +42,9 @@ async function checkWebNFCPermission() {
 
     try {
         const controller = new AbortController();
-        const ndef = new NDEFReader();
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        const ndef = new window.NDEFReader() as NDEFReader;
         await ndef.scan({ signal: controller.signal });
         controller.abort();
         return true;
@@ -91,7 +93,9 @@ async function execWebNFC(request: Buffer, options: ExecOptions): Promise<ExecRe
 
     if (!ndef) {
         try {
-            ndef = new NDEFReader();
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            ndef = new window.NDEFReader() as NDEFReader;
         } catch (e) {
             if (webDebug) {
                 console.log('[libhalo] execWebNFC() failed createing NDEFReader');

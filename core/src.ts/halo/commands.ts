@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-import crypto from 'node:crypto';
+import crypto from 'crypto';
 
 import {Buffer} from 'buffer/index.js';
 import {ethers} from 'ethers';
