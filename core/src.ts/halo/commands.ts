@@ -24,7 +24,13 @@ import {
     KeySlotNo,
     PublicKeyList
 } from "../types.js";
-import {TypedDataDomain, TypedDataField} from "ethers";
+import {
+    HaloCmdGetDataStruct, HaloCmdGetGraffiti, HaloCmdGetPkeys,
+    HaloCmdSign, HaloCmdStoreGraffiti,
+    HaloResGetDataStruct, HaloResGetGraffiti, HaloResGetPkeys,
+    HaloResInputObj,
+    HaloResSign, HaloResStoreGraffiti
+} from "./command_types.js";
 
 const ec = new elliptic.ec('secp256k1');
 
@@ -57,14 +63,6 @@ function extractPublicKeyWebNFC(keyNo: number, resp: ExecReturnStruct) {
     return publicKey;
 }
 
-export interface HaloCmdGetPkeys {}
-
-export interface HaloResGetPkeys {
-    publicKeys: PublicKeyList
-    compressedPublicKeys: PublicKeyList
-    etherAddresses: PublicKeyList
-}
-
 async function cmdGetPkeys(options: ExecHaloCmdOptions, args: HaloCmdGetPkeys): Promise<HaloResGetPkeys> {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_GET_PKEYS])
@@ -83,66 +81,6 @@ async function cmdGetPkeys(options: ExecHaloCmdOptions, args: HaloCmdGetPkeys): 
     }
 
     return {publicKeys, compressedPublicKeys, etherAddresses};
-}
-
-export interface BaseHaloCmdSign {
-    keyNo: KeySlotNo
-    format?: "text" | "hex"
-    password?: ASCIIString
-
-    legacySignCommand?: boolean
-}
-
-export interface HaloCmdSignVariant1 extends BaseHaloCmdSign {
-    digest: HexString
-    message?: undefined
-    typedData?: undefined
-}
-
-export interface HaloCmdSignVariant2 extends BaseHaloCmdSign {
-    digest?: undefined
-    message: HexString
-    typedData?: undefined
-}
-
-export interface HaloCmdSignVariant3 extends BaseHaloCmdSign {
-    digest?: undefined
-    message?: undefined
-    typedData: {
-        domain: TypedDataDomain
-        types: Record<string, Array<TypedDataField>>
-        value: Record<string, never>
-    }
-}
-
-export type HaloCmdSign = HaloCmdSignVariant1 | HaloCmdSignVariant2 | HaloCmdSignVariant3;
-
-export interface HaloResInputObj {
-    keyNo: KeySlotNo
-    digest: HexString
-    message?: HexString
-    typedData?: {
-        domain: TypedDataDomain
-        types: Record<string, Array<TypedDataField>>
-        value: Record<string, never>
-        primaryType: string
-        domainHash: string
-    }
-}
-
-export interface HaloResSign {
-    input: HaloResInputObj
-    signature: {
-        der: HexString
-        raw?: {
-            r: string
-            s: string
-            v: number
-        }
-        ether?: string
-    }
-    publicKey?: string
-    etherAddress?: string
 }
 
 async function cmdSign(options: ExecHaloCmdOptions, args: HaloCmdSign): Promise<HaloResSign> {
@@ -769,16 +707,6 @@ async function cmdImportKey(options: ExecHaloCmdOptions, args: /* TODO */ HaloCo
     }
 }
 
-export interface HaloCmdGetDataStruct {
-    spec: string
-}
-
-// TODO refactor
-export interface HaloResGetDataStruct {
-    isPartial: boolean
-    data: Record<string, unknown>
-}
-
 async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDataStruct): Promise<HaloResGetDataStruct> {
     const specParts = args.spec.split(',');
     let specItems = specParts.map((item: string) => item.split(':', 2));
@@ -875,14 +803,6 @@ async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDat
     };
 }
 
-export interface HaloCmdGetGraffiti {
-    slotNo: number,
-}
-
-export interface HaloResGetGraffiti {
-    data: ASCIIString
-}
-
 async function cmdGetGraffiti(options: ExecHaloCmdOptions, args: HaloCmdGetGraffiti): Promise<HaloResGetGraffiti> {
     const payload = Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_GET_GRAFFITI]),
@@ -895,15 +815,6 @@ async function cmdGetGraffiti(options: ExecHaloCmdOptions, args: HaloCmdGetGraff
     return {
         "data": res.slice(1).toString('ascii')
     }
-}
-
-export interface HaloCmdStoreGraffiti {
-    slotNo: number,
-    data: ASCIIString
-}
-
-export interface HaloResStoreGraffiti {
-    status: "ok"
 }
 
 async function cmdStoreGraffiti(options: ExecHaloCmdOptions, args: HaloCmdStoreGraffiti): Promise<HaloResStoreGraffiti> {
@@ -944,3 +855,5 @@ export {
     cmdGetGraffiti,
     cmdStoreGraffiti,
 };
+
+export type * from "./command_types.js";
