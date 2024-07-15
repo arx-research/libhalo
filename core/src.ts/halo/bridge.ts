@@ -1,47 +1,47 @@
 import queryString from "query-string";
 import WebSocketAsPromised from "websocket-as-promised";
-import {HaloLogicError, HaloTagError, NFCOperationError, NFCBadTransportError, NFCAbortedError, NFCBridgeConsentError} from "./exceptions.ts";
-import {haloFindBridge} from "../web/web_utils.ts";
-import {webDebug} from "./util.ts";
+import {HaloLogicError, HaloTagError, NFCOperationError, NFCBadTransportError, NFCAbortedError, NFCBridgeConsentError} from "./exceptions.js";
+import {haloFindBridge} from "../web/web_utils.js";
+import {webDebug} from "./util.js";
+import {BridgeEvent, BridgeHandleAdded, BridgeOptions, HaloCommandObject} from "../types.js";
 
 class HaloBridge {
     private isRunning: boolean;
-    private lastCommand: null;
-    private lastHandle: null;
-    private url: null;
-    private createWebSocket: any;
+    private lastHandle: string | null;
+    private url: string | null;
+    private readonly createWebSocket: (url: string) => WebSocket;
     private ws: WebSocketAsPromised | null;
 
-    constructor(options) {
+    constructor(options: BridgeOptions) {
         options = Object.assign({}, options);
 
         this.isRunning = false;
-        this.lastCommand = null;
         this.lastHandle = null;
         this.url = null;
+        this.ws = null;
 
         this.createWebSocket = options.createWebSocket
             ? options.createWebSocket
-            : (url) => new WebSocket(url);
+            : (url: string) => new WebSocket(url);
     }
 
-    waitForWelcomePacket() {
+    waitForWelcomePacket(): Promise<Record<string, unknown>> {
         return new Promise((resolve, reject) => {
-            let welcomeWaitTimeout = setTimeout(() => {
+            const welcomeWaitTimeout = setTimeout(() => {
                 reject(new NFCBadTransportError("Server doesn't send ws_connected packet for 6 seconds after accepting the connection."));
             }, 6000);
 
-            this.ws.onClose.addListener((event) => {
+            this.ws!.onClose.addListener((event) => {
                 if (event.code === 4002) {
                     // no user consent
-                    reject(new NFCBridgeConsentError());
+                    reject(new NFCBridgeConsentError("No user consent for this origin."));
                 } else {
                     reject(new NFCBadTransportError("WebSocket closed when waiting for ws_connected packet. " +
                         "Reason: [" + event.code + "] " + event.reason));
                 }
             });
 
-            this.ws.onUnpackedMessage.addListener(data => {
+            this.ws!.onUnpackedMessage.addListener(data => {
                 if (data.event === "ws_connected") {
                     clearTimeout(welcomeWaitTimeout);
                     resolve(data);
@@ -53,10 +53,10 @@ class HaloBridge {
     async connect() {
         this.url = await haloFindBridge({createWebSocket: this.createWebSocket});
 
-        this.ws = new WebSocketAsPromised(this.url, {
+        this.ws = new WebSocketAsPromised(this.url!, {
             createWebSocket: url => this.createWebSocket(url),
             packMessage: data => JSON.stringify(data),
-            unpackMessage: data => JSON.parse(data),
+            unpackMessage: data => JSON.parse(data as string),
             attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
             extractRequestId: data => data && data.uid
         });
@@ -69,17 +69,17 @@ class HaloBridge {
             }
         });
 
-        let waitPromise = this.waitForWelcomePacket();
+        const waitPromise = this.waitForWelcomePacket();
         await this.ws.open();
-        let welcomeMsg = await waitPromise;
-        let serverVersion = welcomeMsg.serverVersion;
+        const welcomeMsg = await waitPromise;
+        const serverVersion = welcomeMsg.serverVersion;
 
         return {
             serverVersion: serverVersion
         };
     }
 
-    getConsentURL(websiteURL, options) {
+    getConsentURL(websiteURL: string, options: unknown) {
         if (!this.url) {
             return null;
         }
@@ -87,6 +87,8 @@ class HaloBridge {
         return this.url
             .replace('ws://', 'http://')
             .replace('wss://', 'https://')
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             .replace('/ws', '/consent?' + queryString.stringify({'website': websiteURL, ...options}));
     }
 
@@ -97,7 +99,7 @@ class HaloBridge {
     }
 
     async waitForHandle() {
-        if (!this.ws.isOpened) {
+        if (this.ws === null || !this.ws.isOpened) {
             throw new NFCBadTransportError("Bridge is not open.");
         }
 
@@ -106,30 +108,36 @@ class HaloBridge {
         }
 
         return new Promise((resolve, reject) => {
-            const msgListener = data => {
+            const msgListener = (data: BridgeEvent) => {
                 if (data.event === "handle_added") {
-                    this.lastHandle = data.data.handle;
+                    this.lastHandle = (data as BridgeHandleAdded).data.handle;
 
-                    this.ws.onUnpackedMessage.removeListener(msgListener);
-                    this.ws.onClose.removeListener(closeListener);
+                    if (this.ws) {
+                        this.ws.onUnpackedMessage.removeListener(msgListener);
+                        this.ws.onClose.removeListener(closeListener);
+                    }
 
                     resolve(this.lastHandle);
                 }
             };
 
-            const closeListener = data => {
-                this.ws.onUnpackedMessage.removeListener(msgListener);
-                this.ws.onClose.removeListener(closeListener);
+            const closeListener = (data: never) => {
+                if (this.ws) {
+                    this.ws.onUnpackedMessage.removeListener(msgListener);
+                    this.ws.onClose.removeListener(closeListener);
+                }
 
                 reject(new NFCBadTransportError("Bridge server has disconnected."));
             };
 
-            this.ws.onUnpackedMessage.addListener(msgListener);
-            this.ws.onClose.addListener(closeListener);
+            if (this.ws) {
+                this.ws.onUnpackedMessage.addListener(msgListener);
+                this.ws.onClose.addListener(closeListener);
+            }
         });
     }
 
-    async execHaloCmd(command) {
+    async execHaloCmd(command: HaloCommandObject) {
         webDebug('[halo-bridge] called execHaloCmd()', command);
 
         if (this.isRunning) {
@@ -137,11 +145,15 @@ class HaloBridge {
             throw new NFCAbortedError("Can not make multiple calls to execHaloCmd() in parallel.");
         }
 
+        if (!this.ws) {
+            throw new NFCBadTransportError("Bridge was not opened.");
+        }
+
         this.isRunning = true;
 
         try {
             webDebug('[halo-bridge] waiting for card tap');
-            let handle = await this.waitForHandle();
+            const handle = await this.waitForHandle();
 
             webDebug('[halo-bridge] sending request to execute command', handle);
             let res;
@@ -154,7 +166,7 @@ class HaloBridge {
                 });
             } catch (e) {
                 webDebug('[halo-bridge] exception when trying to sendRequest', e);
-                throw new NFCBadTransportError('Failed to send request: ' + e.toString());
+                throw new NFCBadTransportError('Failed to send request: ' + (<Error> e).toString());
             }
 
             if (res.event === "exec_success") {
@@ -182,6 +194,9 @@ class HaloBridge {
                         break;
                 }
 
+                // TODO + similiar annotations
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 e.stackOnExecutor = res.data.exception.stack;
                 webDebug('[halo-bridge] throwing exception as the call result', e);
                 throw e;

@@ -1,6 +1,6 @@
 import express from 'express';
 import nunjucks from "nunjucks";
-import {WebSocketServer} from 'ws';
+import {WebSocket, WebSocketServer} from 'ws';
 import jwt from 'jsonwebtoken';
 import https from "https";
 import fs from "fs";
@@ -8,21 +8,26 @@ import path from "path";
 import os from "os";
 import util from "util";
 
-import {dirname, randomBuffer} from "./util.ts";
-import {getBuildInfo} from "./version.ts";
+import {dirname, randomBuffer} from "./util.js";
+import {getBuildInfo} from "./version.js";
 
 import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
 import {NFCOperationError} from "@arx-research/libhalo/api/common";
+import {Reader} from "@arx-research/libhalo/types";
+import {Namespace} from "argparse";
 
-let wss = null;
+let wss: WebSocketServer | null = null;
 
-let currentWsClient = null;
-let currentState = null;
+let currentWsClient: WebSocket | null = null;
+let currentState: {
+    handle: string
+    reader: Reader
+} | null = null;
 
-let jwtSigningKey = randomBuffer().toString('hex');
-let userConsentOrigins = new Set();
+const jwtSigningKey = randomBuffer().toString('hex');
+const userConsentOrigins = new Set();
 
-let buildInfo = getBuildInfo();
+const buildInfo = getBuildInfo();
 
 function generateHandle() {
     return randomBuffer().toString('base64');
@@ -40,13 +45,13 @@ async function makeCSRFToken() {
     });
 }
 
-async function validateCSRFToken(token) {
+async function validateCSRFToken(token: string) {
     return new Promise((resolve, reject) => {
         jwt.verify(token, jwtSigningKey, (err, decoded) => {
             if (err) {
                 reject(err);
             } else {
-                if (decoded.purpose !== 'csrf-consent') {
+                if ((<Record<string, string>> decoded).purpose !== 'csrf-consent') {
                     reject(new Error('Incorrect token purpose.'));
                 } else {
                     resolve(decoded);
@@ -56,7 +61,7 @@ async function validateCSRFToken(token) {
     });
 }
 
-function sendToCurrentWs(ws, data) {
+function sendToCurrentWs(ws: WebSocket | null, data: unknown) {
     console.log('send', util.inspect(data, {showHidden: false, depth: null, colors: true}));
 
     if (currentWsClient !== null && (ws === null || currentWsClient === ws)) {
@@ -67,7 +72,7 @@ function sendToCurrentWs(ws, data) {
     return false;
 }
 
-function wsEventCardConnected(reader) {
+function wsEventCardConnected(reader: Reader) {
     if (currentState) {
         sendToCurrentWs(null, {
             "event": "handle_removed",
@@ -79,7 +84,7 @@ function wsEventCardConnected(reader) {
         });
     }
 
-    let handle = generateHandle();
+    const handle = generateHandle();
     currentState = {"handle": handle, "reader": reader};
     sendToCurrentWs(null, {
         "event": "handle_added",
@@ -91,7 +96,7 @@ function wsEventCardConnected(reader) {
     });
 }
 
-function wsEventCardIncompatible(reader) {
+function wsEventCardIncompatible(reader: Reader) {
     sendToCurrentWs(null, {
         "event": "handle_not_compatible",
         "uid": null,
@@ -102,7 +107,7 @@ function wsEventCardIncompatible(reader) {
     });
 }
 
-function wsEventCardDisconnected(reader) {
+function wsEventCardDisconnected(reader: Reader) {
     if (currentState !== null && currentState.reader === reader) {
         sendToCurrentWs(null, {
             "event": "handle_removed",
@@ -116,7 +121,7 @@ function wsEventCardDisconnected(reader) {
     }
 }
 
-function wsEventReaderConnected(reader) {
+function wsEventReaderConnected(reader: Reader) {
     sendToCurrentWs(null, {
         "event": "reader_added",
         "uid": null,
@@ -126,7 +131,7 @@ function wsEventReaderConnected(reader) {
     });
 }
 
-function wsEventReaderDisconnected(reader) {
+function wsEventReaderDisconnected(reader: Reader) {
     sendToCurrentWs(null, {
         "event": "reader_removed",
         "uid": null,
@@ -158,7 +163,7 @@ function readTLSData() {
     return null;
 }
 
-function wsCreateServer(args, getReaderNames) {
+function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
     const tlsData = readTLSData();
     let serverTLS = null;
 
@@ -201,8 +206,16 @@ function wsCreateServer(args, getReaderNames) {
     });
 
     app.get('/consent', async (req, res) => {
-        let url = new URL(req.query.website);
-        let csrfToken = await makeCSRFToken();
+        let url;
+
+        try {
+            url = new URL(req.query.website as string);
+        } catch (e) {
+            res.status(400).send('Bad request.');
+            return;
+        }
+
+        const csrfToken = await makeCSRFToken();
 
         res.render('consent.html', {
             csrfToken,
@@ -229,28 +242,28 @@ function wsCreateServer(args, getReaderNames) {
             return;
         }
 
-        let url = new URL(req.body.website);
+        const url = new URL(req.body.website);
         userConsentOrigins.add(url.protocol + '//' + url.host);
 
         res.render('consent_close.html');
     });
 
     server.on('upgrade', (request, socket, head) => {
-        wss.handleUpgrade(request, socket, head, socket => {
-            wss.emit('connection', socket, request);
+        wss && wss.handleUpgrade(request, socket, head, socket => {
+            wss && wss.emit('connection', socket, request);
         });
     });
 
     if (serverTLS) {
         serverTLS.on('upgrade', (request, socket, head) => {
-            wss.handleUpgrade(request, socket, head, socket => {
-                wss.emit('connection', socket, request);
+            wss && wss.handleUpgrade(request, socket, head, socket => {
+                wss && wss.emit('connection', socket, request);
             });
         });
     }
 
     wss.on('connection', (ws, req) => {
-        let parts = req.url.split('?');
+        const parts = req.url!.split('?');
 
         if (parts.length === 2 && parts[1] === "ping=1") {
             ws.close(4090, "Pong.");
@@ -261,14 +274,14 @@ function wsCreateServer(args, getReaderNames) {
         let originHostname;
 
         try {
-            originHostname = new URL(req.headers.origin).hostname;
+            originHostname = new URL(req.headers.origin!).hostname;
         } catch (e) {
             ws.close(4003, "Failed to parse origin URL.");
             return;
         }
 
         if (args.allowOrigins) {
-            let allowedOrigins = args.allowOrigins.split(';');
+            const allowedOrigins = args.allowOrigins.split(';');
 
             if (allowedOrigins.includes(req.headers.origin)) {
                 permitted = true;
@@ -301,7 +314,7 @@ function wsCreateServer(args, getReaderNames) {
                 return;
             }
 
-            let packet = JSON.parse(data);
+            const packet = JSON.parse(data.toString('utf-8'));
             console.log('recv', util.inspect(packet, {showHidden: false, depth: null, colors: true}));
 
             if (packet.type === "exec_halo") {
@@ -310,7 +323,7 @@ function wsCreateServer(args, getReaderNames) {
                         throw new NFCOperationError("Invalid handle.");
                     }
 
-                    let res = await execHaloCmdPCSC(packet.command, currentState.reader);
+                    const res = await execHaloCmdPCSC(packet.command, currentState.reader);
                     sendToCurrentWs(ws, {
                         "event": "exec_success",
                         "uid": packet.uid,
@@ -318,7 +331,8 @@ function wsCreateServer(args, getReaderNames) {
                             "res": res
                         }
                     });
-                } catch (e) {
+                } catch (err) {
+                    const e = err as Error;
                     sendToCurrentWs(ws, {
                         "event": "exec_exception",
                         "uid": packet.uid,
@@ -347,9 +361,9 @@ function wsCreateServer(args, getReaderNames) {
             }
         });
 
-        let readerNames = getReaderNames();
+        const readerNames = getReaderNames();
 
-        for (let readerName of readerNames) {
+        for (const readerName of readerNames) {
             sendToCurrentWs(null, {
                 "event": "reader_added",
                 "uid": null,

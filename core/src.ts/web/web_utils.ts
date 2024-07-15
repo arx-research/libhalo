@@ -1,18 +1,19 @@
 import WebSocketAsPromised from 'websocket-as-promised';
-import {NFCBadTransportError} from "../halo/exceptions";
+import {NFCBadTransportError} from "../halo/exceptions.js";
+import {FindBridgeOptions, FindBridgeOptionsDiagnose, FindBridgeOptionsNoDiagnose, FindBridgeResult} from "../types.js";
 
-function haloCreateWs(url) {
+function haloCreateWs(url: string) {
     return new WebSocketAsPromised(url, {
         packMessage: data => JSON.stringify(data),
-        unpackMessage: data => JSON.parse(data),
+        unpackMessage: data => JSON.parse(data as string),
         attachRequestId: (data, requestId) => Object.assign({uid: requestId}, data),
         extractRequestId: data => data && data.uid
     });
 }
 
-function runHealthCheck(url, openTimeout, createWebSocket) {
+function runHealthCheck(url: string, openTimeout: number, createWebSocket: (url: string) => WebSocket) {
     return new Promise((resolve, reject) => {
-        let closeTimeout = null;
+        let closeTimeout: NodeJS.Timeout | null = null;
 
         const pingUrl = url.includes('?') ? (url + '&ping=1') : (url + '?ping=1');
         const wsp = new WebSocketAsPromised(pingUrl, {
@@ -45,12 +46,12 @@ function runHealthCheck(url, openTimeout, createWebSocket) {
     });
 }
 
-function createChecks(wsPort, wssPort, createWebSocket) {
+function createChecks(wsPort: number, wssPort: number, createWebSocket: (url: string) => WebSocket) {
     // detect Firefox
-    const isFirefox = typeof window !== "undefined" && window.hasOwnProperty("InternalError");
+    const isFirefox = typeof window !== "undefined" && Object.prototype.hasOwnProperty.call(window, "InternalError");
     const openTimeout = isFirefox ? 10000 : 5000;
 
-    let checks = [
+    const checks = [
         runHealthCheck('ws://127.0.0.1:' + wsPort + '/ws', openTimeout, createWebSocket)
     ];
 
@@ -65,7 +66,10 @@ function createChecks(wsPort, wssPort, createWebSocket) {
     return checks;
 }
 
-async function haloFindBridge(options) {
+async function haloFindBridge(options: FindBridgeOptionsNoDiagnose): Promise<string>;
+async function haloFindBridge(options: FindBridgeOptionsDiagnose): Promise<FindBridgeResult>;
+
+async function haloFindBridge(options: FindBridgeOptions) {
     options = Object.assign({}, options) || {};
 
     if (!options.wsPort) {
@@ -80,14 +84,14 @@ async function haloFindBridge(options) {
     const wssPort = options.wssPort;
     const createWebSocket = options.createWebSocket
         ? options.createWebSocket
-        : (url) => new WebSocket(url);
+        : (url: string) => new WebSocket(url);
 
     if (options.diagnose) {
-        let res = await Promise.allSettled(createChecks(wsPort, wssPort, createWebSocket));
-        let urls = [];
-        let errors = [];
+        const res = await Promise.allSettled(createChecks(wsPort, wssPort, createWebSocket));
+        const urls = [];
+        const errors = [];
 
-        for (let o of res) {
+        for (const o of res) {
             if (o.status === "fulfilled") {
                 urls.push(o.value);
             } else {

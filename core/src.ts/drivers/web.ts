@@ -1,13 +1,12 @@
-import {NFCAbortedError, NFCMethodNotSupported} from "../halo/exceptions.ts";
-import {execCredential} from "./credential.ts";
-import {execWebNFC} from "./webnfc.ts";
-import {execHaloCmd} from "./common.ts";
-import {emulatedPromptStatusCallback} from "../web/soft_prompt.ts";
-import {isWebDebugEnabled} from "../halo/util.ts";
+import {NFCAbortedError, NFCMethodNotSupported} from "../halo/exceptions.js";
+import {execCredential} from "./credential.js";
+import {execWebNFC} from "./webnfc.js";
+import {execHaloCmd} from "./common.js";
+import {emulatedPromptStatusCallback} from "../web/soft_prompt.js";
+import {isWebDebugEnabled} from "../halo/util.js";
 import {
     ExecHaloCmdOptions,
     ExecHaloCmdWebOptions,
-    ExecOptions,
     HaloCommandObject,
     HaloWebMethod,
     StatusCallbackDetails

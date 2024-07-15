@@ -6,7 +6,7 @@
 
 import {Buffer} from 'buffer/index.js';
 import queryString from 'query-string';
-import {HaloLogicError} from "../halo/exceptions.ts";
+import {HaloLogicError} from "../halo/exceptions.js";
 import {TransceiveFunc} from "../types.js";
 
 async function readNDEF(transceive: TransceiveFunc) {

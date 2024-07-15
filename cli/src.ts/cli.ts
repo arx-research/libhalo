@@ -19,18 +19,20 @@ import {
     wsEventReaderConnected,
     wsEventCardIncompatible,
     wsEventReaderDisconnected
-} from "./ws_server.ts";
+} from "./ws_server.js";
 import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
+import {HaloCommandObject, Reader} from "@arx-research/libhalo/types";
+import {Namespace} from "argparse";
 
 const nfc = new NFC();
-let stopPCSCTimeout = null;
+let stopPCSCTimeout: number | null = null;
 let isConnected = false;
 let isClosing = false;
 
-async function checkCard(reader) {
+async function checkCard(reader: Reader) {
     // try to select Halo ETH Core Layer
     try {
-        let resSelect = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
+        const resSelect = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
         return resSelect.compare(Buffer.from([0x90, 0x00])) === 0;
     } catch (e) {
         console.error(e);
@@ -38,8 +40,8 @@ async function checkCard(reader) {
     }
 }
 
-function runHalo(entryMode, args) {
-    nfc.on('reader', reader => {
+function runHalo(entryMode: string, args: Namespace) {
+    nfc.on('reader', (reader: Reader) => {
         reader.autoProcessing = false;
 
         reader.on('error', err => {
@@ -72,11 +74,11 @@ function runHalo(entryMode, args) {
                 console.log("Tag inserted:", reader.reader.name, '(Type: ' + card.type + ', ATR: ' + card.atr.toString('hex').toUpperCase() + ')');
             }
 
-            clearTimeout(stopPCSCTimeout);
+            clearTimeout(stopPCSCTimeout!);
             stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
 
             (async () => {
-                let res = await checkCard(reader);
+                const res = await checkCard(reader);
 
                 if (res) {
                     clearTimeout(stopPCSCTimeout);
@@ -88,7 +90,7 @@ function runHalo(entryMode, args) {
                         res = {"status": "ok"};
                     } else if (args.name === "test") {
                         res = await __runTestSuite({"__this_is_unsafe": true},
-                            "pcsc", async (command) => await execHaloCmdPCSC(command, reader));
+                            "pcsc", async (command: HaloCommandObject) => await execHaloCmdPCSC(command, reader));
                     } else {
                         try {
                             res = await execHaloCmdPCSC(args, reader);
@@ -96,7 +98,7 @@ function runHalo(entryMode, args) {
                             if (args.output === "color") {
                                 console.error(e);
                             } else {
-                                console.log(JSON.stringify({"_exception": {"message": String(e), "stack": e.stack}}));
+                                console.log(JSON.stringify({"_exception": {"message": String(e), "stack": (<Error> e).stack}}));
                             }
                         }
                     }
@@ -132,14 +134,14 @@ function runHalo(entryMode, args) {
         });
     });
 
-    nfc.on('error', err => {
+    nfc.on('error', (err: Error) => {
         if (!isClosing) {
             console.log('an error occurred', err);
         }
     });
 
-    function stopPCSC(code, output) {
-        clearTimeout(stopPCSCTimeout);
+    function stopPCSC(code: string, output: string) {
+        clearTimeout(stopPCSCTimeout!);
 
         if (code === "error" && output === "color") {
             console.error('Command execution failed.');
@@ -151,7 +153,7 @@ function runHalo(entryMode, args) {
             }
         }
 
-        for (let rdrName in nfc.readers) {
+        for (const rdrName in nfc.readers) {
             nfc.readers[rdrName].close();
         }
 

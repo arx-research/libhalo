@@ -6,13 +6,13 @@
 
 import {
     arr2hex, hex2arr
-} from "../halo/util";
-import {__runTestSuite} from "../halo/tests";
-import {haloCreateWs} from "./web_utils";
+} from "../halo/util.js";
+import {__runTestSuite} from "../halo/tests.js";
+import {haloCreateWs} from "./web_utils.js";
 
 // libhalo web APIs
-export * from '../api/common.tsx';
-export * from '../api/web.tsx';
+export * from '../api/common.js';
+export * from '../api/web.js';
 
 export {
     // extra utilities

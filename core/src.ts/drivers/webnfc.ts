@@ -4,14 +4,14 @@
  * License: MIT
  */
 
-import {ERROR_CODES} from "../halo/errors.ts";
+import {ERROR_CODES} from "../halo/errors.js";
 import {
     HaloTagError,
     NFCMethodNotSupported,
     NFCPermissionRequestDenied,
     NFCAbortedError
-} from "../halo/exceptions.ts";
-import {arr2hex, hex2arr, isWebDebugEnabled} from "../halo/util.ts";
+} from "../halo/exceptions.js";
+import {arr2hex, hex2arr, isWebDebugEnabled} from "../halo/util.js";
 import {ExecOptions, ExecReturnStruct} from "../types.js";
 import {NDEFReader} from "../types_webnfc.js";
 import {Buffer} from 'buffer/index.js';

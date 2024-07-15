@@ -7,14 +7,14 @@
 import {
     HaloLogicError,
     HaloTagError
-} from "../halo/exceptions.ts";
+} from "../halo/exceptions.js";
 import {
     cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm, cmdGenKeyFinalize,
     cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword, cmdReplacePassword, cmdGetKeyInfo,
     cmdGetTransportPK, cmdLoadTransportPK, cmdExportKey, cmdImportKey, cmdImportKeyInit, cmdGetDataStruct,
     cmdGetGraffiti, cmdStoreGraffiti
-} from "../halo/commands.ts";
-import {ERROR_CODES} from "../halo/errors.ts";
+} from "../halo/commands.js";
+import {ERROR_CODES} from "../halo/errors.js";
 import {ExecHaloCmdOptions, HaloCommandObject, HaloResponseObject} from "../types.js";
 import {Buffer} from 'buffer/index.js';
 

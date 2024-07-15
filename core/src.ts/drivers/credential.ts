@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-import {HaloTagError, NFCOperationError, NFCMethodNotSupported} from "../halo/exceptions.ts";
-import {ERROR_CODES} from "../halo/errors.ts";
-import {arr2hex, isWebDebugEnabled} from "../halo/util.ts";
+import {HaloTagError, NFCOperationError, NFCMethodNotSupported} from "../halo/exceptions.js";
+import {ERROR_CODES} from "../halo/errors.js";
+import {arr2hex, isWebDebugEnabled} from "../halo/util.js";
 import {ExecOptions, ExecReturnStruct} from "../types.js";
 import {Buffer} from 'buffer/index.js';
 
@@ -105,7 +105,6 @@ async function execCredential(request: Buffer, options: ExecOptions): Promise<Ex
         console.log('[libhalo] execCredential() command result:', arr2hex(resBuf));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise((resolve, reject) => {
         setTimeout(() => {
             resolve({

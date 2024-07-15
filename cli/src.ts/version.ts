@@ -1,5 +1,5 @@
 import fs from "fs";
-import {dirname} from "./util.ts";
+import {dirname} from "./util.js";
 
 function getVersionInfo() {
     if (fs.existsSync(dirname + '/halotools_version.json')) {
@@ -10,7 +10,7 @@ function getVersionInfo() {
 }
 
 function getBuildInfo() {
-    let versionInfo = getVersionInfo();
+    const versionInfo = getVersionInfo();
 
     return {
         tagName: versionInfo ? versionInfo.tagName : 'SNAPSHOT',
@@ -20,7 +20,7 @@ function getBuildInfo() {
 }
 
 function printVersionInfo() {
-    let versionInfo = getVersionInfo();
+    const versionInfo = getVersionInfo();
 
     if (versionInfo) {
         console.log(versionInfo.name + ' (' + versionInfo.tagName + '; ' + versionInfo.commitId + ')');

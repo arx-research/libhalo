@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-import {readNDEF} from "./read_ndef.ts";
-import {HaloLogicError, NFCOperationError} from "../halo/exceptions.ts";
-import {execHaloCmd, checkErrors} from "./common.ts";
+import {readNDEF} from "./read_ndef.js";
+import {HaloLogicError, NFCOperationError} from "../halo/exceptions.js";
+import {execHaloCmd, checkErrors} from "./common.js";
 import {ExecCoreCommandOptions, ExecHaloCmdOptions, HaloCommandObject, Reader} from "../types.js";
 import {Buffer} from 'buffer/index.js';
 

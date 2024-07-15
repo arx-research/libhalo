@@ -6,35 +6,44 @@
 
 import {webcrypto as crypto} from 'crypto';
 import express from "express";
-import {WebSocketServer} from 'ws';
+import {RawData, WebSocket, WebSocketServer} from 'ws';
+import {IncomingMessage} from "http";
 import queryString from 'query-string';
 import nunjucks from "nunjucks";
 import {parse} from "url";
 
-import {parseArgs} from './args_gateway.ts';
-import {printVersionInfo, getBuildInfo} from "./version.ts";
-import {dirname} from "./util.ts";
+import {parseArgs} from './args_gateway.js';
+import {printVersionInfo, getBuildInfo} from "./version.js";
+import {dirname} from "./util.js";
+import {Namespace} from "argparse";
 
-let buildInfo = getBuildInfo();
+const buildInfo = getBuildInfo();
 
 const REQUESTOR_SESS_LIMIT = 10 * 60 * 1000;
 const MAX_SESSION_LIMIT = 1000;
 
-let args = parseArgs();
+const args = parseArgs();
 
 if (!args) {
     process.exit(0);
 }
 
-let sessionIds = {};
+interface SocketState {
+    requestor: WebSocket,
+    executor: WebSocket | null
+    requestUID: null
+    reconnects: number
+}
 
-function processRequestor(ws, req) {
+const sessionIds: Record<string, SocketState> = {};
+
+function processRequestor(ws: WebSocket, req: IncomingMessage) {
     if (Object.keys(sessionIds).length >= MAX_SESSION_LIMIT) {
         ws.close(4053, "Too many connections.");
         return;
     }
 
-    let sessionId = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url');
+    const sessionId = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url');
     let ipStr = 'IP: ' + req.socket.remoteAddress;
 
     if (req.headers['x-forwarded-for']) {
@@ -50,7 +59,7 @@ function processRequestor(ws, req) {
         "reconnects": 0
     };
 
-    let sobj = sessionIds[sessionId];
+    const sobj = sessionIds[sessionId];
 
     setTimeout(() => {
         ws.close(4080, "Session timed out.");
@@ -68,7 +77,7 @@ function processRequestor(ws, req) {
     });
 
     ws.on('message', function message(data) {
-        let obj = JSON.parse(data);
+        const obj = JSON.parse(data.toString('utf-8'));
 
         if (obj.type === "keepalive") {
             // ignore
@@ -101,13 +110,13 @@ function processRequestor(ws, req) {
     }));
 }
 
-function processExecutor(ws, req, sessionId) {
-    if (!sessionIds.hasOwnProperty(sessionId)) {
+function processExecutor(ws: WebSocket, req: IncomingMessage, sessionId: string) {
+    if (!Object.prototype.hasOwnProperty.call(sessionIds, sessionId)) {
         ws.close(4052, "No such session ID.");
         return;
     }
 
-    let sobj = sessionIds[sessionId];
+    const sobj = sessionIds[sessionId];
     let ipStr = 'IP: ' + req.socket.remoteAddress;
 
     if (req.headers['x-forwarded-for']) {
@@ -138,8 +147,8 @@ function processExecutor(ws, req, sessionId) {
         sobj.requestor.send(JSON.stringify({"type": "executor_disconnected"}));
     });
 
-    ws.on('message', (data) => {
-        let obj = JSON.parse(data);
+    ws.on('message', (data: RawData) => {
+        const obj = JSON.parse(data.toString('utf-8'));
 
         if (obj.type === "keepalive") {
             // ignore
@@ -165,11 +174,11 @@ function processExecutor(ws, req, sessionId) {
     ws.send(JSON.stringify({"type": "ping"}));
 }
 
-function createServer(args) {
+function createServer(args: Namespace) {
     const app = express();
     const server = app.listen(args.listenPort, args.listenHost);
 
-    let wss = new WebSocketServer({
+    const wss = new WebSocketServer({
         noServer: true,
         maxPayload: 6 * 1024 // max packet size - 6 kB
     });
@@ -199,7 +208,7 @@ function createServer(args) {
     });
 
     server.on('upgrade', (request, socket, head) => {
-        const { pathname } = parse(request.url);
+        const { pathname } = parse(request.url!);
 
         if (pathname === "/ws") {
             wss.handleUpgrade(request, socket, head, socket => {
@@ -212,13 +221,13 @@ function createServer(args) {
 
     wss.on('connection', (ws, req) => {
         try {
-            let query = req.url.split('?', 2)[1];
-            let qs = queryString.parse(query);
+            const query = req.url!.split('?', 2)[1];
+            const qs = queryString.parse(query);
 
             if (qs.side === "requestor") {
                 processRequestor(ws, req);
             } else if (qs.side === "executor") {
-                processExecutor(ws, req, qs.sessionId);
+                processExecutor(ws, req, qs.sessionId as string);
             } else {
                 ws.close(4050, "Invalid query string parameters specified.");
             }

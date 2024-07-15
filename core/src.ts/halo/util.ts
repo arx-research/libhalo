@@ -7,7 +7,7 @@
 import {Buffer} from 'buffer/index.js';
 import elliptic from 'elliptic';
 import {ethers, Signature} from 'ethers';
-import {HaloLogicError} from "./exceptions.ts";
+import {HaloLogicError} from "./exceptions.js";
 import crypto from "crypto";
 import {BN} from 'bn.js';
 import {PublicKeyList} from "../types.js";
@@ -30,7 +30,7 @@ function hex2arr(hexString: string) {
     );
 }
 
-function arr2hex(buffer: number[]) {
+function arr2hex(buffer: number[] | Uint8Array) {
     return [...new Uint8Array(buffer)]
         .map(x => x.toString(16).padStart(2, '0'))
         .join('');

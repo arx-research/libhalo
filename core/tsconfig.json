@@ -1,14 +1,12 @@
 {
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
     "lib": [
-      "es2020",
-      "es5",
+      "es2022",
       "dom"
     ],
     "moduleResolution": "node16",

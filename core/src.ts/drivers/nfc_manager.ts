@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-import {checkErrors, execHaloCmd} from "./common.ts";
-import {HaloLogicError} from "../halo/exceptions.ts";
-import {readNDEF} from "./read_ndef.ts";
+import {checkErrors, execHaloCmd} from "./common.js";
+import {HaloLogicError} from "../halo/exceptions.js";
+import {readNDEF} from "./read_ndef.js";
 import {Buffer} from 'buffer/index.js';
 import {EmptyOptions, HaloCommandObject, RNNFCManager} from "../types.js";
 

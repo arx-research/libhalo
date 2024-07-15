@@ -4,8 +4,8 @@
  * License: MIT
  */
 
-import {execHaloCmdPCSC} from "../drivers/pcsc.ts";
-import {HaloGateway} from "../halo/gateway/requestor.ts";
+import {execHaloCmdPCSC} from "../drivers/pcsc.js";
+import {HaloGateway} from "../halo/gateway/requestor.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else

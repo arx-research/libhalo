@@ -1,10 +1,14 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+// TODO
+
 /**
  * LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
  * Copyright by Arx Research, Inc., a Delaware corporation
  * License: MIT
  */
 
-import {HaloLogicError, HaloTagError} from "../api/common.ts";
+import {HaloLogicError, HaloTagError} from "../api/common.js";
 import elliptic from 'elliptic';
 
 const ec = new elliptic.ec('secp256k1');

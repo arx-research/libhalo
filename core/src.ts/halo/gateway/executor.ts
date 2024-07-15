@@ -1,7 +1,7 @@
-import {JWEUtil} from "../jwe_util.ts";
+import {JWEUtil} from "../jwe_util.js";
 import queryString from "query-string";
 import WebSocketAsPromised from "websocket-as-promised";
-import {execHaloCmdWeb} from "../../drivers/web.ts";
+import {execHaloCmdWeb} from "../../drivers/web.js";
 import {HaloCommandObject} from "../../types.js";
 
 let gatewayServerHost: string | null = null;

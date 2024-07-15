@@ -4,12 +4,12 @@
  * License: MIT
  */
 
-import {HaloGateway} from "../halo/gateway/requestor.ts";
-import {HaloBridge} from "../halo/bridge.ts";
-import {haloFindBridge} from "../web/web_utils.ts";
-import {haloGateExecutorCreateWs, haloGateExecutorUserConfirm, haloGateExecutorSetHost} from "../halo/gateway/executor.ts";
-import {execHaloCmdWeb, detectMethod} from "../drivers/web.ts";
-import {checkWebNFCPermission} from "../drivers/webnfc.ts";
+import {HaloGateway} from "../halo/gateway/requestor.js";
+import {HaloBridge} from "../halo/bridge.js";
+import {haloFindBridge} from "../web/web_utils.js";
+import {haloGateExecutorCreateWs, haloGateExecutorUserConfirm, haloGateExecutorSetHost} from "../halo/gateway/executor.js";
+import {execHaloCmdWeb, detectMethod} from "../drivers/web.js";
+import {checkWebNFCPermission} from "../drivers/webnfc.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else

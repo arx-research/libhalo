@@ -4,11 +4,11 @@
  * License: MIT
  */
 
-import {parseArgs} from './args_bridge.ts';
-import {runHalo} from "./cli.ts";
-import {printVersionInfo} from "./version.ts";
+import {parseArgs} from './args_bridge.js';
+import {runHalo} from "./cli.js";
+import {printVersionInfo} from "./version.js";
 
-let args = parseArgs();
+const args = parseArgs();
 
 if (!args) {
     process.exit(0);

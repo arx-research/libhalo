@@ -1,9 +1,11 @@
 import QRCode from "qrcode";
 import WebSocketAsPromised from "websocket-as-promised";
 import crypto from "crypto";
-import {JWEUtil} from "../jwe_util.ts";
-import {HaloLogicError, HaloTagError, NFCBadTransportError, NFCAbortedError, NFCOperationError} from "../exceptions.ts";
-import {webDebug} from "../util.ts";
+import {JWEUtil} from "../jwe_util.js";
+import {HaloLogicError, HaloTagError, NFCBadTransportError, NFCAbortedError, NFCOperationError} from "../exceptions.js";
+import {webDebug} from "../util.js";
+import {GatewayWelcomeMsg, HaloCommandObject} from "../../types.js";
+
 
 function makeQR(url: string) {
     return new Promise((resolve, reject) => {
@@ -29,7 +31,9 @@ class HaloGateway {
 
     private ws: WebSocketAsPromised;
 
-    constructor(gatewayServer: string, options) {
+    constructor(gatewayServer: string, options: {
+        createWebSocket?: (url: string) => WebSocket
+    }) {
         this.jweUtil = new JWEUtil();
         this.isRunning = false;
         this.hasExecutor = false;
@@ -39,7 +43,7 @@ class HaloGateway {
         this.gatewayServer = gatewayServer;
 
         options = Object.assign({}, options);
-        const createWebSocket = options.createWebSocket ? options.createWebSocket : (url) => new WebSocket(url);
+        const createWebSocket = options.createWebSocket ? options.createWebSocket : (url: string) => new WebSocket(url);
 
         const urlObj = new URL(gatewayServer);
 
@@ -126,7 +130,7 @@ class HaloGateway {
 
         const waitPromise = this.waitForWelcomePacket();
         const promiseRes = await Promise.all([this.ws.open(), waitPromise]);
-        const welcomeMsg = promiseRes[1];
+        const welcomeMsg = promiseRes[1] as GatewayWelcomeMsg;
 
         const serverVersion = welcomeMsg.serverVersion;
 
@@ -170,7 +174,7 @@ class HaloGateway {
         })
     }
 
-    async execHaloCmd(command) {
+    async execHaloCmd(command: HaloCommandObject) {
         webDebug('[halo-requestor] called execHaloCmd()', command);
 
         if (this.isRunning) {
@@ -205,7 +209,7 @@ class HaloGateway {
                 });
             } catch (e) {
                 webDebug('[halo-requestor] exception when trying to sendRequest', e);
-                throw new NFCBadTransportError('Failed to send request: ' + e.toString());
+                throw new NFCBadTransportError('Failed to send request: ' + (<Error> e).toString());
             }
 
             if (res.type !== "result_cmd") {
@@ -254,6 +258,9 @@ class HaloGateway {
                         break;
                 }
 
+                // TODO
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 e.stackOnExecutor = resolution.exception.stack;
                 webDebug('[halo-requestor] throwing exception as call result', e);
                 throw e;

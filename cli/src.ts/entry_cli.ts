@@ -4,9 +4,9 @@
  * License: MIT
  */
 
-import {parseArgs} from './args_cli.ts';
-import {runHalo} from "./cli.ts";
-import {printVersionInfo, getVersionInfo} from "./version.ts";
+import {parseArgs} from './args_cli.js';
+import {runHalo} from "./cli.js";
+import {printVersionInfo, getVersionInfo} from "./version.js";
 
 let args = parseArgs();
 

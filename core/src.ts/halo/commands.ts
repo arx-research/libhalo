@@ -8,14 +8,14 @@ import crypto from 'node:crypto';
 
 import {Buffer} from 'buffer/index.js';
 import {ethers} from 'ethers';
-import {HaloLogicError, HaloTagError} from "./exceptions.ts";
-import {convertSignature, mode, parseSig, parsePublicKeys, randomBuffer, SECP256k1_ORDER, BJJ_ORDER, sigToDer} from "./util.ts";
-import {FLAGS} from "./flags.ts";
+import {HaloLogicError, HaloTagError} from "./exceptions.js";
+import {convertSignature, mode, parseSig, parsePublicKeys, randomBuffer, SECP256k1_ORDER, BJJ_ORDER, sigToDer} from "./util.js";
+import {FLAGS} from "./flags.js";
 import {sha256} from "js-sha256";
 import elliptic from 'elliptic';
-import {CMD_CODES as CMD} from './cmdcodes.tsx';
+import {CMD_CODES as CMD} from './cmdcodes.js';
 import pbkdf2 from 'pbkdf2';
-import {KEY_FLAGS, parseKeyFlags} from "./keyflags.ts";
+import {KEY_FLAGS, parseKeyFlags} from "./keyflags.js";
 import {ExecHaloCmdOptions, ExecReturnStruct, HaloCommandArgsObject, PublicKeyList} from "../types.js";
 
 const ec = new elliptic.ec('secp256k1');

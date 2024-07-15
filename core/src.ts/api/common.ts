@@ -13,11 +13,11 @@ import {
     NFCOperationError,
     NFCBadTransportError,
     NFCBridgeConsentError
-} from "../halo/exceptions.ts";
+} from "../halo/exceptions.js";
 import {
     parsePublicKeys, convertSignature, recoverPublicKey, sigToDer,
     SECP256k1_ORDER, BJJ_ORDER
-} from "../halo/util.ts";
+} from "../halo/util.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else

@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-import {execHaloCmdRN} from "../drivers/nfc_manager.ts";
+import {execHaloCmdRN} from "../drivers/nfc_manager.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
