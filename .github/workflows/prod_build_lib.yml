@@ -148,6 +148,7 @@ jobs:
           cd core
           yarn install --frozen-lockfile --production=false
           ./node_modules/.bin/tsc
+          ./node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
         run: yarn publish
         env:

@@ -30,24 +30,31 @@
   "type": "module",
   "exports": {
     ".": {
+      "require": "./lib.commonjs/index.js",
       "import": "./lib.esm/index.js"
     },
     "./api/common": {
+      "require": "./lib.commonjs/api/common.js",
       "import": "./lib.esm/api/common.js"
     },
     "./api/desktop": {
+      "require": "./lib.commonjs/api/desktop.js",
       "import": "./lib.esm/api/desktop.js"
     },
     "./api/react-native": {
+      "require": "./lib.commonjs/api/react-native.js",
       "import": "./lib.esm/api/react-native.js"
     },
     "./api/web": {
+      "require": "./lib.commonjs/api/web.js",
       "import": "./lib.esm/api/web.js"
     },
     "./types": {
+      "require": "./lib.commonjs/types.js",
       "import": "./lib.esm/types.js"
     },
     "./__tests": {
+      "require": "./lib.commonjs/halo/tests.js",
       "import": "./lib.esm/halo/tests.js"
     }
   },
