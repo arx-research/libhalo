@@ -1,4 +1,4 @@
-import {ASCIIString, HexString, KeySlotNo, PublicKeyList} from "../types.js";
+import {ASCIIString, HexString, KeyFlags, KeySlotNo, KeyState, PublicKeyList} from "../types.js";
 import {TypedDataDomain, TypedDataField} from "ethers";
 
 export interface HaloCmdGetPkeys {}
@@ -81,7 +81,7 @@ export interface HaloResGetDataStruct {
 }
 
 export interface HaloCmdGetGraffiti {
-    slotNo: number,
+    slotNo: number
 }
 
 export interface HaloResGetGraffiti {
@@ -94,5 +94,128 @@ export interface HaloCmdStoreGraffiti {
 }
 
 export interface HaloResStoreGraffiti {
+    status: "ok"
+}
+
+export interface HaloCmdWriteLatch {
+    data: HexString
+    latchNo: number
+}
+
+export interface HaloResWriteLatch {
+    status: "ok"
+}
+
+export interface HaloCmdSignRandom {
+    keyNo: KeySlotNo
+}
+
+export interface HaloResSignRandom {
+    counter: number
+    payload: HexString
+    signature: HexString
+    publicKey: HexString
+}
+
+export interface HaloCmdSignChallenge {
+    keyNo: KeySlotNo
+    challenge: HexString
+}
+
+export interface HaloResSignChallenge {
+    signature: HexString
+    publicKey: HexString
+    attestSig: HexString
+}
+
+export interface HaloCmdImportKeyInit {
+    keyNo: KeySlotNo
+    data: HexString
+}
+
+export interface HaloResImportKeyInit {
+    status: "ok"
+}
+
+export interface HaloCmdImportKey {
+    keyNo: KeySlotNo
+}
+
+export interface HaloResImportKey {
+    publicKey: HexString
+}
+
+export interface HaloCmdExportKey {
+    keyNo: KeySlotNo
+    password: ASCIIString
+    data: HexString
+}
+
+export interface HaloResExportKey {
+    data: HexString
+}
+
+export interface HaloCmdGetTransportPK {
+
+}
+
+export interface HaloResGetTransportPK {
+    data: HexString
+    rootPublicKey: HexString
+}
+
+export interface HaloCmdLoadTransportPK {
+    data: HexString
+}
+
+export interface HaloResLoadTransportPK {
+    data: HexString
+    rootPublicKey: HexString
+}
+
+export interface HaloCmdSetPassword {
+    password: ASCIIString
+    keyNo: KeySlotNo
+}
+
+export interface HaloResSetPassword {
+    status: "ok"
+}
+
+export interface HaloCmdUnsetPassword {
+    password: ASCIIString
+    keyNo: KeySlotNo
+}
+
+export interface HaloResUnsetPassword {
+    status: "ok"
+}
+
+export interface HaloCmdReplacePassword {
+    currentPassword: ASCIIString
+    newPassword: ASCIIString
+    keyNo: KeySlotNo
+}
+
+export interface HaloResReplacePassword {
+    status: "ok"
+}
+
+export interface HaloCmdGetKeyInfo {
+    keyNo: KeySlotNo
+}
+
+export interface HaloResGetKeyInfo {
+    keyState: KeyState
+    publicKey: HexString
+    attestSig: HexString
+}
+
+export interface HaloCmdSetURLSubdomain {
+    subdomain: ASCIIString
+    allowSignatureDER: HexString
+}
+
+export interface HaloResSetURLSubdomain {
     status: "ok"
 }

@@ -14,6 +14,7 @@ import {
     NFCBadTransportError,
     NFCBridgeConsentError
 } from "../halo/exceptions.js";
+import {BaseHaloAPI} from "../halo/cmd_exec.js";
 import {
     parsePublicKeys, convertSignature, recoverPublicKey, sigToDer,
     SECP256k1_ORDER, BJJ_ORDER
@@ -24,6 +25,8 @@ import {
  * except the lib's index.js. The library's structure is subject to change in the next versions.
  */
 export {
+    BaseHaloAPI,
+
     // exported utils
     parsePublicKeys as haloParsePublicKeys,
     convertSignature as haloConvertSignature,

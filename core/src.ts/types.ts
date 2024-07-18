@@ -146,6 +146,82 @@ export interface FindBridgeResult {
     errors: string[]
 }
 
+export interface KeyFlags {
+    isPasswordProtected: boolean
+    hasMandatoryPassword: boolean
+    rawSignCommandNotUsed: boolean
+    isImported: boolean
+    isExported: boolean
+}
+
+export interface KeyState extends KeyFlags {
+    failedAuthCounter: number
+}
+
+export interface HaloCmdCFGNDEF {
+    flagUseText: boolean
+    flagHidePk1: boolean
+    flagHidePk2: boolean
+    flagHidePk3: boolean
+    flagShowPk1Attest: boolean
+    flagShowPk2Attest: boolean
+    flagHideRNDSIG: boolean
+    flagHideCMDRES: boolean
+
+    flagShowPk3Attest: boolean
+    flagShowLatch1Sig: boolean
+    flagShowLatch2Sig: boolean
+    flagLegacyStatic: boolean
+    flagShowPkN: boolean
+    flagShowPkNAttest: boolean
+    flagRNDSIGUseBJJ62: boolean
+
+    pkN: KeySlotNo
+}
+
+export interface HaloResCFGNDEF {
+    status: "ok"
+    cfgBytes: HexString
+}
+
+export interface HaloCmdGenKey {
+    keyNo: KeySlotNo
+    entropy?: HexString
+}
+
+export interface HaloResGenKeyV1 {
+    needsConfirmPK: true
+    publicKey: HexString
+}
+
+export interface HaloResGenKeyV2 {
+    needsConfirmPK: false
+    rootPublicKey: HexString
+    rootAttestSig: HexString
+}
+
+export type HaloResGenKey = HaloResGenKeyV1 | HaloResGenKeyV2;
+
+export interface HaloCmdGenKeyConfirm {
+    keyNo: KeySlotNo
+    publicKey: HexString
+}
+
+export interface HaloResGenKeyConfirm {
+    rootPublicKey: HexString
+    rootAttestSig: HexString
+}
+
+export interface HaloCmdGenKeyFinalize {
+    keyNo: KeySlotNo
+    password?: ASCIIString
+}
+
+export interface HaloResGenKeyFinalize {
+    publicKey: HexString
+    attestSig: HexString
+}
+
 export type KeySlotNo = number;
 export type ASCIIString = string;
 export type HexString = string;

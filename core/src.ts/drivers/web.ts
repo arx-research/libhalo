@@ -7,11 +7,12 @@ import {isWebDebugEnabled} from "../halo/util.js";
 import {
     ExecHaloCmdOptions,
     ExecHaloCmdWebOptions,
-    HaloCommandObject,
+    HaloCommandObject, HaloResponseObject,
     HaloWebMethod,
     StatusCallbackDetails
 } from "../types.js";
 import {Buffer} from 'buffer/index.js';
+import {BaseHaloAPI} from "../halo/cmd_exec.js";
 
 let isCallRunning = false;
 
@@ -31,7 +32,7 @@ function makeDefault<Type>(curValue: Type | null | undefined, defaultValue: Type
  * Detect the best command execution method for the current device.
  * @returns {string} Either "credential" or "webnfc".
  */
-function detectMethod() {
+export function detectMethod() {
     try {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
@@ -60,7 +61,7 @@ function defaultStatusCallback(cause: string, statusObj: StatusCallbackDetails) 
  * @param options Additional options for the command executor.
  * @returns {Promise<*>} Command execution result.
  */
-async function execHaloCmdWeb(command: HaloCommandObject, options?: ExecHaloCmdWebOptions) {
+export async function execHaloCmdWeb(command: HaloCommandObject, options?: ExecHaloCmdWebOptions) {
     if (options && !options.noDebounce && isCallRunning) {
         throw new NFCAbortedError("The operation was debounced.");
     }
@@ -114,7 +115,16 @@ async function execHaloCmdWeb(command: HaloCommandObject, options?: ExecHaloCmdW
     }
 }
 
-export {
-    execHaloCmdWeb,
-    detectMethod
-};
+export class HaloWebAPI extends BaseHaloAPI {
+    private readonly options: ExecHaloCmdWebOptions | undefined;
+
+    constructor(options?: ExecHaloCmdWebOptions) {
+        super();
+
+        this.options = options;
+    }
+
+    executeCommand(args: HaloCommandObject): Promise<HaloResponseObject> {
+        return execHaloCmdWeb(args, this.options);
+    }
+}

@@ -3,6 +3,7 @@
  * Copyright by Arx Research, Inc., a Delaware corporation
  * License: MIT
  */
+import {KeyFlags} from "../types.js";
 
 const KEY_FLAGS = {
     KEYFLG_IS_PWD_PROTECTED:   0x01,
@@ -13,7 +14,7 @@ const KEY_FLAGS = {
     KEYFLG_IS_EXPORTED:        0x20
 }
 
-function parseKeyFlags(keyFlags: number) {
+function parseKeyFlags(keyFlags: number): KeyFlags {
     return {
         isPasswordProtected: !!(keyFlags & KEY_FLAGS.KEYFLG_IS_PWD_PROTECTED),
         hasMandatoryPassword: !!(keyFlags & KEY_FLAGS.KEYFLG_MANDATORY_PASSWORD),

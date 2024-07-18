@@ -8,7 +8,7 @@ import {HaloGateway} from "../halo/gateway/requestor.js";
 import {HaloBridge} from "../halo/bridge.js";
 import {haloFindBridge} from "../web/web_utils.js";
 import {haloGateExecutorCreateWs, haloGateExecutorUserConfirm, haloGateExecutorSetHost} from "../halo/gateway/executor.js";
-import {execHaloCmdWeb, detectMethod} from "../drivers/web.js";
+import {HaloWebAPI, execHaloCmdWeb, detectMethod} from "../drivers/web.js";
 import {checkWebNFCPermission} from "../drivers/webnfc.js";
 
 /**
@@ -17,6 +17,7 @@ import {checkWebNFCPermission} from "../drivers/webnfc.js";
  */
 export {
     // for web usage
+    HaloWebAPI,
     execHaloCmdWeb,
     haloFindBridge,
     detectMethod as haloGetDefaultMethod,
