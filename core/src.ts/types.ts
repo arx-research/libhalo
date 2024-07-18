@@ -1,6 +1,14 @@
 import {Buffer} from 'buffer/index.js';
 
 
+// These types should only be used internally for the command dispatchers.
+// There are specific arg/return types defined for each HaLo command.
+
+// eslint-disable-next-line
+export type HaloCommandObject = any;
+// eslint-disable-next-line
+export type HaloResponseObject = any;
+
 export interface Card {
     type: string
     atr: Buffer
@@ -82,14 +90,6 @@ export interface GatewayWelcomeMsg {
     }
     sessionId: string
 }
-
-// TODO proper types for Halo Commands
-// eslint-disable-next-line
-export type HaloCommandObject = any;
-// eslint-disable-next-line
-export type HaloResponseObject = any;
-// eslint-disable-next-line
-export type HaloCommandArgsObject = any;
 
 export interface BridgeOptions {
     createWebSocket?: (url: string) => WebSocket

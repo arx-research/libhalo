@@ -74,7 +74,6 @@ export interface HaloCmdGetDataStruct {
     spec: string
 }
 
-// TODO refactor
 export interface HaloResGetDataStruct {
     isPartial: boolean
     data: Record<string, unknown>
