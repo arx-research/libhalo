@@ -30,21 +30,31 @@
   "type": "module",
   "exports": {
     ".": {
+      "require": "./lib.commonjs/index.js",
       "import": "./lib.esm/index.js"
     },
     "./api/common": {
+      "require": "./lib.commonjs/api/common.js",
       "import": "./lib.esm/api/common.js"
     },
     "./api/desktop": {
+      "require": "./lib.commonjs/api/desktop.js",
       "import": "./lib.esm/api/desktop.js"
     },
     "./api/react-native": {
+      "require": "./lib.commonjs/api/react-native.js",
       "import": "./lib.esm/api/react-native.js"
     },
     "./api/web": {
+      "require": "./lib.commonjs/api/web.js",
       "import": "./lib.esm/api/web.js"
     },
+    "./types": {
+      "require": "./lib.commonjs/types.js",
+      "import": "./lib.esm/types.js"
+    },
     "./__tests": {
+      "require": "./lib.commonjs/halo/tests.js",
       "import": "./lib.esm/halo/tests.js"
     }
   },
@@ -52,7 +62,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "argparse": "^2.0.1",
     "buffer": "^6.0.3",
     "elliptic": "^6.5.5",
     "ethers": "^6.13.1",
@@ -64,10 +73,17 @@
     "websocket-as-promised": "^2.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.7.0",
+    "@types/elliptic": "^6.4.18",
+    "@types/pbkdf2": "^3.1.2",
+    "@types/qrcode": "^1.5.5",
     "crypto-browserify": "^3.12.0",
+    "eslint": "^9.7.0",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
+    "ts-loader": "^9.5.1",
     "typescript": "^5.5.3",
+    "typescript-eslint": "^7.16.0",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4"
   }

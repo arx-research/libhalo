@@ -6,9 +6,9 @@ const __dirname = dirname(__filename);
 
 export default {
     entry: {
-        entry_cli: './src.ts/entry_cli.js',
-        entry_bridge: './src.ts/entry_bridge.js',
-        entry_gateway: './src.ts/entry_gateway.js',
+        entry_cli: './src.ts/entry_cli.ts',
+        entry_bridge: './src.ts/entry_bridge.ts',
+        entry_gateway: './src.ts/entry_gateway.ts',
     },
     output: {
         filename: '[name].bundle.cjs',
@@ -19,14 +19,17 @@ export default {
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
+                test: /\.ts$/,
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
         ],
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.ts', '.js'],
+        extensionAlias: {
+            '.js': ['.js', '.ts'],
+        },
         fallback: {
             vm: false,
             chokidar: false,

@@ -32,6 +32,7 @@ jobs:
         run: |
           cd core
           ./node_modules/.bin/tsc
+          ./node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Run webpack (root)
         run: |
           cd core
