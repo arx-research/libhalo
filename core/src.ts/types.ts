@@ -65,6 +65,14 @@ export interface ExecHaloCmdWebOptions extends ExecOptions {
     noDebounce?: boolean
 }
 
+export interface HaloAPICallOptions {
+    method?: HaloWebMethod | "pcsc" | "nfc-manager"
+}
+
+export interface HaloWebAPICallOptions {
+    method?: HaloWebMethod
+}
+
 export interface EmptyOptions {
 
 }
@@ -159,24 +167,24 @@ export interface KeyState extends KeyFlags {
 }
 
 export interface HaloCmdCFGNDEF {
-    flagUseText: boolean
-    flagHidePk1: boolean
-    flagHidePk2: boolean
-    flagHidePk3: boolean
-    flagShowPk1Attest: boolean
-    flagShowPk2Attest: boolean
-    flagHideRNDSIG: boolean
-    flagHideCMDRES: boolean
+    flagUseText?: boolean
+    flagHidePk1?: boolean
+    flagHidePk2?: boolean
+    flagHidePk3?: boolean
+    flagShowPk1Attest?: boolean
+    flagShowPk2Attest?: boolean
+    flagHideRNDSIG?: boolean
+    flagHideCMDRES?: boolean
 
-    flagShowPk3Attest: boolean
-    flagShowLatch1Sig: boolean
-    flagShowLatch2Sig: boolean
-    flagLegacyStatic: boolean
-    flagShowPkN: boolean
-    flagShowPkNAttest: boolean
-    flagRNDSIGUseBJJ62: boolean
+    flagShowPk3Attest?: boolean
+    flagShowLatch1Sig?: boolean
+    flagShowLatch2Sig?: boolean
+    flagLegacyStatic?: boolean
+    flagShowPkN?: boolean
+    flagShowPkNAttest?: boolean
+    flagRNDSIGUseBJJ62?: boolean
 
-    pkN: KeySlotNo
+    pkN?: KeySlotNo
 }
 
 export interface HaloResCFGNDEF {
@@ -226,4 +234,5 @@ export type KeySlotNo = number;
 export type ASCIIString = string;
 export type HexString = string;
 
+export * from './halo/command_types.js';
 export * from './types_webnfc.js';
