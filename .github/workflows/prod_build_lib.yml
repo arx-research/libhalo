@@ -150,7 +150,7 @@ jobs:
           ./node_modules/.bin/tsc
           ./node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
-        run: yarn publish
+        run: cd core && yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.RELEASE_NPM_TOKEN }}
       - name: Re-setup Node.JS with GitHub pkg
@@ -159,6 +159,6 @@ jobs:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
       - name: Publish package to GitHub
-        run: yarn publish
+        run: cd core && yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
