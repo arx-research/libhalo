@@ -14,7 +14,7 @@ import {webDebug} from "../util.js";
 import {GatewayWelcomeMsg, HaloCommandObject} from "../../types.js";
 
 
-function makeQR(url: string) {
+function makeQR(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
         QRCode.toDataURL(url, function (err, url) {
             if (err) {

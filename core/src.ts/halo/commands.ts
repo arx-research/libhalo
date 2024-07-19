@@ -28,7 +28,7 @@ import {KEY_FLAGS, parseKeyFlags} from "./keyflags.js";
 import {
     ExecHaloCmdOptions,
     ExecReturnStruct, HaloCmdCFGNDEF, HaloCmdGenKey, HaloCmdGenKeyConfirm, HaloCmdGenKeyFinalize,
-    HaloResCFGNDEF, HaloResGenKey, HaloResGenKeyConfirm, HaloResGenKeyFinalize,
+    HaloResCFGNDEF, HaloResGenKey, HaloResGenKeyConfirm, HaloResGenKeyFinalize, KeyFlags,
     PublicKeyList
 } from "../types.js";
 import {
@@ -55,7 +55,7 @@ import {
     HaloResSignChallenge,
     HaloResSignRandom,
     HaloResStoreGraffiti, HaloResUnsetPassword,
-    HaloResWriteLatch
+    HaloResWriteLatch, StructErrorResponse
 } from "./command_types.js";
 
 const ec = new elliptic.ec('secp256k1');
@@ -783,7 +783,7 @@ async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDat
     let res = Buffer.from(resp.result, "hex");
 
     specItems = specItems.reverse();
-    const out: Record<string, unknown> = {};
+    const out: Record<string, string | number | StructErrorResponse | KeyFlags | null> = {};
 
     while (res.length > 0) {
         const item = specItems.pop() as string[];

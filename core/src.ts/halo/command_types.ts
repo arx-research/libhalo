@@ -74,9 +74,14 @@ export interface HaloCmdGetDataStruct {
     spec: string
 }
 
+// TODO better definition / refactor that API
 export interface HaloResGetDataStruct {
     isPartial: boolean
-    data: Record<string, unknown>
+    data: Record<string, ASCIIString | HexString | number | StructErrorResponse | KeyFlags | null>
+}
+
+export interface StructErrorResponse {
+    error: string
 }
 
 export interface HaloCmdGetGraffiti {

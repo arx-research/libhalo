@@ -6,8 +6,8 @@ import {emulatedPromptStatusCallback} from "../web/soft_prompt.js";
 import {isWebDebugEnabled} from "../halo/util.js";
 import {
     ExecHaloCmdOptions,
-    ExecHaloCmdWebOptions,
-    HaloCommandObject, HaloResponseObject,
+    ExecHaloCmdWebOptions, HaloAPICallOptions,
+    HaloCommandObject, HaloResponseObject, HaloWebAPICallOptions,
     HaloWebMethod,
     StatusCallbackDetails
 } from "../types.js";
@@ -124,7 +124,7 @@ export class HaloWebAPI extends BaseHaloAPI {
         this.options = options;
     }
 
-    executeCommand(args: HaloCommandObject): Promise<HaloResponseObject> {
-        return execHaloCmdWeb(args, this.options);
+    executeCommand(args: HaloCommandObject, options?: HaloWebAPICallOptions): Promise<HaloResponseObject> {
+        return execHaloCmdWeb(args, {...this.options, ...options});
     }
 }

@@ -6,125 +6,143 @@
 import {
     HaloCmdExportKey,
     HaloCmdGetDataStruct,
-    HaloCmdGetGraffiti, HaloCmdGetKeyInfo,
+    HaloCmdGetGraffiti,
+    HaloCmdGetKeyInfo,
     HaloCmdGetPkeys,
     HaloCmdGetTransportPK,
     HaloCmdImportKey,
     HaloCmdImportKeyInit,
-    HaloCmdLoadTransportPK, HaloCmdReplacePassword, HaloCmdSetPassword, HaloCmdSetURLSubdomain,
+    HaloCmdLoadTransportPK,
+    HaloCmdReplacePassword,
+    HaloCmdSetPassword,
+    HaloCmdSetURLSubdomain,
     HaloCmdSign,
     HaloCmdSignChallenge,
     HaloCmdSignRandom,
-    HaloCmdStoreGraffiti, HaloCmdUnsetPassword,
+    HaloCmdStoreGraffiti,
+    HaloCmdUnsetPassword,
     HaloCmdWriteLatch,
     HaloResExportKey,
-    HaloResGetGraffiti, HaloResGetKeyInfo,
-    HaloResGetPkeys, HaloResGetTransportPK,
+    HaloResGetDataStruct,
+    HaloResGetGraffiti,
+    HaloResGetKeyInfo,
+    HaloResGetPkeys,
+    HaloResGetTransportPK,
     HaloResImportKey,
     HaloResImportKeyInit,
-    HaloResLoadTransportPK, HaloResReplacePassword, HaloResSetPassword, HaloResSetURLSubdomain,
+    HaloResLoadTransportPK,
+    HaloResReplacePassword,
+    HaloResSetPassword,
+    HaloResSetURLSubdomain,
     HaloResSign,
     HaloResSignChallenge,
-    HaloResSignRandom, HaloResUnsetPassword,
+    HaloResSignRandom,
+    HaloResStoreGraffiti,
+    HaloResUnsetPassword,
     HaloResWriteLatch
 } from "./command_types.js";
 import {
+    HaloAPICallOptions,
     HaloCmdCFGNDEF,
-    HaloCmdGenKey, HaloCmdGenKeyConfirm, HaloCmdGenKeyFinalize,
+    HaloCmdGenKey,
+    HaloCmdGenKeyConfirm,
+    HaloCmdGenKeyFinalize,
     HaloCommandObject,
     HaloResCFGNDEF,
-    HaloResGenKey, HaloResGenKeyConfirm, HaloResGenKeyFinalize,
+    HaloResGenKey,
+    HaloResGenKeyConfirm,
+    HaloResGenKeyFinalize,
     HaloResponseObject
 } from "../types.js";
 
 export abstract class BaseHaloAPI {
-    abstract executeCommand(args: HaloCommandObject): Promise<HaloResponseObject>;
+    abstract executeCommand(args: HaloCommandObject, options?: HaloAPICallOptions): Promise<HaloResponseObject>;
 
-    getPkeys(args: HaloCmdGetPkeys): Promise<HaloResGetPkeys> {
-        return this.executeCommand(args);
+    getPkeys(args: HaloCmdGetPkeys, options?: HaloAPICallOptions): Promise<HaloResGetPkeys> {
+        return this.executeCommand(args, options);
     }
 
-    sign(args: HaloCmdSign): Promise<HaloResSign> {
-        return this.executeCommand(args);
+    sign(args: HaloCmdSign, options?: HaloAPICallOptions): Promise<HaloResSign> {
+        return this.executeCommand(args, options);
     }
 
-    writeLatch(args: HaloCmdWriteLatch): Promise<HaloResWriteLatch> {
-        return this.executeCommand(args);
+    writeLatch(args: HaloCmdWriteLatch, options?: HaloAPICallOptions): Promise<HaloResWriteLatch> {
+        return this.executeCommand(args, options);
     }
 
-    signRandom(args: HaloCmdSignRandom): Promise<HaloResSignRandom> {
-        return this.executeCommand(args);
+    signRandom(args: HaloCmdSignRandom, options?: HaloAPICallOptions): Promise<HaloResSignRandom> {
+        return this.executeCommand(args, options);
     }
 
-    signChallenge(args: HaloCmdSignChallenge): Promise<HaloResSignChallenge> {
-        return this.executeCommand(args);
+    signChallenge(args: HaloCmdSignChallenge, options?: HaloAPICallOptions): Promise<HaloResSignChallenge> {
+        return this.executeCommand(args, options);
     }
 
-    cfgNDEF(args: HaloCmdCFGNDEF): Promise<HaloResCFGNDEF> {
-        return this.executeCommand(args);
+    cfgNDEF(args: HaloCmdCFGNDEF, options?: HaloAPICallOptions): Promise<HaloResCFGNDEF> {
+        return this.executeCommand(args, options);
     }
 
-    genKey(args: HaloCmdGenKey): Promise<HaloResGenKey> {
-        return this.executeCommand(args);
+    genKey(args: HaloCmdGenKey, options?: HaloAPICallOptions): Promise<HaloResGenKey> {
+        return this.executeCommand(args, options);
     }
 
-    genKeyConfirm(args: HaloCmdGenKeyConfirm): Promise<HaloResGenKeyConfirm> {
-        return this.executeCommand(args);
+    genKeyConfirm(args: HaloCmdGenKeyConfirm, options?: HaloAPICallOptions): Promise<HaloResGenKeyConfirm> {
+        return this.executeCommand(args, options);
     }
 
-    genKeyFinalize(args: HaloCmdGenKeyFinalize): Promise<HaloResGenKeyFinalize> {
-        return this.executeCommand(args);
+    genKeyFinalize(args: HaloCmdGenKeyFinalize, options?: HaloAPICallOptions): Promise<HaloResGenKeyFinalize> {
+        return this.executeCommand(args, options);
     }
 
-    setURLSubdomain(args: HaloCmdSetURLSubdomain): Promise<HaloResSetURLSubdomain> {
-        return this.executeCommand(args);
+    setURLSubdomain(args: HaloCmdSetURLSubdomain, options?: HaloAPICallOptions): Promise<HaloResSetURLSubdomain> {
+        return this.executeCommand(args, options);
     }
 
-    getKeyInfo(args: HaloCmdGetKeyInfo): Promise<HaloResGetKeyInfo> {
-        return this.executeCommand(args);
+    getKeyInfo(args: HaloCmdGetKeyInfo, options?: HaloAPICallOptions): Promise<HaloResGetKeyInfo> {
+        return this.executeCommand(args, options);
     }
 
-    setPassword(args: HaloCmdSetPassword): Promise<HaloResSetPassword> {
-        return this.executeCommand(args);
+    setPassword(args: HaloCmdSetPassword, options?: HaloAPICallOptions): Promise<HaloResSetPassword> {
+        return this.executeCommand(args, options);
     }
 
-    unsetPassword(args: HaloCmdUnsetPassword): Promise<HaloResUnsetPassword> {
-        return this.executeCommand(args);
+    unsetPassword(args: HaloCmdUnsetPassword, options?: HaloAPICallOptions): Promise<HaloResUnsetPassword> {
+        return this.executeCommand(args, options);
     }
 
-    replacePassword(args: HaloCmdReplacePassword): Promise<HaloResReplacePassword> {
-        return this.executeCommand(args);
+    replacePassword(args: HaloCmdReplacePassword, options?: HaloAPICallOptions): Promise<HaloResReplacePassword> {
+        return this.executeCommand(args, options);
     }
 
-    getTransportPK(args: HaloCmdGetTransportPK): Promise<HaloResGetTransportPK> {
-        return this.executeCommand(args);
+    getTransportPK(args: HaloCmdGetTransportPK, options?: HaloAPICallOptions): Promise<HaloResGetTransportPK> {
+        return this.executeCommand(args, options);
     }
 
-    loadTransportPK(args: HaloCmdLoadTransportPK): Promise<HaloResLoadTransportPK> {
-        return this.executeCommand(args);
+    loadTransportPK(args: HaloCmdLoadTransportPK, options?: HaloAPICallOptions): Promise<HaloResLoadTransportPK> {
+        return this.executeCommand(args, options);
     }
 
-    exportKey(args: HaloCmdExportKey): Promise<HaloResExportKey> {
-        return this.executeCommand(args);
+    exportKey(args: HaloCmdExportKey, options?: HaloAPICallOptions): Promise<HaloResExportKey> {
+        return this.executeCommand(args, options);
     }
 
-    importKeyInit(args: HaloCmdImportKeyInit): Promise<HaloResImportKeyInit> {
-        return this.executeCommand(args);
+    importKeyInit(args: HaloCmdImportKeyInit, options?: HaloAPICallOptions): Promise<HaloResImportKeyInit> {
+        return this.executeCommand(args, options);
     }
 
-    importKey(args: HaloCmdImportKey): Promise<HaloResImportKey> {
-        return this.executeCommand(args);
+    importKey(args: HaloCmdImportKey, options?: HaloAPICallOptions): Promise<HaloResImportKey> {
+        return this.executeCommand(args, options);
     }
 
-    getDataStruct(args: HaloCmdGetDataStruct): Promise<HaloCmdGetDataStruct> {
-        return this.executeCommand(args);
+    getDataStruct(args: HaloCmdGetDataStruct, options?: HaloAPICallOptions): Promise<HaloResGetDataStruct> {
+        return this.executeCommand(args, options);
     }
 
-    getGraffiti(args: HaloCmdGetGraffiti): Promise<HaloResGetGraffiti> {
-        return this.executeCommand(args);
+    getGraffiti(args: HaloCmdGetGraffiti, options?: HaloAPICallOptions): Promise<HaloResGetGraffiti> {
+        return this.executeCommand(args, options);
     }
 
-    storeGraffiti(args: HaloCmdStoreGraffiti): Promise<HaloCmdStoreGraffiti> {
-        return this.executeCommand(args);
+    storeGraffiti(args: HaloCmdStoreGraffiti, options?: HaloAPICallOptions): Promise<HaloResStoreGraffiti> {
+        return this.executeCommand(args, options);
     }
 }
