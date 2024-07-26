@@ -8,10 +8,11 @@ import {
     NFCBadTransportError,
     NFCAbortedError,
     NFCOperationError,
-    NFCGatewayUnexpectedError
+    NFCGatewayUnexpectedError, NFCBridgeConsentError
 } from "../exceptions.js";
 import {webDebug} from "../util.js";
 import {GatewayWelcomeMsg, HaloCommandObject} from "../../types.js";
+import {SignalDispatcher} from "strongly-typed-events";
 
 
 function makeQR(url: string): Promise<string> {
@@ -29,6 +30,7 @@ function makeQR(url: string): Promise<string> {
 class HaloGateway {
     private jweUtil: JWEUtil;
     private isRunning: boolean;
+    private _isInitialized: boolean;
     private hasExecutor: boolean;
     private closeTimeout: NodeJS.Timeout | null;
 
@@ -37,12 +39,14 @@ class HaloGateway {
     private gatewayServerHttp: string;
 
     private ws: WebSocketAsPromised;
+    private _onDisconnected = new SignalDispatcher();
 
     constructor(gatewayServer: string, options: {
         createWebSocket?: (url: string) => WebSocket
     }) {
         this.jweUtil = new JWEUtil();
         this.isRunning = false;
+        this._isInitialized = false;
         this.hasExecutor = false;
         this.closeTimeout = null;
 
@@ -86,6 +90,10 @@ class HaloGateway {
             }
         });
 
+        this.ws.onClose.addListener((event) => {
+            this._onDisconnected.dispatch();
+        });
+
         this.ws.onUnpackedMessage.addListener(data => {
             if (data.type === "executor_connected") {
                 if (this.lastCommand) {
@@ -111,6 +119,14 @@ class HaloGateway {
                 webDebug('[halo-requestor] executor had disconnected');
             }
         });
+    }
+
+    isInitialized() {
+        return this._isInitialized;
+    }
+
+    onDisconnected() {
+        return this._onDisconnected.asEvent();
     }
 
     waitForWelcomePacket() {
@@ -175,6 +191,7 @@ class HaloGateway {
 
             this.ws.onUnpackedMessage.addListener(data => {
                 if (data.type === "executor_connected") {
+                    this._isInitialized = true;
                     resolve(data);
                 }
             });
