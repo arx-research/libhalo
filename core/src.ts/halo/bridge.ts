@@ -12,6 +12,7 @@ import {
 import {haloFindBridge} from "../web/web_utils.js";
 import {webDebug} from "./util.js";
 import {BridgeEvent, BridgeHandleAdded, BridgeOptions, HaloCommandObject} from "../types.js";
+import {SignalDispatcher} from "strongly-typed-events";
 
 class HaloBridge {
     private isRunning: boolean;
@@ -19,6 +20,7 @@ class HaloBridge {
     private url: string | null;
     private readonly createWebSocket: (url: string) => WebSocket;
     private ws: WebSocketAsPromised | null;
+    private _onDisconnected = new SignalDispatcher();
 
     constructor(options: BridgeOptions) {
         options = Object.assign({}, options);
@@ -58,6 +60,10 @@ class HaloBridge {
         })
     }
 
+    onDisconnected() {
+        return this._onDisconnected.asEvent();
+    }
+
     async connect() {
         this.url = await haloFindBridge({createWebSocket: this.createWebSocket});
 
@@ -75,6 +81,10 @@ class HaloBridge {
             } else if (data.event === "handle_removed" && this.lastHandle === data.data.handle) {
                 this.lastHandle = null;
             }
+        });
+
+        this.ws.onClose.addListener((event) => {
+            this._onDisconnected.dispatch();
         });
 
         const waitPromise = this.waitForWelcomePacket();
