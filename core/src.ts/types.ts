@@ -156,7 +156,6 @@ export interface FindBridgeResult {
 
 export interface KeyFlags {
     isPasswordProtected: boolean
-    hasMandatoryPassword: boolean
     rawSignCommandNotUsed: boolean
     isImported: boolean
     isExported: boolean
