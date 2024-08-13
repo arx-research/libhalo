@@ -536,7 +536,7 @@ async function cmdGetKeyInfo(options: ExecHaloCmdOptions, args: HaloCmdGetKeyInf
     let failedAuthCtr = 0;
     let off = 2;
 
-    if (keyFlags & KEY_FLAGS.KEYFLG_CONTAINS_AUTH_CTR) {
+    if (keyFlags & KEY_FLAGS.KEYFLG_FLAG_FORMAT_V2) {
         // key info contains failed auth counter
         off = 3;
         failedAuthCtr = res.slice(2, 3)[0];
