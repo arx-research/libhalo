@@ -16,23 +16,23 @@ rm -f /usr/local/etc/halo-bridge/private_key.pem
 rm -f /usr/local/etc/halo-bridge/server.csr
 rm -f /usr/local/etc/halo-bridge/server.crt
 
-# ask user whether he wants to generate a certificate for halo-bridge.internal
-if osascript -e 'display dialog "In order for halo-bridge to work correctly, we will need to generate a self-signed certificate for the '\''halo-bridge.internal'\'' domain and mark it as trusted in the system.\n\nYou can skip that step if you don'\''t need to use halo-bridge tool." buttons {"Skip", "Generate certificate"} default button "Generate certificate" cancel button "Skip" with icon caution with title "HaLo Tools Installer"'
+# ask user whether he wants to generate a certificate for halo-bridge.local
+if osascript -e 'display dialog "In order for halo-bridge to work correctly, we will need to generate a self-signed certificate for the '\''halo-bridge.local'\'' domain and mark it as trusted in the system.\n\nYou can skip that step if you don'\''t need to use halo-bridge tool." buttons {"Skip", "Generate certificate"} default button "Generate certificate" cancel button "Skip" with icon caution with title "HaLo Tools Installer"'
 then
   # generate new local certificate
   openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
   openssl req -new -sha256 -key /usr/local/etc/halo-bridge/private_key.pem -out /usr/local/etc/halo-bridge/server.csr -subj '/CN=halo-tools (Local Certificate)/'
-  openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.internal'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.crt
+  openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.crt
 
   # add certificate to the trust list
   security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /usr/local/etc/halo-bridge/server.crt
 fi
 
-# add halo-bridge.internal domain to /etc/hosts if it doesn't exist yet
-if ! grep -q "halo-bridge.internal" /etc/hosts
+# add halo-bridge.local domain to /etc/hosts if it doesn't exist yet
+if ! grep -q "halo-bridge.local" /etc/hosts
 then
   echo "" >> /etc/hosts
-  echo "127.0.0.1  halo-bridge.internal" >> /etc/hosts
+  echo "127.0.0.1  halo-bridge.local" >> /etc/hosts
 fi
 
 exit 0
