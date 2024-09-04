@@ -7,7 +7,7 @@ function randomBuffer() {
     return Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
 }
 
-function saveLog(log: Record<string, string>) {
+function saveLog(log: Record<string, string | string[]>) {
     const now = new Date();
     const month = now.getMonth() + 1;
     const year = now.getFullYear();

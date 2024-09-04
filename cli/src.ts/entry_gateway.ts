@@ -55,6 +55,7 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
     const log_to_save = {
         event_name: "Requestor connected",
         origin: req.headers['origin'] || "Unknown",
+        forwarded_for: req.headers['x-forwarded-for'] || "Unknown",
         ip: req.socket.remoteAddress || "Unknown",
     };
     saveLog(log_to_save);
