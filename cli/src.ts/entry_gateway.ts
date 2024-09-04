@@ -14,7 +14,7 @@ import {parse} from "url";
 
 import {parseArgs} from './args_gateway.js';
 import {printVersionInfo, getBuildInfo} from "./version.js";
-import {dirname} from "./util.js";
+import {dirname, saveLog} from "./util.js";
 import {Namespace} from "argparse";
 
 const buildInfo = getBuildInfo();
@@ -51,6 +51,13 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
     }
 
     console.log('[' + sessionId + '] Requestor connected. ' + ipStr);
+
+    const log_to_save = {
+        event_name: "Requestor connected",
+        origin: req.headers['origin'] || "Unknown",
+        ip: req.socket.remoteAddress || "Unknown",
+    };
+    saveLog(log_to_save);
 
     sessionIds[sessionId] = {
         "requestor": ws,
@@ -94,6 +101,12 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
                     "payload": obj.payload
                 }));
                 console.log('[' + sessionId + '] Command request sent to executor.');
+                const log_to_save = {
+                    event_name: "Command request sent to executor",
+                    origin: req.headers['origin'] || "Unknown",
+                    ip: req.socket.remoteAddress || "Unknown",
+                };
+                saveLog(log_to_save);
             } else {
                 sobj.requestor.send(JSON.stringify({
                     "uid": obj.uid,
