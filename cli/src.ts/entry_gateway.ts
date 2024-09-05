@@ -105,6 +105,7 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
                 const log_to_save = {
                     event_name: "Command request sent to executor",
                     origin: req.headers['origin'] || "Unknown",
+                    forwarded_for: req.headers['x-forwarded-for'] || "Unknown",
                     ip: req.socket.remoteAddress || "Unknown",
                 };
                 saveLog(log_to_save);
