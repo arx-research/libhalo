@@ -11,6 +11,8 @@ import {IncomingMessage} from "http";
 import queryString from 'query-string';
 import nunjucks from "nunjucks";
 import {parse} from "url";
+import {join as path_join} from 'node:path';
+import fs from "fs";
 
 import {parseArgs} from './args_gateway.js';
 import {printVersionInfo, getBuildInfo} from "./version.js";
@@ -220,6 +222,121 @@ function createServer(args: Namespace) {
 
     app.get('/ws', (req, res) => {
         res.status(426).type('text/plain').send('Upgrade required');
+    });
+
+    app.get("/stats", (req, res) => {
+        const logDir = path_join(dirname, "logs");
+        const logFilenames = fs.readdirSync(logDir);
+        const logs: Record<string, Array<Record<string, string>>> = {};
+
+        // Extract raw log data from all log files
+        for (const filename of logFilenames) {
+            const rawLogs = fs.readFileSync(path_join(logDir, filename), "utf-8");
+            // Parse each line of the log file into a JSON object, ignore empty lines
+            const parsedLogs = rawLogs
+            .split("\n")
+            .filter((line) => line.length > 0)
+            .map((line) => JSON.parse(line));
+            logs[filename.replaceAll(".ndjson", "")] = parsedLogs;
+        }
+        console.log("logs", logs);
+
+        // Prepare the data to be rendered
+        // Format with example data:
+        // {
+        //   "2024": {
+        //     "9": {
+        //       "https://halo-demos.arx.org": {
+        //         total_connections: 0,
+        //         total_processed_commands: 0,
+        //         total_unique_ips: 0
+        //       },
+        //     },
+        //     "10": {
+        //       ...
+        //     }
+        //     ...
+        //   }
+        const data: Record<
+          string,
+          Record<
+            string,
+            Record<
+              string,
+              {
+                total_connections: number;
+                total_processed_commands: number;
+                total_unique_ips: number;
+              }
+            >
+          >
+        > = {};
+        for (const [yyyy_mm, logData] of Object.entries(logs)) {
+            const uniqueIps = new Set<string>();
+            const length = Object.entries(logData).length;
+            const [yyyy, mm] = yyyy_mm.split("_");
+            for (const [index, log] of logData.entries()) {
+                const origin = log.origin;
+                if (!data[yyyy]) {
+                    data[yyyy] = {};
+                }
+                if (!data[yyyy][mm]) {
+                    data[yyyy][mm] = {};
+                }
+                if (!data[yyyy][mm][origin]) {
+                    data[yyyy][mm][origin] = {
+                        total_connections: 0,
+                        total_processed_commands: 0,
+                        total_unique_ips: 0,
+                    };
+                }
+
+                uniqueIps.add(log.ip);
+
+                if (log.event_name === "Requestor connected") {
+                    data[yyyy][mm][origin].total_connections++;
+                } else if (log.event_name === "Command request sent to executor") {
+                    data[yyyy][mm][origin].total_processed_commands++;
+                }
+
+                if (index === length - 1) {
+                    data[yyyy][mm][origin].total_unique_ips = uniqueIps.size;
+                }
+            }
+        }
+
+        // Flatten the data to be rendered
+        const flatData: Array<{
+            year: number;
+            month: number;
+            total_connections: number;
+            total_processed_commands: number;
+            total_unique_ips: number;
+        }> = [];
+
+        for (const [yyyy, months] of Object.entries(data)) {
+            for (const [mm, origins] of Object.entries(months)) {
+                for (const [origin, stats] of Object.entries(origins)) {
+                    flatData.push({
+                        year: parseInt(yyyy),
+                        month: parseInt(mm),
+                        total_connections: stats.total_connections,
+                        total_processed_commands: stats.total_processed_commands,
+                        total_unique_ips: stats.total_unique_ips,
+                    });
+                }
+            }
+        }
+
+        // Sort the flat data by year and month(descending)
+        flatData.sort((a, b) => {
+            if (a.year === b.year) {
+                return b.month - a.month;
+            }
+            return b.year - a.year;
+        });
+
+        res.render("stats.html", {data: flatData});
     });
 
     server.on('upgrade', (request, socket, head) => {

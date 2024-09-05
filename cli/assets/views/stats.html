@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/assets/static/style.css" />
+    <title>HaLo Gateway Server</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="box">
+        {% for item in data %}
+          <h1>{{ item['year'] }}.{{ item['month'] }}</h1>
+          <p>
+            <b>Total connections:</b> {{ item['total_connections'] }}<br />
+            <b>Total processed commands:</b> {{ item['total_processed_commands'] }}<br />
+            <b>Total unique IPs:</b> {{ item['total_unique_ips'] }}<br />
+          </p>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>
