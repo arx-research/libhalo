@@ -1,6 +1,6 @@
 {
   "name": "@arx-research/libhalo",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.",
   "contributors": [
     {
