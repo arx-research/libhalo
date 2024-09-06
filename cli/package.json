@@ -51,6 +51,7 @@
     "nfc-pcsc": "^0.8.1",
     "nunjucks": "^3.2.4",
     "open": "^10.1.0",
+    "promise-socket": "^8.0.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
