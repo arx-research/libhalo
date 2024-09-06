@@ -14,9 +14,9 @@ class JWEUtil {
         const sharedKey = crypto.randomBytes(16)
         const sharedKeyEnc = sharedKey
             .toString('base64')
-            .replace('+', '-')
-            .replace('/', '_')
-            .replace('==', '');
+            .replaceAll('+', '-')
+            .replaceAll('/', '_')
+            .replaceAll('==', '');
 
         this.sharedKeyObj = await subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
@@ -35,8 +35,8 @@ class JWEUtil {
         }
 
         const fixedKeyStr = (sharedKey + "=".repeat(padLen))
-            .replace('-', '+')
-            .replace('_', '/');
+            .replaceAll('-', '+')
+            .replaceAll('_', '/');
         const sharedKeyBuf = Buffer.from(fixedKeyStr, 'base64');
         this.sharedKeyObj = await subtle.importKey("raw", sharedKeyBuf, "AES-GCM", true, [
             "encrypt",
