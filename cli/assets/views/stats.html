@@ -6,17 +6,42 @@
     <title>HaLo Gateway Server</title>
   </head>
   <body>
-    <div class="container">
+    <div class="container-lg">
       <div class="box">
+        <h1>Statistics</h1>
+        {% if data|length > 0 %}
+          {% set prevMonth = none %}
+          {% set prevYear = none %}
+        {% endif %}
+
+
         {% for item in data %}
-          <h1>{{ item['year'] }}.{{ item['month'] }}</h1>
-          <p>
-            <b>Total connections:</b> {{ item['total_connections'] }}<br />
-            <b>Total processed commands:</b> {{ item['total_processed_commands'] }}<br />
-            <b>Total unique IPs:</b> {{ item['total_unique_ips'] }}<br />
-          </p>
+          {% if prevYear != item['year'] or prevMonth != item['month'] %}
+            <h3 class="margin-top-20px">{{ "0" + item['month'] if item['month'] < 10 else item['month'] }}.{{ item['year'] }}</h3>
+            <table>
+              <tr>
+                <th>Origin Domain</th>
+                <th>Total Connections</th>
+                <th>Total Processed Commands</th>
+                <th>Total Unique IPs</th>
+              </tr>
+          {% endif %}
+          <tr>
+            <td>{{ item['origin'] }} {{loop.index}} {{data|length}}</td>
+            <td>{{ item['total_connections'] }}</td>
+            <td>{{ item['total_processed_commands'] }}</td>
+            <td>{{ item['total_unique_ips'] }}</td>
+          </tr>
+
+          {% set prevMonth = item['month'] %}
+          {% set prevYear = item['year'] %}
+
+          {% if data[loop.index + 1]['month'] != prevMonth and data[loop.index + 1]['year'] != prevYear %}
+            </table>
+          {% endif %}
         {% endfor %}
       </div>
     </div>
   </body>
 </html>
+

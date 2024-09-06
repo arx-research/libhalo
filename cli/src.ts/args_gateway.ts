@@ -21,6 +21,12 @@ parser.add_argument("-p", "--listen-port", {
     default: 32842,
     dest: "listenPort"
 });
+parser.add_argument("-d", "--disable-stats", {
+    help: "Whether to disable the /stats page",
+    default: false,
+    dest: "disableStats",
+    action: "store_true"
+});
 
 function parseArgs() {
     return parser.parse_args();
