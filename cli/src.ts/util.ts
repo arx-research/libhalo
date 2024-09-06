@@ -12,7 +12,7 @@ function saveLog(log: Record<string, string | string[]>) {
     const month = now.getMonth() + 1;
     const year = now.getFullYear();
     const filename = `${year}_${month}.ndjson`;
-    const logDir = path_join(dirname, "logs");
+    const logDir = "./logs/";
     const logPath = path_join(logDir, filename);
 
     const alteredLog = {
@@ -25,7 +25,7 @@ function saveLog(log: Record<string, string | string[]>) {
     if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir);
     }
-    
+
     // Create/append to log file
     fs.appendFile(logPath, JSON.stringify(alteredLog) + "\n", (err) => {
         if (err) {
