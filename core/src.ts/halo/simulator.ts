@@ -139,7 +139,16 @@ class HaloSimulator {
             }
         };
 
-        return await execHaloCmd(command, cmdOpts);
+        let res;
+        console.log('[libhalo][simulator] => ', command);
+        try {
+            res = await execHaloCmd(command, cmdOpts);
+        } catch (e) {
+            console.error('[libhalo][simulator] err', e);
+            throw e;
+        }
+        console.log('[libhalo][simulator] <= ', res);
+        return res;
     }
 }
 
