@@ -15,7 +15,11 @@ import {
     cmdGetGraffiti, cmdStoreGraffiti
 } from "../halo/commands.js";
 import {ERROR_CODES} from "../halo/errors.js";
-import {ExecHaloCmdOptions, HaloCommandObject, HaloResponseObject} from "../types.js";
+import {
+    ExecHaloCmdOptions,
+    HaloCommandObject,
+    HaloResponseObject
+} from "../types.js";
 import {Buffer} from 'buffer/index.js';
 
 async function execHaloCmd(command: HaloCommandObject, options: ExecHaloCmdOptions): Promise<HaloResponseObject> {
@@ -85,7 +89,29 @@ function checkErrors(res: Buffer) {
     }
 }
 
+function wrapCommandForU2F(command: Buffer) {
+    const payload = Buffer.concat([
+        Buffer.from(Array(64)),
+        Buffer.from([command.length]),
+        command
+    ]);
+
+    return Buffer.concat([
+        Buffer.from("00020800", "hex"),
+        Buffer.from([payload.length]),
+        payload,
+        Buffer.from([0x00])
+    ]);
+}
+
+function unwrapResultFromU2F(res: Buffer) {
+    return res.slice(5);
+}
+
+
 export {
     execHaloCmd,
-    checkErrors
+    checkErrors,
+    wrapCommandForU2F,
+    unwrapResultFromU2F
 };

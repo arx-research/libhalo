@@ -6,7 +6,7 @@
 
 import {readNDEF} from "./read_ndef.js";
 import {HaloLogicError, NFCOperationError} from "../halo/exceptions.js";
-import {execHaloCmd, checkErrors} from "./common.js";
+import {execHaloCmd, checkErrors, wrapCommandForU2F, unwrapResultFromU2F} from "./common.js";
 import {
     ExecHaloCmdOptions, ExecOptions,
     HaloCommandObject,
@@ -107,25 +107,6 @@ async function getAddonVersion(reader: Reader) {
     }
 
     return addonVersionRes.slice(0, -2).toString();
-}
-
-function wrapCommandForU2F(command: Buffer) {
-    const payload = Buffer.concat([
-        Buffer.from(Array(64)),
-        Buffer.from([command.length]),
-        command
-    ]);
-
-    return Buffer.concat([
-        Buffer.from("00020800", "hex"),
-        Buffer.from([payload.length]),
-        payload,
-        Buffer.from([0x00])
-    ]);
-}
-
-function unwrapResultFromU2F(res: Buffer) {
-    return res.slice(5);
 }
 
 async function execCoreCommand(reader: Reader, command: Buffer, options?: ExecOptions) {

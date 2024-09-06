@@ -50,7 +50,7 @@ export interface ExecReturnStruct {
 }
 
 export interface ExecHaloCmdOptions {
-    method: "credential" | "pcsc" | "webnfc" | "nfc-manager"
+    method: "credential" | "pcsc" | "webnfc" | "nfc-manager" | "simulator"
     exec: (command: Buffer, options?: ExecOptions) => Promise<ExecReturnStruct>
 }
 
@@ -99,8 +99,17 @@ export interface GatewayWelcomeMsg {
     sessionId: string
 }
 
-export interface BridgeOptions {
+export interface BaseCreateWSOptions {
     createWebSocket?: (url: string) => WebSocket
+}
+
+export interface BridgeOptions extends BaseCreateWSOptions {}
+export interface SimulatorOptions extends BaseCreateWSOptions {}
+
+export interface ConnectSimulatorOptions {
+    url: string
+    cardId: string
+    authSecret: string
 }
 
 export interface BridgeEvent {

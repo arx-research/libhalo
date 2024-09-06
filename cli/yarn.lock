@@ -8,7 +8,7 @@
   integrity sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==
 
 "@arx-research/libhalo@../core":
-  version "1.4.3"
+  version "1.6.3"
   dependencies:
     buffer "^6.0.3"
     elliptic "^6.5.5"
@@ -18,6 +18,7 @@
     pbkdf2 "^3.1.2"
     qrcode "^1.5.3"
     query-string "^9.0.0"
+    strongly-typed-events "^3.0.11"
     websocket-as-promised "^2.1.0"
 
 "@babel/generator@7.23.0":
@@ -2694,6 +2695,31 @@ promise-controller@^1.0.0:
   resolved "https://registry.yarnpkg.com/promise-controller/-/promise-controller-1.0.0.tgz#81ebea71271aa40ac8f3bebccab3d4158dc4cc02"
   integrity sha512-goA0zA9L91tuQbUmiMinSYqlyUtEgg4fxJcjYnLYOQnrktb4o4UqciXDNXiRUPiDBPACmsr1k8jDW4r7UDq9Qw==
 
+promise-duplex@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/promise-duplex/-/promise-duplex-8.0.0.tgz#139c846fcff71f27c980c42375c5fd3539982c20"
+  integrity sha512-JlrnT6KZMRD+t4cxP7gh/dlGP2pl01/jTPg3pTLvFLBTdHTbTTdc+g25q0qswC3ziO9RAr3L1b2n/++4y23GQg==
+  dependencies:
+    promise-readable "^8.0.1"
+    promise-writable "^8.0.0"
+
+promise-readable@^8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/promise-readable/-/promise-readable-8.0.1.tgz#f5e9d59b1c4c655cc4d90578283fa626f563b13d"
+  integrity sha512-peVAz+49xRooF1Om2wYSOluKpOApnpiJVOKgQ6IR/ZAWo15tBa4ZtcKKSTAytRiNJVlkvil9NoFhqihY4Sl1Fw==
+
+promise-socket@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/promise-socket/-/promise-socket-8.0.0.tgz#82c795018773915f91f362bdc1d34c6f7249410d"
+  integrity sha512-5Qb5719QcOm3/zrt0DLiAsJXutv2vb4HRxCiOVro1eyAOMak6vF2gTIoB6f0M1mnKMCsXW1SC/O+4G3P6p7kbw==
+  dependencies:
+    promise-duplex "^8.0.0"
+
+promise-writable@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/promise-writable/-/promise-writable-8.0.0.tgz#1a62b38403f4085dc42899c6deea8d9e0a3525e8"
+  integrity sha512-Qn7/5tE42fjLUWevPm/SFmVz26tRdhmxmPXgOJSeIwLnkI2V4u0/t+CrRXb8ic1Jy9qqvOHVYm+sAIgel++eVA==
+
 promise.prototype.finally@^3.1.2:
   version "3.1.8"
   resolved "https://registry.yarnpkg.com/promise.prototype.finally/-/promise.prototype.finally-3.1.8.tgz#b97bc1bbca74dc21b6e978c85a70752a7a0b7c3a"
@@ -3101,6 +3127,53 @@ statuses@2.0.1:
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-2.0.1.tgz#55cb000ccf1d48728bd23c685a063998cf1a1b63"
   integrity sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==
 
+ste-core@^3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/ste-core/-/ste-core-3.0.11.tgz#a2f0d0cd23a33b7aafd5a6c83e8e209ef3d8fabe"
+  integrity sha512-ivkRENMh0mdGoPlZ4xVcEaC8rXQfTEfvonRw5m8VDKV7kgcbZbaNd1TnKl08wXbcLdT7okSc63HNP8cVhy95zg==
+
+ste-events@^3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/ste-events/-/ste-events-3.0.11.tgz#eb8972329486b10a019b23687b34887746fe6bf2"
+  integrity sha512-eahsf3+KARhBOtsdQZvRgzVO/vg8M3wBRbKaQIIFGRIZ2BtAQFr7t0cU94xVW2qh1rA+b4QxrjHc1N9NxKc90w==
+  dependencies:
+    ste-core "^3.0.11"
+
+ste-promise-events@^3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/ste-promise-events/-/ste-promise-events-3.0.11.tgz#4a89b481418989d7f2c3ad79d8b89cfba3632ac8"
+  integrity sha512-LTYTsYSpcNlNRFc/vmviHJ38hB8QTjUYoKVcfjhDnGU2vhnnbAqvsjaY0IMRAlHH6kPMysdgNWfr+1I99BWy9Q==
+  dependencies:
+    ste-core "^3.0.11"
+
+ste-promise-signals@^3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/ste-promise-signals/-/ste-promise-signals-3.0.11.tgz#d83d81f3193972f1f5e064f39b2befbc0f8d338d"
+  integrity sha512-idDK24bBAeVILzP3/7EEcIoZC1kSYBZE8uW8HassdmPv28vfoME2PQG5GQFWgVGGx88Ag4Nor8qHk88lVQvWhQ==
+  dependencies:
+    ste-core "^3.0.11"
+
+ste-promise-simple-events@^3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/ste-promise-simple-events/-/ste-promise-simple-events-3.0.11.tgz#4ddc197308f702e42ff3ee102e3c3227975686af"
+  integrity sha512-xrM7scATyrV/cgwdSlegH+fpWGrRqq6hnykgzTye3M85HnFgAIrYINOut2Hg7b0LHP+vhFQ9x2EMCHpZyT3ktQ==
+  dependencies:
+    ste-core "^3.0.11"
+
+ste-signals@^3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/ste-signals/-/ste-signals-3.0.11.tgz#22a9f85e7196515436bb6b235aa0e307e8a75f38"
+  integrity sha512-Thc4Z/jYH5DWKxrbV+EtMX7mJLjtjgD2K/sxcK355uJKklg+vlVhCO1JSOJoHlwRfp+hxANMSZQv2JCxFLnjnw==
+  dependencies:
+    ste-core "^3.0.11"
+
+ste-simple-events@^3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/ste-simple-events/-/ste-simple-events-3.0.11.tgz#1963a446f901a3b7157fcda7fc59c9d6f572b764"
+  integrity sha512-PDoQajqiTtJLNDWfJCihzACiTVZyFsXi6hNAVNelNJoNmqj+BaWuhJ/NHaAHxzfSRoMbL+hFgfPqFmxiHhAQSQ==
+  dependencies:
+    ste-core "^3.0.11"
+
 stream-meter@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/stream-meter/-/stream-meter-1.0.4.tgz#52af95aa5ea760a2491716704dbff90f73afdd1d"
@@ -3175,6 +3248,19 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==
+
+strongly-typed-events@^3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/strongly-typed-events/-/strongly-typed-events-3.0.11.tgz#8b156b572ef15a21136cc35383a5d2465048a05c"
+  integrity sha512-k7871A9tGgikRriVCARnb8+tlF/x6kFd8+KidcFcN6EG/3DcOMPnNBfRH712PGXlj2zhmy/VDvOFND1TYp2JdQ==
+  dependencies:
+    ste-core "^3.0.11"
+    ste-events "^3.0.11"
+    ste-promise-events "^3.0.11"
+    ste-promise-signals "^3.0.11"
+    ste-promise-simple-events "^3.0.11"
+    ste-signals "^3.0.11"
+    ste-simple-events "^3.0.11"
 
 supports-color@^7.1.0:
   version "7.2.0"

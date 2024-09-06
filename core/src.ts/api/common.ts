@@ -15,6 +15,7 @@ import {
     NFCBridgeConsentError
 } from "../halo/exceptions.js";
 import {BaseHaloAPI} from "../halo/cmd_exec.js";
+import {HaloSimulator, SimHaloAPI} from "../halo/simulator.js";
 import {
     parsePublicKeys, convertSignature, recoverPublicKey, sigToDer,
     SECP256k1_ORDER, BJJ_ORDER
@@ -26,6 +27,10 @@ import {
  */
 export {
     BaseHaloAPI,
+
+    // internal - for testing
+    HaloSimulator,
+    SimHaloAPI,
 
     // exported utils
     parsePublicKeys as haloParsePublicKeys,
