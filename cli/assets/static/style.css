@@ -50,6 +50,16 @@ h6 {
   width: 100%;
 }
 
+.container-lg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 1000px;
+  width: calc(100% - 40px);
+  width: 100%;
+}
+
 .box {
   background: #fcfcfc;
   border-radius: 8px;
@@ -145,4 +155,23 @@ svg {
 
 .flex-buttons .button {
   flex: 1;
+}
+
+.margin-top-20px {
+  margin-top: 20px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
 }
