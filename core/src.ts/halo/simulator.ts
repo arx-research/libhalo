@@ -16,10 +16,10 @@ import {SignJWT} from "jose";
 import {HaloLogicError, NFCBadTransportError} from "./exceptions.js";
 
 class HaloSimulator {
-    private url: string | null;
-    private readonly createWebSocket: (url: string) => WebSocket;
-    private ws: WebSocketAsPromised | null;
-    private _onDisconnected = new SignalDispatcher();
+    protected url: string | null;
+    protected readonly createWebSocket: (url: string) => WebSocket;
+    protected ws: WebSocketAsPromised | null;
+    protected _onDisconnected = new SignalDispatcher();
 
     constructor(options?: SimulatorOptions) {
         options = Object.assign({}, options);
@@ -32,7 +32,7 @@ class HaloSimulator {
             : (url: string) => new WebSocket(url);
     }
 
-    private async signJWT(url: string, authSecret: string, cardId: string) {
+    protected async signJWT(url: string, authSecret: string, cardId: string) {
         return await new SignJWT({card_id: cardId}) // details to  encode in the token
             .setProtectedHeader({alg: 'HS256'}) // algorithm
             .setIssuedAt()
@@ -59,6 +59,26 @@ class HaloSimulator {
         });
 
         await this.ws.open();
+        await this.waitForWelcomePacket();
+    }
+
+    protected waitForWelcomePacket() {
+        return new Promise((resolve, reject) => {
+            const welcomeWaitTimeout = setTimeout(() => {
+                reject(new NFCBadTransportError("Server doesn't send welcome packet for 6 seconds after accepting the connection."));
+            }, 6000);
+
+            this.ws!.onClose.addListener((event) => {
+                reject(new NFCBadTransportError("WebSocket closed when waiting for welcome packet. Reason: [" + event.code + "] " + event.reason));
+            });
+
+            this.ws!.onUnpackedMessage.addListener(data => {
+                if (data.type === "welcome") {
+                    clearTimeout(welcomeWaitTimeout);
+                    resolve(data);
+                }
+            });
+        })
     }
 
     async disconnect() {
@@ -70,7 +90,7 @@ class HaloSimulator {
         return this._onDisconnected.asEvent();
     }
 
-    private unwrapRAPDU(response: Record<string, string>) {
+    protected unwrapRAPDU(response: Record<string, string>) {
         if (response.type !== "rapdu") {
             throw new NFCBadTransportError("Simulator returned an incorrect packet type, expected 'rapdu', got: '" + response.type + "'");
         }
