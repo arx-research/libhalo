@@ -19,6 +19,7 @@ import {ERROR_CODES} from "./errors.js";
 
 class HaloSimulator {
     protected url: string | null;
+    protected consoleUrl: string | null;
     protected readonly createWebSocket: (url: string) => WebSocket;
     protected ws: WebSocketAsPromised | null;
     protected _onDisconnected = new SignalDispatcher();
@@ -27,6 +28,7 @@ class HaloSimulator {
         options = Object.assign({}, options);
 
         this.url = null;
+        this.consoleUrl = null;
         this.ws = null;
 
         this.createWebSocket = options.createWebSocket
@@ -34,19 +36,25 @@ class HaloSimulator {
             : (url: string) => new WebSocket(url);
     }
 
-    protected async signJWT(url: string, authSecret: string, cardId: string) {
+    protected async signJWT(url: string, authSecret: string, cardId: string, exp: string) {
         return await new SignJWT({card_id: cardId}) // details to  encode in the token
             .setProtectedHeader({alg: 'HS256'}) // algorithm
             .setIssuedAt()
             .setAudience(queryString.parseUrl(url).url)
-            .setExpirationTime("180 seconds")
+            .setExpirationTime(exp)
             .sign(Buffer.from(authSecret, 'hex')); // secretKey generated from previous step
     }
 
-    async connect(options: ConnectSimulatorOptions) {
-        this.url = queryString.stringifyUrl({url: options.url, query: {
-            jwt: await this.signJWT(options.url, options.authSecret, options.cardId)
+    async makeSignedURL(url: string, authSecret: string, cardId: string, exp: string) {
+        return queryString.stringifyUrl({url: url, query: {
+            jwt: await this.signJWT(url, authSecret, cardId, exp)
         }});
+    }
+
+    async connect(options: ConnectSimulatorOptions) {
+        console.log('[libhalo][simulator] Simulator connecting...');
+        this.url = await this.makeSignedURL(options.url + "/ws", options.authSecret, options.cardId, "180 seconds");
+        this.consoleUrl = await this.makeSignedURL(options.url + "/console", options.authSecret, options.cardId, "8 hours");
 
         this.ws = new WebSocketAsPromised(this.url, {
             createWebSocket: url => this.createWebSocket(url),
@@ -61,7 +69,13 @@ class HaloSimulator {
         });
 
         await this.ws.open();
-        await this.waitForWelcomePacket();
+        const welcomePacket = await this.waitForWelcomePacket();
+        console.log('[libhalo][simulator] Connected, console URL: ', this.consoleUrl);
+        return welcomePacket;
+    }
+
+    getConsoleURL() {
+        return this.consoleUrl;
     }
 
     protected waitForWelcomePacket() {
