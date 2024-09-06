@@ -264,7 +264,7 @@ function createServer(args: Namespace) {
               >
             > = {};
             for (const [yyyy_mm, logData] of Object.entries(logs)) {
-                const uniqueIps = new Set<string>();
+                const uniqueIps: Record<string, Set<string>> = {}
                 const length = Object.entries(logData).length;
                 for (const [index, log] of logData.entries()) {
                     const origin = log.origin;
@@ -282,7 +282,10 @@ function createServer(args: Namespace) {
                     }
     
                     // Add IP to the set
-                    uniqueIps.add(log.ip);
+                    if (!uniqueIps[origin]) {
+                        uniqueIps[origin] = new Set();
+                    }
+                    uniqueIps[origin].add(log.ip);
     
                     // Handle different log events
                     if (log.event_name === "Requestor connected") {
@@ -291,10 +294,8 @@ function createServer(args: Namespace) {
                         data[yyyy_mm][origin].total_processed_commands++;
                     }
     
-                    // Update the total unique IPs if it's the last log entry
-                    if (index === length - 1) {
-                        data[yyyy_mm][origin].total_unique_ips = uniqueIps.size;
-                    }
+                    // Update the total unique IPs
+                    data[yyyy_mm][origin].total_unique_ips = uniqueIps[origin].size;
                 }
             }
     
