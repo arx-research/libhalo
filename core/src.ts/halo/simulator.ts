@@ -54,8 +54,10 @@ class HaloSimulator {
     async connect(options: ConnectSimulatorOptions) {
         console.log('[libhalo][simulator] Simulator connecting...');
         this.url = await this.makeSignedURL(options.url + "/ws", options.authSecret, options.cardId, "180 seconds");
-        this.consoleUrl = await this.makeSignedURL(options.url + "/console", options.authSecret, options.cardId, "8 hours");
-        this.consoleUrl = this.consoleUrl.replace("ws://", "http://").replace("wss://", "https://");
+        const tmpConsoleUrl = (options.url + "/console")
+            .replace("ws://", "http://")
+            .replace("wss://", "https://");
+        this.consoleUrl = await this.makeSignedURL(tmpConsoleUrl, options.authSecret, options.cardId, "8 hours");
 
         this.ws = new WebSocketAsPromised(this.url, {
             createWebSocket: url => this.createWebSocket(url),
