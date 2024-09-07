@@ -85,8 +85,20 @@ class HaloSimulator {
         return this.consoleUrl;
     }
 
+    async resetState(options: Record<string, string>): Promise<void> {
+        const res = await this.ws!.sendRequest({"type": "destroy_card_set", "options": options});
+
+        if (res.type !== "ack") {
+            throw new NFCBadTransportError("Unexpected reply from the server.");
+        }
+    }
+
     async swapCard(cardId: number): Promise<void> {
-        await this.ws!.sendRequest({"type": "swap_card", "card_id": cardId});
+        const res = await this.ws!.sendRequest({"type": "swap_card", "card_id": cardId});
+
+        if (res.type !== "ack") {
+            throw new NFCBadTransportError("Unexpected reply from the server.");
+        }
     }
 
     protected waitForWelcomePacket() {
