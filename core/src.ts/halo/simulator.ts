@@ -85,7 +85,7 @@ class HaloSimulator {
         return this.consoleUrl;
     }
 
-    async resetState(options: Record<string, string>): Promise<void> {
+    async resetCardSet(options: Record<string, string>): Promise<void> {
         const res = await this.ws!.sendRequest({"type": "destroy_card_set", "options": options});
 
         if (res.type !== "ack") {
@@ -212,6 +212,14 @@ class SimHaloAPI extends BaseHaloAPI {
 
     async connect(options: ConnectSimulatorOptions) {
         await this.sim.connect(options);
+    }
+
+    async resetCardSet(options: Record<string, string>): Promise<void> {
+        await this.sim.resetCardSet(options);
+    }
+
+    async swapCard(cardId: number): Promise<void> {
+        await this.sim.swapCard(cardId);
     }
 
     executeCommand(args: HaloCommandObject): Promise<HaloResponseObject> {
