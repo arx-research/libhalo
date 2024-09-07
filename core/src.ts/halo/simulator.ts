@@ -77,8 +77,16 @@ class HaloSimulator {
         return welcomePacket;
     }
 
-    getConsoleURL() {
+    getConsoleURL(): string {
+        if (!this.consoleUrl) {
+            throw new Error("Simulator is not yet connected!");
+        }
+
         return this.consoleUrl;
+    }
+
+    async swapCard(cardId: number): Promise<void> {
+        await this.ws!.sendRequest({"type": "swap_card", "card_id": cardId});
     }
 
     protected waitForWelcomePacket() {
