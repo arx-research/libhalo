@@ -641,7 +641,7 @@ async function _internalLoadPK(options: ExecHaloCmdOptions, payload: Buffer) {
 }
 
 async function cmdGetTransportPK(options: ExecHaloCmdOptions, args: HaloCmdGetTransportPK): Promise<HaloResGetTransportPK> {
-    if (options.method !== "credential" && options.method !== "pcsc") {
+    if (options.method !== "credential" && options.method !== "pcsc" && options.method !== "simulator") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
 
@@ -653,7 +653,7 @@ async function cmdGetTransportPK(options: ExecHaloCmdOptions, args: HaloCmdGetTr
 }
 
 async function cmdLoadTransportPK(options: ExecHaloCmdOptions, args: HaloCmdLoadTransportPK): Promise<HaloResLoadTransportPK> {
-    if (options.method !== "credential" && options.method !== "pcsc") {
+    if (options.method !== "credential" && options.method !== "pcsc" && options.method !== "simulator") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
 
@@ -666,7 +666,7 @@ async function cmdLoadTransportPK(options: ExecHaloCmdOptions, args: HaloCmdLoad
 }
 
 async function cmdExportKey(options: ExecHaloCmdOptions, args: HaloCmdExportKey): Promise<HaloResExportKey> {
-    if (options.method !== "credential" && options.method !== "pcsc") {
+    if (options.method !== "credential" && options.method !== "pcsc" && options.method !== "simulator") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
 
@@ -698,7 +698,7 @@ async function cmdExportKey(options: ExecHaloCmdOptions, args: HaloCmdExportKey)
 }
 
 async function cmdImportKeyInit(options: ExecHaloCmdOptions, args: HaloCmdImportKeyInit): Promise<HaloResImportKeyInit> {
-    if (options.method !== "credential" && options.method !== "pcsc") {
+    if (options.method !== "credential" && options.method !== "pcsc" && options.method !== "simulator") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
 
@@ -716,7 +716,7 @@ async function cmdImportKeyInit(options: ExecHaloCmdOptions, args: HaloCmdImport
 }
 
 async function cmdImportKey(options: ExecHaloCmdOptions, args: HaloCmdImportKey): Promise<HaloResImportKey> {
-    if (options.method !== "credential" && options.method !== "pcsc") {
+    if (options.method !== "credential" && options.method !== "pcsc" && options.method !== "simulator") {
         throw new HaloLogicError("Unsupported execution method. Please set options.method = 'credential'.");
     }
 
