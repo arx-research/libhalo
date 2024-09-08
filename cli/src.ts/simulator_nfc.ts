@@ -49,6 +49,10 @@ export class SimNFC implements INFC {
         return this._options.csetId;
     }
 
+    getSimInstance() {
+        return this._options.simInstance;
+    }
+
     getConsoleURL() {
         return this._connectedReader.sim.getConsoleURL();
     }
@@ -104,7 +108,7 @@ export class SimReader implements Reader {
     }
 
     async initialize(options: ConnectSimulatorOptions) {
-        this.name = "Simulator " + options.csetId
+        this.name = "Simulator " + options.simInstance + " " + options.csetId
         this.reader.name = this.name;
         await this.sim.connect(options);
     }

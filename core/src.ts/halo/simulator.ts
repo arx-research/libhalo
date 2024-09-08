@@ -38,8 +38,8 @@ class HaloSimulator {
             : (url: string) => new WebSocket(url);
     }
 
-    protected async signJWT(url: string, authSecret: string, csetId: string, exp: string) {
-        return await new SignJWT({cset_id: csetId})
+    protected async signJWT(url: string, authSecret: string, csetId: string, simInstance: string, exp: string) {
+        return await new SignJWT({cset_id: csetId, sim_instance: simInstance})
             .setProtectedHeader({alg: 'HS256'})
             .setIssuedAt()
             .setAudience(queryString.parseUrl(url).url)
@@ -47,9 +47,9 @@ class HaloSimulator {
             .sign(Buffer.from(authSecret, 'hex'));
     }
 
-    async makeSignedURL(url: string, authSecret: string, csetId: string, exp: string) {
+    async makeSignedURL(url: string, authSecret: string, csetId: string, simInstance: string, exp: string) {
         return queryString.stringifyUrl({url: url, query: {
-            jwt: await this.signJWT(url, authSecret, csetId, exp)
+            jwt: await this.signJWT(url, authSecret, csetId, simInstance, exp)
         }});
     }
 
@@ -57,11 +57,11 @@ class HaloSimulator {
         if (!this.noDebugPrints) {
             console.log('[libhalo][simulator] Simulator connecting...');
         }
-        this.url = await this.makeSignedURL(options.url + "/ws", options.authSecret, options.csetId, "180 seconds");
+        this.url = await this.makeSignedURL(options.url + "/ws", options.authSecret, options.csetId, options.simInstance, "180 seconds");
         const tmpConsoleUrl = (options.url + "/console")
             .replace("ws://", "http://")
             .replace("wss://", "https://");
-        this.consoleUrl = await this.makeSignedURL(tmpConsoleUrl, options.authSecret, options.csetId, "8 hours");
+        this.consoleUrl = await this.makeSignedURL(tmpConsoleUrl, options.authSecret, options.csetId, options.simInstance, "8 hours");
 
         this.ws = new WebSocketAsPromised(this.url, {
             createWebSocket: url => this.createWebSocket(url),
