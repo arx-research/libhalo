@@ -23,13 +23,15 @@ class HaloSimulator {
     protected readonly createWebSocket: (url: string) => WebSocket;
     protected ws: WebSocketAsPromised | null;
     protected _onDisconnected = new SignalDispatcher();
+    protected noDebugPrints: boolean = false;
 
     constructor(options?: SimulatorOptions) {
         options = Object.assign({}, options);
 
         this.url = null;
-        this.consoleUrl = null;
         this.ws = null;
+        this.consoleUrl = null;
+        this.noDebugPrints = !!options.noDebugPrints;
 
         this.createWebSocket = options.createWebSocket
             ? options.createWebSocket
@@ -52,7 +54,9 @@ class HaloSimulator {
     }
 
     async connect(options: ConnectSimulatorOptions) {
-        console.log('[libhalo][simulator] Simulator connecting...');
+        if (!this.noDebugPrints) {
+            console.log('[libhalo][simulator] Simulator connecting...');
+        }
         this.url = await this.makeSignedURL(options.url + "/ws", options.authSecret, options.cardId, "180 seconds");
         const tmpConsoleUrl = (options.url + "/console")
             .replace("ws://", "http://")
@@ -73,7 +77,11 @@ class HaloSimulator {
 
         await this.ws.open();
         const welcomePacket = await this.waitForWelcomePacket();
-        console.log('[libhalo][simulator] Connected, console URL: ', this.consoleUrl);
+
+        if (!this.noDebugPrints) {
+            console.log('[libhalo][simulator] Connected, console URL: ', this.consoleUrl);
+        }
+
         return welcomePacket;
     }
 
@@ -144,6 +152,19 @@ class HaloSimulator {
         return buf;
     }
 
+    async execRawAPDU(data: Buffer): Promise<Buffer> {
+        const res = await this.ws!.sendRequest({
+            "type": "apdu",
+            "data": data.toString('hex').toUpperCase()
+        });
+
+        if (res.type !== "rapdu") {
+            throw new Error("Unexpected packet returned by simulator.");
+        }
+
+        return Buffer.from(res.data, "hex");
+    }
+
     async execHaloCmd(command: HaloCommandObject) {
         const cmdOpts: ExecHaloCmdOptions = {
             method: "simulator",
@@ -189,14 +210,20 @@ class HaloSimulator {
         };
 
         let res;
-        console.log('[libhalo][simulator] => ', command);
+        if (!this.noDebugPrints) {
+            console.log('[libhalo][simulator] => ', command);
+        }
         try {
             res = await execHaloCmd(command, cmdOpts);
         } catch (e) {
-            console.error('[libhalo][simulator] err', e);
+            if (!this.noDebugPrints) {
+                console.error('[libhalo][simulator] err', e);
+            }
             throw e;
         }
-        console.log('[libhalo][simulator] <= ', res);
+        if (!this.noDebugPrints) {
+            console.log('[libhalo][simulator] <= ', res);
+        }
         return res;
     }
 }

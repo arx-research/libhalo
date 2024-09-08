@@ -22,12 +22,14 @@ export interface ReaderEventListener {
 }
 
 export interface Reader {
+    name: string
     reader: {
         name: string
     }
     autoProcessing: boolean
-    transmit: (data: Buffer, responseMaxLength: number) => Promise<Buffer>;
+    transmit: (data: Buffer, responseMaxLength: number) => Promise<Buffer>
     on: ReaderEventListener
+    close: () => void
 }
 
 export interface TransceiveFunc {
@@ -104,7 +106,9 @@ export interface BaseCreateWSOptions {
 }
 
 export interface BridgeOptions extends BaseCreateWSOptions {}
-export interface SimulatorOptions extends BaseCreateWSOptions {}
+export interface SimulatorOptions extends BaseCreateWSOptions {
+    noDebugPrints?: boolean
+}
 
 export interface ConnectSimulatorOptions {
     url: string
