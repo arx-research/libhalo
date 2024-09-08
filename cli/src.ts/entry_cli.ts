@@ -23,13 +23,16 @@ if (args && args.name === "cli_version") {
         enabled: true,
         url: args.url,
         authSecret: args.secret,
-        cardId: args.cset_id
+        csetId: args.cset_id
     };
     saveSimConfig(simConfig);
     console.log('Config updated.');
 } else if (args && args.name === "sim_enable") {
     const simConfig = getSimConfig();
     simConfig.enabled = true;
+    if (args.cset_id) {
+        simConfig.csetId = args.cset_id;
+    }
     saveSimConfig(simConfig);
     console.log('Config updated.');
 } else if (args && args.name === "sim_disable") {
