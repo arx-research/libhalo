@@ -21,10 +21,29 @@ import {
     wsEventReaderDisconnected
 } from "./ws_server.js";
 import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
-import {HaloCommandObject, Reader} from "@arx-research/libhalo/types";
+import {ConnectSimulatorOptions, HaloCommandObject, Reader} from "@arx-research/libhalo/types";
 import {Namespace} from "argparse";
+import {INFC, SimNFC} from "./simulator/nfc.js";
+import fs from "fs";
+import {getSimConfig, getSimConfigPath} from "./util.js";
 
-const nfc = new NFC();
+let simOptions: ConnectSimulatorOptions | null = null;
+let nfc: INFC;
+
+if (fs.existsSync(getSimConfigPath())) {
+    const simConfig = getSimConfig();
+
+    if (simConfig.enabled) {
+        simOptions = simConfig as ConnectSimulatorOptions;
+    }
+}
+
+if (!simOptions) {
+    nfc = new NFC();
+} else {
+    nfc = new SimNFC(simOptions);
+}
+
 let stopPCSCTimeout: number | null = null;
 let isConnected = false;
 let isClosing = false;
@@ -38,6 +57,15 @@ async function checkCard(reader: Reader) {
         console.error(e);
         return false;
     }
+}
+
+function ensureSimulator() {
+    if (!(nfc instanceof SimNFC)) {
+        console.error('Simulator is not enabled!');
+        process.exit(1);
+    }
+
+    return nfc;
 }
 
 function runHalo(entryMode: string, args: Namespace) {
@@ -59,6 +87,12 @@ function runHalo(entryMode: string, args: Namespace) {
         }
 
         reader.on('card', card => {
+            if (args.output === "color") {
+                if (nfc instanceof SimNFC) {
+                    console.warn('[!] Running on simulator (cset_id=' + nfc.getCardSetID() + ')');
+                }
+            }
+
             if (entryMode === "server") {
                 (async () => {
                     if (await checkCard(reader)) {
@@ -88,6 +122,17 @@ function runHalo(entryMode: string, args: Namespace) {
                     if (args.name === "pcsc_detect") {
                         console.log("HaLo tag detected:", reader.reader.name);
                         res = {"status": "ok"};
+                    } else if (args.name === "sim_console") {
+                        console.log(ensureSimulator().getConsoleURL());
+                        process.exit(0);
+                    } else if (args.name === "sim_set_card") {
+                        await ensureSimulator().swapCard(args.id);
+                        console.log('Card swapped on simulator.');
+                        process.exit(0);
+                    } else if (args.name === "sim_reset") {
+                        await ensureSimulator().resetCardSet(args.options);
+                        console.log('Card set was reset.');
+                        process.exit(0);
                     } else if (args.name === "test") {
                         res = await __runTestSuite({"__this_is_unsafe": true},
                             "pcsc", async (command: HaloCommandObject) => await execHaloCmdPCSC(command, reader));

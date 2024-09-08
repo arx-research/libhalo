@@ -52,6 +52,7 @@
     "nunjucks": "^3.2.4",
     "open": "^10.1.0",
     "promise-socket": "^8.0.0",
+    "websocket": "^1.0.35",
     "ws": "^8.18.0"
   },
   "devDependencies": {

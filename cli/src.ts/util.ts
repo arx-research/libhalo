@@ -2,6 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname as path_dirname, join as path_join } from 'node:path';
 import crypto from "crypto";
 import fs from "fs";
+import path from "path";
+import os from "os";
 
 function randomBuffer() {
     return Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
@@ -34,6 +36,22 @@ function saveLog(log: Record<string, string | string[]>) {
     });
 }
 
+function getSimConfigPath() {
+    return path.join(os.homedir(), '.halo-simulator.json');
+}
+
+function simConfigExists() {
+    return fs.existsSync(getSimConfigPath());
+}
+
+function getSimConfig() {
+    return JSON.parse(fs.readFileSync(getSimConfigPath(), 'utf-8'));
+}
+
+function saveSimConfig(simConfig: unknown) {
+    fs.writeFileSync(getSimConfigPath(), JSON.stringify(simConfig, null, 4));
+}
+
 let dirname: string;
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -43,7 +61,6 @@ if (process.pkg && process.pkg.entrypoint) {
 } else {
     const filename = fileURLToPath(import.meta.url);
     dirname = path_join(path_dirname(filename), '..');
-    console.log(dirname);
 }
 
-export {dirname, randomBuffer, saveLog};
+export {dirname, randomBuffer, saveLog, getSimConfigPath, simConfigExists, getSimConfig, saveSimConfig};
