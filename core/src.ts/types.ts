@@ -112,7 +112,7 @@ export interface SimulatorOptions extends BaseCreateWSOptions {
 
 export interface ConnectSimulatorOptions {
     url: string
-    cardId: string
+    csetId: string
     authSecret: string
 }
 
