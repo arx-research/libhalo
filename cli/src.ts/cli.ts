@@ -23,7 +23,7 @@ import {
 import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
 import {ConnectSimulatorOptions, HaloCommandObject, Reader} from "@arx-research/libhalo/types";
 import {Namespace} from "argparse";
-import {INFC, SimNFC} from "./simulator/nfc.js";
+import {INFC, SimNFC} from "./simulator_nfc.js";
 import fs from "fs";
 import {getSimConfig, getSimConfigPath} from "./util.js";
 
@@ -89,7 +89,7 @@ function runHalo(entryMode: string, args: Namespace) {
         reader.on('card', card => {
             if (args.output === "color") {
                 if (nfc instanceof SimNFC) {
-                    console.warn('[!] Running on simulator (cset_id=' + nfc.getCardSetID() + ')');
+                    console.warn('[!] Running on simulator (sim_instance=' + nfc.getSimInstance() + '; cset_id=' + nfc.getCardSetID() + ')');
                 }
             }
 

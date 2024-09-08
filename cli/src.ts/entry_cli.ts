@@ -23,7 +23,8 @@ if (args && args.name === "cli_version") {
         enabled: true,
         url: args.url,
         authSecret: args.secret,
-        csetId: args.cset_id
+        csetId: args.cset_id,
+        simInstance: args.sim_instance
     };
     saveSimConfig(simConfig);
     console.log('Config updated.');
@@ -32,6 +33,9 @@ if (args && args.name === "cli_version") {
     simConfig.enabled = true;
     if (args.cset_id) {
         simConfig.csetId = args.cset_id;
+    }
+    if (args.sim_instance) {
+        simConfig.simInstance = args.sim_instance;
     }
     saveSimConfig(simConfig);
     console.log('Config updated.');

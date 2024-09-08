@@ -383,6 +383,7 @@ const cfgSimParser = subparsers.add_parser("sim_cfg", {help: "Configure simulati
 cfgSimParser.add_argument("--url", {required: true});
 cfgSimParser.add_argument("--secret", {required: true});
 cfgSimParser.add_argument("--cset-id", {required: true});
+cfgSimParser.add_argument("--sim-instance", {required: true});
 
 const simSwapParser = subparsers.add_parser("sim_set_card", {help: "Activate card on simulator."})
 simSwapParser.add_argument("id");
@@ -392,6 +393,7 @@ simResetParser.add_argument("--options", {action: JSONParseAction, help: 'Reset 
 
 const simEnableParser = subparsers.add_parser("sim_enable", {help: "Enable simulation."});
 simEnableParser.add_argument("--cset-id", {help: "Optional (not changed if not provided)."});
+simEnableParser.add_argument("--sim-instance", {help: "Optional (not changed if not provided)."});
 
 subparsers.add_parser("sim_disable", {help: "Disable simulation."});
 
