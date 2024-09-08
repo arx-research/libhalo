@@ -390,8 +390,8 @@ simSwapParser.add_argument("id");
 const simResetParser = subparsers.add_parser("sim_reset", {help: "Reset card set on simulator."})
 simResetParser.add_argument("--options", {action: JSONParseAction, help: 'Reset options (JSON string), optional.', default: {}});
 
-subparsers.add_parser("sim_enable", {help: "Enable simulation."});
-cfgSimParser.add_argument("--cset-id", {help: "Optional (not changed if not provided)."});
+const simEnableParser = subparsers.add_parser("sim_enable", {help: "Enable simulation."});
+simEnableParser.add_argument("--cset-id", {help: "Optional (not changed if not provided)."});
 
 subparsers.add_parser("sim_disable", {help: "Disable simulation."});
 
