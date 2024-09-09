@@ -379,16 +379,18 @@ storeGraffitiParser.add_argument("--data", {
 
 subparsers.add_parser("pcsc_detect", {help: "Detect PC/SC readers and HaLo tags (for debugging)."});
 
-const cfgSimParser = subparsers.add_parser("sim_cfg", {help: "Configure simulation."})
+const cfgSimParser = subparsers.add_parser("sim_cfg", {help: "Configure simulation."});
 cfgSimParser.add_argument("--url", {required: true});
 cfgSimParser.add_argument("--secret", {required: true});
 cfgSimParser.add_argument("--cset-id", {required: true});
 cfgSimParser.add_argument("--sim-instance", {required: true});
 
-const simSwapParser = subparsers.add_parser("sim_set_card", {help: "Activate card on simulator."})
+const simSwapParser = subparsers.add_parser("sim_set_card", {help: "Activate card on simulator."});
 simSwapParser.add_argument("id");
 
-const simResetParser = subparsers.add_parser("sim_reset", {help: "Reset card set on simulator."})
+subparsers.add_parser("sim_destroy", {help: "Destroy card set on simulator."});
+
+const simResetParser = subparsers.add_parser("sim_reset", {help: "Reset card set on simulator."});
 simResetParser.add_argument("--options", {action: JSONParseAction, help: 'Reset options (JSON string), optional.', default: {}});
 
 const simEnableParser = subparsers.add_parser("sim_enable", {help: "Enable simulation."});
