@@ -129,6 +129,10 @@ function runHalo(entryMode: string, args: Namespace) {
                         await ensureSimulator().swapCard(args.id);
                         console.log('Card swapped on simulator.');
                         process.exit(0);
+                    } else if (args.name === "sim_destroy") {
+                        await ensureSimulator().destroyCardSet();
+                        console.log('Card set was destroyed.');
+                        process.exit(0);
                     } else if (args.name === "sim_reset") {
                         await ensureSimulator().resetCardSet(args.options);
                         console.log('Card set was reset.');
