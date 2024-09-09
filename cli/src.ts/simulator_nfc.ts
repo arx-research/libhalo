@@ -65,6 +65,10 @@ export class SimNFC implements INFC {
         return await this._connectedReader.sim.resetCardSet(options);
     }
 
+    async destroyCardSet() {
+        return await this._connectedReader.sim.destroyCardSet();
+    }
+
     on: INFCOn = (eventName, listener) => {
         if (eventName === "reader") {
             const _listener = listener as (reader: Reader) => void;
