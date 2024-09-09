@@ -24,6 +24,7 @@ class HaloSimulator {
     protected ws: WebSocketAsPromised | null;
     protected _onDisconnected = new SignalDispatcher();
     protected noDebugPrints: boolean = false;
+    protected disconnectReason: unknown | null = null;
 
     constructor(options?: SimulatorOptions) {
         options = Object.assign({}, options);
@@ -72,6 +73,12 @@ class HaloSimulator {
         });
 
         this.ws.onClose.addListener((event) => {
+            this.disconnectReason = event;
+
+            if (!this.noDebugPrints) {
+                console.error('[libhalo][simulator] Disconnected from simulator: ', event);
+            }
+
             this._onDisconnected.dispatch();
         });
 
@@ -85,6 +92,10 @@ class HaloSimulator {
         return welcomePacket;
     }
 
+    getDisconnectReason() {
+        return this.disconnectReason;
+    }
+
     getConsoleURL(): string {
         if (!this.consoleUrl) {
             throw new Error("Simulator is not yet connected!");
@@ -94,7 +105,15 @@ class HaloSimulator {
     }
 
     async resetCardSet(options: Record<string, string>): Promise<void> {
-        const res = await this.ws!.sendRequest({"type": "destroy_card_set", "options": options});
+        const res = await this.ws!.sendRequest({"type": "reset_cs", "options": options});
+
+        if (res.type !== "ack") {
+            throw new NFCBadTransportError("Unexpected reply from the server.");
+        }
+    }
+
+    async destroyCardSet(): Promise<void> {
+        const res = await this.ws!.sendRequest({"type": "destroy_cs"});
 
         if (res.type !== "ack") {
             throw new NFCBadTransportError("Unexpected reply from the server.");
@@ -243,6 +262,10 @@ class SimHaloAPI extends BaseHaloAPI {
 
     async resetCardSet(options: Record<string, string>): Promise<void> {
         await this.sim.resetCardSet(options);
+    }
+
+    async destroyCardSet(): Promise<void> {
+        await this.sim.destroyCardSet();
     }
 
     async swapCard(cardId: number): Promise<void> {
