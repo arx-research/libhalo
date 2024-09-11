@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--
+    LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+    Copyright by Arx Research, Inc., a Delaware corporation
+    License: MIT
+    -->
+        <title>LibHaLo Demo</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+        <script type="text/javascript">
+            // ensure the library is always fully reloaded
+            document.write('<script src="../dist/libhalo.js?_v=' + (
+            Math.random() + '') + '"></scr' + 'ipt>');
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>LibHaLo Demo</h1>
+            <p class="text-muted">
+                Batch retrieve certain public objects from the HaLo tag (like public key values, latch values etc.)
+            </p>
+            <div class="d-flex flex-column justify-content-center align-items-center">
+                <table id="table" class="table">
+                    <tr>
+                        <th>Object Type</th>
+                        <th>Value</th>
+                        <th></th>
+                    </tr>
+                </table>
+                <button class="btn btn-primary mb-3" onclick="insertEmptyRow()">Insert Row</button>
+            </div>
+
+            <button class="btn btn-primary" id="pairSignBtn" onclick="btnSignMessageClicked();">Retrieve data</button>
+            <p id="noArgsError" class="text-danger mt-3" style="display:none">Please specify at least one parameter</p>
+
+            <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
+
+            <script type="text/javascript">
+                let rowIdCounter = 0;
+
+                // Insert initial rows into the table
+                insertInitialRows()
+
+                function log(data) {
+                    console.log(data);
+                    document
+                        .getElementById('statusText')
+                        .innerText += '\n' + data;
+                }
+
+                async function btnSignMessageClicked() {
+                    const spec = extractSpecFromTable();
+
+                    // Handle displaying/hiding the noArgsError message
+                    if (spec === "") {
+                        document
+                            .getElementById('noArgsError')
+                            .style
+                            .display = 'block';
+                        return;
+                    } else {
+                        document
+                            .getElementById('noArgsError')
+                            .style
+                            .display = 'none';
+                    }
+
+                    // Prepare payload
+                    const cmd = {
+                        name: "get_data_struct",
+                        spec
+                    };
+
+                    try {
+                        log("Executing command: " + JSON.stringify(cmd));
+                        let result = await execHaloCmdWeb(cmd);
+                        log(JSON.stringify(result));
+                    } catch (e) {
+                        log(JSON.stringify(e));
+                    }
+                }
+
+                function insertEmptyRow() {
+                    const parser = new DOMParser();
+                    const tbody = document
+                        .getElementById('table')
+                        .getElementsByTagName('tbody')[0];
+                    const newRow = tbody.insertRow();
+                    const rowId = `row-${rowIdCounter}`;
+                    newRow.id = rowId
+                    newRow.innerHTML = `
+                        <td>
+                            <select class="form-select">
+                            <option value="publicKey">publicKey</option>
+                            <option value="publicKeyAttest">publicKeyAttest</option>
+                            <option value="keySlotFlags">keySlotFlags</option>
+                            <option value="keySlotFailedAuthCtr">keySlotFailedAuthCtr</option>
+                            <option value="latchValue">latchValue</option>
+                            <option value="latchAttest">latchAttest</option>
+                            <option value="graffiti">graffiti</option>
+                            <option value="firmwareVersion">firmwareVersion</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" placeHolder="0 - 255"></input>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" onclick="removeRow('${rowId}')">-</button>
+                        </td>
+                    `;
+                    rowIdCounter++;
+                }
+
+                function removeRow(rowId) {
+                    const row = document.getElementById(rowId);
+                    row
+                        .parentNode
+                        .removeChild(row);
+                }
+
+                function extractSpecFromTable() {
+                    let spec = "";
+                    const tbody = document
+                        .getElementById('table')
+                        .getElementsByTagName('tbody')[0];
+                    const rows = Array
+                        .from(tbody.getElementsByTagName('tr'))
+                        .slice(1);
+                    for (const row of rows) {
+                        const select = row.getElementsByTagName('select')[0];
+                        const input = row.getElementsByTagName('input')[0];
+
+                        // Generate the spec string
+                        const objType = select.value;
+                        const value = input.value;
+                        if (value) {
+                            if (spec !== "") {
+                                spec += ",";
+                            }
+                            spec += objType + ":" + value;
+                        }
+                    }
+
+                    return spec;
+                }
+
+                function insertInitialRows() {
+                    const parser = new DOMParser();
+                    const tbody = document
+                        .getElementById('table')
+                        .getElementsByTagName('tbody')[0];
+                    let newRow = tbody.insertRow();
+                    let rowId = `row-${rowIdCounter}`;
+                    newRow.id = rowId
+                    newRow.innerHTML = `
+                        <td>
+                            <select class="form-select">
+                            <option value="publicKey" selected>publicKey</option>
+                            <option value="publicKeyAttest">publicKeyAttest</option>
+                            <option value="keySlotFlags">keySlotFlags</option>
+                            <option value="keySlotFailedAuthCtr">keySlotFailedAuthCtr</option>
+                            <option value="latchValue">latchValue</option>
+                            <option value="latchAttest">latchAttest</option>
+                            <option value="graffiti">graffiti</option>
+                            <option value="firmwareVersion">firmwareVersion</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" value="1" placeHolder="0 - 255"></input>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" onclick="removeRow('${rowId}')">-</button>
+                        </td>
+                    `;
+                    rowIdCounter++;
+
+                    newRow = tbody.insertRow();
+                    rowId = `row-${rowIdCounter}`;
+                    newRow.id = rowId
+                    newRow.innerHTML = `
+                        <td>
+                            <select class="form-select">
+                            <option value="publicKey" selected>publicKey</option>
+                            <option value="publicKeyAttest">publicKeyAttest</option>
+                            <option value="keySlotFlags">keySlotFlags</option>
+                            <option value="keySlotFailedAuthCtr">keySlotFailedAuthCtr</option>
+                            <option value="latchValue">latchValue</option>
+                            <option value="latchAttest">latchAttest</option>
+                            <option value="graffiti">graffiti</option>
+                            <option value="firmwareVersion">firmwareVersion</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" value="2" placeHolder="0 - 255"></input>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" onclick="removeRow('${rowId}')">-</button>
+                        </td>
+                    `;
+                    rowIdCounter++;
+
+                    newRow = tbody.insertRow();
+                    rowId = `row-${rowIdCounter}`;
+                    newRow.id = rowId
+                    newRow.innerHTML = `
+                        <td>
+                            <select class="form-select">
+                            <option value="publicKey">publicKey</option>
+                            <option value="publicKeyAttest">publicKeyAttest</option>
+                            <option value="keySlotFlags">keySlotFlags</option>
+                            <option value="keySlotFailedAuthCtr">keySlotFailedAuthCtr</option>
+                            <option value="latchValue" selected>latchValue</option>
+                            <option value="latchAttest">latchAttest</option>
+                            <option value="graffiti">graffiti</option>
+                            <option value="firmwareVersion">firmwareVersion</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" value="1" placeHolder="0 - 255"></input>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" onclick="removeRow('${rowId}')">-</button>
+                        </td>
+                    `;
+                    rowIdCounter++;
+                }
+            </script>
+        </div>
+    </body>
+</html>
