@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--
+    LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+    Copyright by Arx Research, Inc., a Delaware corporation
+    License: MIT
+    -->
+        <title>LibHaLo Demo</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+        <script type="text/javascript">
+            // ensure the library is always fully reloaded
+            document.write('<script src="../dist/libhalo.js?_v=' + (
+            Math.random() + '') + '"></scr' + 'ipt>');
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>LibHaLo Demo</h1>
+            <p class="text-muted">
+                Learn how to use HaLo bridge on desktop computers.
+            </p>
+            <p class="text-muted">
+                <a href="https://github.com/arx-research/libhalo/blob/master/docs/halo-bridge.md" target="_blank">HaLo Bridge documentation</a>
+            </p>
+            <p class="text-muted">
+                First, please follow the steps below to install HaLo Bridge on your computer:
+            </p>
+            <ol class="text-muted">
+                <li>
+                    Obtain an NFC PC/SC reader compliant with ISO 14443A protocol and your operating system, then connect it to your desktop.<br/>
+                    <a href="https://www.acs.com.hk/en/products/342/acr1252u-usb-nfc-reader-iii-nfc-forum-certified-reader/" target="_blank">Example device</a>
+                </li>
+                <li>
+                    Download HaLo Tools distribution and install it (or simply unpack it if no installer is provided for your platform).<br/>
+                    <a href="https://github.com/arx-research/libhalo/releases" target="_blank">Releases</a>
+                </li>
+                <li>Run <b>halo-bridge</b> binary (on MacOS: "HaLo Bridge Server" straight from Launchpad).</li>
+                <li>The terminal window with HaLo Bridge Server and the diagnostic web page should automatically pop up.</li>
+                <li>Place a compatible HaLo chip onto the NFC reader and click "Run example command" button.</li>
+            </ol>
+
+            <button class="btn btn-primary" onclick="btnClicked()">Run example command</button>
+
+            <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
+
+            <script type="text/javascript">
+                function log(data) {
+                    console.log(data);
+                    document
+                        .getElementById('statusText')
+                        .innerText += '\n' + data;
+                }
+
+                async function btnClicked() {
+                    // Prepare payload
+                    const cmd = {
+                        name: "get_data_struct",
+                        spec: "publicKey:1,publicKey:2,latchValue:2"
+                    };
+
+                    try {
+                        log("Executing command: " + JSON.stringify(cmd));
+                        const bridge = new HaloBridge();
+                        await bridge.connect();
+                        const result = await bridge.execHaloCmd(cmd);
+                        log(JSON.stringify(result));
+                    } catch (e) {
+                        log(JSON.stringify(e));
+                    }
+                }
+            </script>
+        </div>
+    </body>
+</html>
