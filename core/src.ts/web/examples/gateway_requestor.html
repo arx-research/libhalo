@@ -48,8 +48,19 @@
         <p class="text-muted">Only for debugging. It's recommended to keep this as it is.</p>
     </div>
     <div class="mb-3">
-        <label class="form-label">Message to be signed with ECDSA/Keccak (hex-encoded)</label>
-        <input type="text" class="form-control" id="message" value="">
+        <label class="form-label">How would you like to sign the message</label>
+        <select class="form-select" id="signMethod" onchange="onChangeSelect(this);">
+            <option value="message" selected>EIP191</option>
+            <option value="digest">ECDSA</option>
+        </select>
+    </div>
+    <div class="mb-3" id="message-container">
+        <label class="form-label">Hex-encoded message to be signed with ECDSA/Keccak</label>
+        <input type="text" class="form-control" id="message">
+    </div>
+    <div class="mb-3" id="digest-container" style="display:none">
+        <label class="form-label">Hex-encoded 32-byte digest to be signed using plain ECDSA</label>
+        <input type="text" class="form-control" id="digest">
     </div>
     <button class="btn btn-primary" id="pairSignBtn" onclick="btnSignMessageClicked();">Pair and request to sign with key #1</button>
     <button class="btn btn-secondary" id="signBtn" onclick="btnInitiateSessClicked();">Request another signature with key #1</button>
@@ -63,23 +74,69 @@
     <div id="server-ver"></div>
 
     <script type="text/javascript">
-        // generate random message on load
+        // generate random messages on load
+        generateRandomMessage();
+        generateRandomDigest();
+
         let gate = null;
 
-        let rnd = new Uint8Array(6);
-        crypto.getRandomValues(rnd);
-        document.getElementById('message').value = arr2hex(rnd);
-        document.getElementById('signBtn').disabled = true;
-        document.getElementById('signBtn').style.display = 'none';
-
-        let cmd = {"name": "sign", "message": document.getElementById('message').value, "keyNo": 1};
-
         function log(data) {
-            console.log(data);
             document.getElementById('statusText').innerText += '\n' + data;
         }
 
+        function onChangeSelect(selectElement) {
+            const val = selectElement.value;
+            if (val === "message") {
+                document.getElementById('message-container').style.display = 'block';
+                document.getElementById('digest-container').style.display = 'none';
+            } else {
+                document.getElementById('message-container').style.display = 'none';
+                document.getElementById('digest-container').style.display = 'block';
+            }
+        }
+
+        function generateRandomMessage() {
+            const rnd = new Uint8Array(6);
+            crypto.getRandomValues(rnd);
+            document.getElementById('message').value = arr2hex(rnd);
+            document.getElementById('signBtn').disabled = true;
+            document.getElementById('signBtn').style.display = 'none';
+        }
+
+        async function generateRandomDigest() {
+            const rnd = new Uint8Array(6);
+            crypto.getRandomValues(rnd);
+
+            const msgBuffer = new TextEncoder().encode(rnd);     
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+  
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            document.getElementById('digest').value = hashHex;
+            document.getElementById('signBtn').disabled = true;
+            document.getElementById('signBtn').style.display = 'none';
+        }
+
+        function generateCmd() {
+            const name = "sign";
+            const signMethod = document.getElementById('signMethod').value;
+            const message = document.getElementById('message').value;
+            const digest = document.getElementById('digest').value;
+
+            let cmd = {};
+            if (signMethod === "message") {
+                cmd = {name, message, "keyNo": 1};
+            } else {
+                cmd = {name, digest, "keyNo": 1};
+            }
+
+            return cmd;
+        }
+
         async function btnSignMessageClicked() {
+            const cmd = generateCmd();
+
             document.getElementById('pairSignBtn').disabled = true;
             gate = new HaloGateway(document.getElementById('gatewayURL').value);
 
@@ -123,6 +180,8 @@
         async function btnInitiateSessClicked() {
             document.getElementById('signBtn').disabled = true;
             log('Requested to execute a command. Please click [Confirm] on your smartphone and tap your HaLo tag.');
+
+            const cmd = generateCmd();
 
             try {
                 let res = await gate.execHaloCmd(cmd);
