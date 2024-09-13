@@ -118,11 +118,7 @@
 
                     try {
                         log("Executing command: " + JSON.stringify(cmd));
-                        //let result = await execHaloCmdWeb(cmd);
-
-                        let bridge = new HaloBridge();
-                        await bridge.connect();
-                        let result = await bridge.execHaloCmd(cmd);
+                        const result = await execHaloCmdWeb(cmd);
                         log(JSON.stringify(result));
                     } catch (e) {
                         log(JSON.stringify(e));
