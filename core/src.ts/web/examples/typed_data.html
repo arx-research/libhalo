@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--
+    LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+    Copyright by Arx Research, Inc., a Delaware corporation
+    License: MIT
+    -->
+        <title>LibHaLo Demo</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+        <script type="text/javascript">
+            // ensure the library is always fully reloaded
+            document.write('<script src="../dist/libhalo.js?_v=' + (
+            Math.random() + '') + '"></scr' + 'ipt>');
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>LibHaLo Demo</h1>
+            <p class="text-muted">
+                Typed data signing (EIP-712).
+            </p>
+            <p class="text-muted">
+                Please provide values for the predefined EIP-712 typed data.
+            </p>
+
+            <h4>Values</h4>
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col" >
+                        <div class="mb-3">
+                            <label class="form-label">From Name</label>
+                            <input type="text" class="form-control" id="from.name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">From Wallet</label>
+                            <input type="text" class="form-control" id="from.wallet">
+                        </div>
+                    </div>
+                    <div class="col" >
+                        <div class="mb-3">
+                            <label class="form-label">To Name</label>
+                            <input type="text" class="form-control" id="to.name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">To Wallet</label>
+                            <input type="text" class="form-control" id="to.wallet">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contents</label>
+                    <input type="text" class="form-control" id="contents">
+                </div>
+            </div>
+
+            <button class="btn btn-primary mb-3" onclick="previewBtnClicked()">Generate preview</button>
+
+            <div id="typedDataPreviewContainer" style="display:none">
+                <h4>Typed Data Preview</h4>
+                <pre id="typedDataPreview" class="mt-3"></pre>
+            </div>
+
+            <button class="btn btn-primary mb-3" onclick="submitBtnClicked()">Submit</button>
+            <p id="noArgsError" class="text-danger mt-3" style="display:none">Make sure all fields are filled out</p>
+
+            <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
+
+            <script type="text/javascript">
+                // Generate initial value
+                let value = generateInitialValue();
+
+                function log(data) {
+                    console.log(data);
+                    document
+                        .getElementById('statusText')
+                        .innerText += '\n' + data;
+                }
+
+                async function submitBtnClicked() {
+                    // Generate domain, types and value data
+                    const domain = generateDomainData();
+                    const types = generateTypesData();
+                    const value = extractValueFromInputs();
+
+                    // Generate typedData payload
+                    const typedData = {
+                        domain,
+                        types,
+                        value
+                    };
+
+                    // Handle displaying/hiding the noArgsError message
+                    const values = [value.from.name, value.from.wallet, value.to.name, value.to.wallet, value.contents];
+                    if (values.some(v => !v)) {
+                        document
+                            .getElementById('noArgsError')
+                            .style
+                            .display = 'block';
+                        return;
+                    } else {
+                        document
+                            .getElementById('noArgsError')
+                            .style
+                            .display = 'none';
+                    }
+
+                    // Prepare payload
+                    const cmd = {
+                        name: "sign",
+                        keyNo: 1,
+                        typedData
+                    };
+
+                    try {
+                        log("Executing command: " + JSON.stringify(cmd));
+                        const result = await execHaloCmdWeb(cmd);
+                        log(JSON.stringify(result));
+                    } catch (e) {
+                        log(JSON.stringify(e));
+                    }
+                }
+
+                function previewBtnClicked() {
+                    // Generate preview
+                    generateTypedDataPreview();
+                }
+
+                function generateDomainData() {
+                    // Generate domain data
+                    return {name: "Ether Mail", version: "1", chainId: 1, verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"};
+                }
+
+                function generateTypesData() {
+                    // Generate types data
+                    return {
+                        Person: [
+                            {
+                                name: "name",
+                                type: "string"
+                            }, {
+                                name: "wallet",
+                                type: "address"
+                            }
+                        ],
+                        Mail: [
+                            {
+                                name: "from",
+                                type: "Person"
+                            }, {
+                                name: "to",
+                                type: "Person"
+                            }, {
+                                name: "contents",
+                                type: "string"
+                            }
+                        ]
+                    }
+                }
+
+                function generateInitialValue() {
+                    // Generate initial value
+                    const value = {
+                        from: {
+                            name: "Cow",
+                            wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+                        },
+                        to: {
+                            name: "Bob",
+                            wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+                        },
+                        contents: "Hello, Bob!"
+                    };
+
+                    // Populate inputs
+                    document
+                        .getElementById('from.name')
+                        .value = value.from.name;
+                    document
+                        .getElementById('from.wallet')
+                        .value = value.from.wallet;
+                    document
+                        .getElementById('to.name')
+                        .value = value.to.name;
+                    document
+                        .getElementById('to.wallet')
+                        .value = value.to.wallet;
+                    document
+                        .getElementById('contents')
+                        .value = value.contents;
+                    return
+                }
+
+                function extractValueFromInputs() {
+                    // Extract value from inputs
+                    return {
+                        from: {
+                            name: document
+                                .getElementById('from.name')
+                                .value,
+                            wallet: document
+                                .getElementById('from.wallet')
+                                .value
+                        },
+                        to: {
+                            name: document
+                                .getElementById('to.name')
+                                .value,
+                            wallet: document
+                                .getElementById('to.wallet')
+                                .value
+                        },
+                        contents: document
+                            .getElementById('contents')
+                            .value
+                    };
+                }
+
+                function generateTypedDataPreview() {
+                    // Generate typed data preview
+                    const domain = generateDomainData();
+                    const types = generateTypesData();
+                    const value = extractValueFromInputs();
+
+                    const typedData = {
+                        domain,
+                        types,
+                        value
+                    };
+
+                    document
+                        .getElementById('typedDataPreview')
+                        .innerText = JSON.stringify(typedData, null, 2);
+                    document
+                        .getElementById('typedDataPreviewContainer')
+                        .style
+                        .display = 'block';
+                }
+            </script>
+        </div>
+    </body>
+</html>
