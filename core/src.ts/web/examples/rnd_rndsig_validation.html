@@ -1,329 +1,116 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <!--
-    LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
-    Copyright by Arx Research, Inc., a Delaware corporation
-    License: MIT
-    -->
-        <title>LibHaLo Demo</title>
+<head>
+    <!--
+LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+Copyright by Arx Research, Inc., a Delaware corporation
+License: MIT
+-->
+    <title>LibHaLo Demo</title>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
           integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
-        <script type="text/javascript">
-            // ensure the library is always fully reloaded
-            document.write('<script src="../dist/libhalo.js?_v=' + (
+    <script type="text/javascript">
+        // ensure the library is always fully reloaded
+        document.write('<script src="../dist/libhalo.js?_v=' + (
             Math.random() + '') + '"></scr' + 'ipt>');
-        </script>
-        <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
-        type="application/javascript"></script>
-        <script src="
-            https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.7/elliptic.min.js"></script>
-        <script src="
-            https://cdn.jsdelivr.net/npm/keccak256@1.0.6/keccak256.min.js
-        "></script>
-        <script src="
-            https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js
-        "></script>
-        <script src="
-            https://cdn.jsdelivr.net/npm/secp256k1@5.0.0/elliptic.min.js
-        "></script>
-    </head>
-    <body>
-        <div class="container">
-            <h1>LibHaLo Demo</h1>
-            <p class="text-muted">
-                <b>(Mobile only) RND/RNDSIG validation
-            </p>
-                <div class="mb-3">
-                    <label class="form-label">URL</label>
-                    <input type="text" class="form-control" id="url" value="https://eth.vrfy.ch/?av=A02.03.000001.390DE7BD&v=01.C8.000005.E582A2D2&pk1=04F80774B09C70BD8C572F57C2D05835D0E324BE9133B49285EAC24E177BC56D92BCF464C3B12CECE362D91FAF37D7ACBA0996C61922A3535CBAEA855416EA6034&pk2=0463D44E9708131505F8E8C5917DF96919624173EEF726DF3F0569865CE83BC9CD9A018879E56C2FF8DC12531A354A6E669714871D0A5F2B5D63E100E98F930DA5&rnd=00000001FBAD9E01AA882F8669123390768FC8AF11916589DF638787A2C2700A&rndsig=304502203D6CBC47D7257FC8C324AB7ED3E9F00B478EFDE41967BDB2923D6C8393291B0C022100BE6601EA37CA66EEB74F3E38C9B37CE44ECC99B6CF1D49D7A5271BBB573BF58A04&cmd=0000&res=00">
-                </div>
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.7/elliptic.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>LibHaLo Demo</h1>
+    <p class="text-muted">
+        <b>(Mobile only)</b> RND/RNDSIG validation
+    </p>
+    <div class="mb-3">
+        <label class="form-label">URL</label>
+        <input type="text" class="form-control" id="url"
+               value="https://eth.vrfy.ch/?av=A02.03.000001.390DE7BD&v=01.C8.000005.E582A2D2&pk1=04F80774B09C70BD8C572F57C2D05835D0E324BE9133B49285EAC24E177BC56D92BCF464C3B12CECE362D91FAF37D7ACBA0996C61922A3535CBAEA855416EA6034&pk2=0463D44E9708131505F8E8C5917DF96919624173EEF726DF3F0569865CE83BC9CD9A018879E56C2FF8DC12531A354A6E669714871D0A5F2B5D63E100E98F930DA5&rnd=00000001FBAD9E01AA882F8669123390768FC8AF11916589DF638787A2C2700A&rndsig=304502203D6CBC47D7257FC8C324AB7ED3E9F00B478EFDE41967BDB2923D6C8393291B0C022100BE6601EA37CA66EEB74F3E38C9B37CE44ECC99B6CF1D49D7A5271BBB573BF58A04&cmd=0000&res=00">
+    </div>
 
-                <button class="btn btn-primary" onclick="btnClicked()">Validate</button>
-                <p id="noArgsError" class="text-danger mt-3" style="display:none">Please provide a url</p>
+    <button class="btn btn-primary" onclick="btnClicked()">Validate</button>
+    <p id="noArgsError" class="text-danger mt-3" style="display:none">Please provide a url</p>
 
-                <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
+    <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
 
-                <script type="text/javascript">
-                    function log(data) {
-                        console.log(data);
-                        document
-                            .getElementById('statusText')
-                            .innerText += '\n' + data;
-                    }
+    <script type="text/javascript">
+        function log(data) {
+            console.log(data);
+            document
+                .getElementById('statusText')
+                .innerText += '\n' + data;
+        }
 
-                    async function btnClicked() {
-                        // Extract url from input
-                        const url = document
-                            .getElementById('url')
-                            .value;
+        async function btnClicked() {
+            // Extract url from input
+            const url = document
+                .getElementById('url')
+                .value;
 
-                        // Extract parameters from url
-                        const urlParams = new URLSearchParams(url);
-                        const pk2 = urlParams.get('pk2');
-                        const rnd = urlParams.get('rnd');
-                        const rndsig = urlParams.get('rndsig');
-                        // Handle displaying/hiding the noArgsError message
-                        if (!url) {
-                            document
-                                .getElementById('noArgsError')
-                                .style
-                                .display = 'block';
-                            return;
-                        } else {
-                            document
-                                .getElementById('noArgsError')
-                                .style
-                                .display = 'none';
-                        }
+            // Extract parameters from url
+            const urlParams = new URLSearchParams(url);
+            const pk2 = urlParams.get('pk2');
+            const rnd = urlParams.get('rnd');
+            const rndsig = urlParams.get('rndsig');
+            // Handle displaying/hiding the noArgsError message
+            if (!url) {
+                document
+                    .getElementById('noArgsError')
+                    .style
+                    .display = 'block';
+                return;
+            } else {
+                document
+                    .getElementById('noArgsError')
+                    .style
+                    .display = 'none';
+            }
 
-                        // Convert a hex string to a byte array
-                        function hexToBytes(hex) {
-                            let bytes = [];
-                            for (let c = 0; c < hex.length; c += 2) 
-                                bytes.push(parseInt(hex.substr(c, 2), 16));
-                            return bytes;
-                        }
+            // utility functions for hex encoding/decoding
+            function hex2arr(hexString) {
+                return new Uint8Array(
+                    hexString.match(/.{1,2}/g).map(
+                        byte => parseInt(byte, 16)));
+            }
 
-                        const rnd_b = hexToBytes(rnd);
-                        console.log({rnd_b});
+            function arr2hex(buffer) {
+                return [...new Uint8Array(buffer)]
+                    .map(x => x.toString(16).padStart(2, '0'))
+                    .join('');
+            }
 
-                        let utf8Encode = new TextEncoder();
-                        data = [
-                            ...utf8Encode.encode("\x19Attest counter pk2:\n"),
-                            ...rnd_b
-                        ];
-                        console.log("data", data)
-                        console.log("data0", data[0])
-                        console.log("data5", data[5])
-                        console.log("data len", data.length)
+            // assemble the message to be verified
+            const header = new TextEncoder().encode("\x19Attest counter pk2:\n");
+            const rnd_b = hex2arr(rnd);
 
-                        let sig = hexToBytes(rndsig);
-                        sig = sig.slice(0, sig[1] + 2);
-                        console.log("sig", sig)
-                        console.log("sig[0]", sig[0])
-                        console.log("sig[70]", sig[70])
-                        console.log("sig len", sig.length)
+            // \/ full message before hashing
+            const data = [
+                ...header,
+                ...rnd_b
+            ];
 
-                        const ec = new elliptic.ec('secp256k1');
-                        console.log(ec)
-                        const key = ec.keyFromPublic(pk2, "hex");
-                        console.log(key.getPublic().encode("hex"))
-                        console.log(pk2)
-                        console.log(key.verify(data, sig));
+            // hash the assembled message
+            const hashBuffer = await crypto.subtle.digest('SHA-256', Uint8Array.from(data));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-                        /*
-                    //Generate a Key Pair
-                    const key = ec.keyFromPublic(pk2, "hex");
-                    const publicKey = key.getPublic();
+            // trim the signature in case it contains excess null bytes
+            // (the signature could be padded with null bytes in case when it's shorter than the field
+            // reserved in the dynamic URL's query string, that's a performance optimization on the HaLo tag itself)
+            let sig = hex2arr(rndsig);
+            sig = sig.slice(0, sig[1] + 2);
+            sig = arr2hex(sig);
 
-                    console.log({publicKey, pk2});
-                    console.log({rndsig});
-                    //console.log(key.verify(rnd, rndsig));
+            // actually verify the signature
+            const ec = new elliptic.ec('secp256k1');
+            const key = ec.keyFromPublic(pk2, "hex");
 
-                    signature = {
-                    r: "0x3D6CBC47D7257FC8C324AB7ED3E9F00B478EFDE41967BDB2923D6C8393291B0C",
-                    s: "0x00BE6601EA37CA66EEB74F3E38C9B37CE44ECC99B6CF1D49D7A5271BBB573BF58A"
-                    };
-                    console.log(ec.verify(rnd, signature));
-                    */
-
-                        /*var key = ec.genKeyPair();
-                    var msgHash = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
-                    var signature = key.sign(msgHash);
-
-                    // Export DER encoded signature in Array
-                    var derSign = signature.toDER();
-                    console.log({derSign, signature})*/
-
-                        /*
-                    // Generate keys
-                    var key = ec.genKeyPair();
-
-                    // Sign the message's hash (input must be an array, or a hex-string)
-                    var msgHash = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
-                    var signature = key.sign(msgHash);
-                    var derSign = signature.toDER();
-                    console.log(signature)
-                    console.log(derSign)
-
-                    // Decode DER encoded signature
-                    console.log(rndsig.slice(0, rndsig[1] + 2));
-                    */
-
-                        //Generate a Key Pair
-                        /*
-                    const key = ec.keyFromPublic(pk2, "hex");
-                    const publicKey = key.getPublic();
-
-                    var m = signature.match(/([a-f\d]{64})/gi);
-
-                    console.log({publicKey, pk2});
-                    console.log({rndsig});
-                    console.log(key.verify(rnd, rndsig));*/
-
-                        /* WORKING EXAMPLE */
-                        /*
-                    const EC = elliptic.ec;
-                    const ec = new EC('secp256k1');
-
-                    //Generate a Key Pair
-                    const key = ec.genKeyPair();
-                    const publicKey = key.getPublic('hex');
-                    const privateKey = key.getPrivate('hex');
-
-                    //Generate a Signature
-                    const message = "Hello, Ethereum!";
-                    const msgHash = keccak256(btoa(message));
-                    const signature = key.sign(msgHash, 'hex');
-
-                    // Verify the signature
-                    const isValid = ec.verify(msgHash, signature, publicKey, 'hex');
-                    console.log(isValid);
-                    */
-
-                        /*
-                    var ec = new elliptic.ec('secp256k1');
-
-                    // Generate keys
-                    var key = ec.genKeyPair();
-                    console.log(key)
-                    console.log(key.getPublic("hex"))
-
-                    // Sign the message's hash (input must be an array, or a hex-string)
-                    var msgHash = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
-                    var signature = key.sign(msgHash);
-
-                    // Export DER encoded signature in Array
-                    var derSign = signature.toDER();
-
-                    // Verify signature
-                    console.log(ec.verify(rnd, rndsig, pk2));*/
-
-                        /*const rnd_b = hexToBinaryString(rnd);
-                    console.log({ rnd_b });
-
-                    let utf8Encode = new TextEncoder();
-                    let utf8Decode = new TextDecoder();
-                    data = utf8Encode.encode("\x19Attest counter pk2:\n" + rnd_b);
-                    console.log({data})
-                    console.log({data: utf8Decode.decode(data)})
-
-                    let sig = hexToBinaryString(rndsig);
-                    console.log({sig, test: ethers.utils.arrayify("0x"+rndsig)})
-                    sig = sig.slice(0, sig[1] + 2);
-                    console.log({sig})
-
-
-                    console.log({pk2, test: hexToBinaryString(pk2)})
-
-                    const pk2Bytes = ethers.utils.arrayify("0x"+pk2);
-                    console.log({pk2Bytes})
-                    const vk = new elliptic.ec('secp256k1').keyFromPublic(pk2, 'hex');
-                    console.log("vk", vk);
-                    const isValid = vk.verify(data, { r: sig.slice(0, 32), s: sig.slice(32, 64) });
-                    console.log({isValid})*/
-
-                        /*
-                    function unhexlify(hexString) {
-                        if (hexString.length % 2 !== 0) {
-                            throw new Error('Invalid hex string');
-                        }
-                        const bytes = new Uint8Array(hexString.length / 2);
-                        for (let i = 0; i < hexString.length; i += 2) {
-                            bytes[i / 2] = parseInt(hexString.substr(i, 2), 16);
-                        }
-                        return bytes;
-                    }
-
-                    const rnd_b = unhexlify(rnd);
-                    console.log({rnd, rnd_b})
-                    */
-
-                        /*
-                    def validate_rndsig(pk2, rnd, rndsig):
-                        rnd_b = binascii.unhexlify(rnd)
-
-                        data = b'\x19Attest counter pk2:\n' + rnd_b
-                        sig = binascii.unhexlify(rndsig)
-                        sig = sig[0:sig[1] + 2]
-                        vk = VerifyingKey.from_string(binascii.unhexlify(pk2), curve=SECP256k1)
-                        vk.verify(sig, data, sigdecode=sigdecode_der, hashfunc=sha256)
-
-                        return struct.unpack(">I", rnd_b[0:4])[0]
-
-
-                    if __name__ == "__main__":
-                        PK2 = '0463D44E9708131505F8E8C5917DF96919624173EEF726DF3F0569865CE83BC9CD9A018879E56C2FF8DC12531A354A6E669714871D0A5F2B5D63E100E98F930DA5'
-                        RND = '00000001FBAD9E01AA882F8669123390768FC8AF11916589DF638787A2C2700A'
-                        RNDSIG = '304502203D6CBC47D7257FC8C324AB7ED3E9F00B478EFDE41967BDB2923D6C8393291B0C022100BE6601EA37CA66EEB74F3E38C9B37CE44ECC99B6CF1D49D7A5271BBB573BF58A04'
-
-                        print('Validated OK, counter value:', validate_rndsig(PK2, RND, RNDSIG))
-                    */
-
-                        function validateRndSig(pk2, rnd, rndsig) {
-                            const rnd_b = ethers
-                                .utils
-                                .arrayify("0x" + rnd);
-                            console.log("rnd_b", rnd_b);
-
-                            const data = ethers
-                                .utils
-                                .concat([
-                                    ethers
-                                        .utils
-                                        .toUtf8Bytes("\x19Attest counter pk2:\n"),
-                                    rnd_b
-                                ]);
-                            console.log("data", data);
-                            const sig = ethers
-                                .utils
-                                .arrayify("0x" + rndsig)
-                                .slice(0, ethers.utils.arrayify("0x" + rndsig)[1] + 2);
-                            console.log("sig", sig);
-
-                            const vk = new elliptic
-                                .ec('secp256k1')
-                                .keyFromPublic("04" + pk2, 'hex');
-                            console.log("vk", vk);
-                            const isValid = vk.verify(data, {
-                                r: sig.slice(0, 32),
-                                s: sig.slice(32, 64)
-                            });
-                            if (!isValid) {
-                                throw new Error("Signature verification failed");
-                            }
-
-                            return new DataView(rnd_b.buffer).getUint32(0, false);
-                        }
-
-                        /*const PK2 = '0463D44E9708131505F8E8C5917DF96919624173EEF726DF3F0569865CE83BC9CD9A018879E56C2FF8DC12531A354A6E669714871D0A5F2B5D63E100E98F930DA5';
-                    const RND = '00000001FBAD9E01AA882F8669123390768FC8AF11916589DF638787A2C2700A';
-                    const RNDSIG = '304502203D6CBC47D7257FC8C324AB7ED3E9F00B478EFDE41967BDB2923D6C8393291B0C022100BE6601EA37CA66EEB74F3E38C9B37CE44ECC99B6CF1D49D7A5271BBB573BF58A04';
-
-                    console.log("PK2", PK2);
-                    console.log("RND", RND);
-                    console.log("RNDSIG", RNDSIG);
-                    console.log("\n\n");
-                    console.log('Validated OK, counter value:', validateRndSig(PK2, RND, RNDSIG));*/
-
-                    }
-
-                    function hexToBinaryString(hexString) {
-                        if (hexString.length % 2 !== 0) {
-                            throw new Error('Invalid hex string');
-                        }
-                        let binaryString = '';
-                        for (let i = 0; i < hexString.length; i += 2) {
-                            const byte = parseInt(hexString.substr(i, 2, 16));
-                            binaryString += String.fromCharCode(byte);
-                        }
-                        return binaryString;
-                    }
-                </script>
-            </div>
-        </body>
-    </html>
+            console.log('verify result', key.verify(hashHex, sig));
+        }
+    </script>
+</div>
+</body>
+</html>
