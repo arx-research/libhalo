@@ -60,6 +60,12 @@ License: MIT
             const rnd = urlParams.get('rnd');
             const rndsig = urlParams.get('rndsig');
 
+            // Check if pk2, rnd & rndsig parameters are present
+            if (!pk2 || !rnd || !rndsig) {
+                log("Please provide a URL with pk2, rnd & rndsig parameters");
+                return;
+            }
+
             // Handle displaying/hiding the noArgsError message
             if (!url) {
                 document
