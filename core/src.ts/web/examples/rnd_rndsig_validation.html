@@ -10,12 +10,13 @@ License: MIT
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
     <script type="text/javascript">
         // ensure the library is always fully reloaded
         document.write('<script src="../dist/libhalo.js?_v=' + (
-            Math.random() + '') + '"></scr' + 'ipt>');
+            Math.random() + '') + '"></scr' + 'ipt>'
+        );
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.7/elliptic.min.js"></script>
 </head>
@@ -25,14 +26,17 @@ License: MIT
     <p class="text-muted">
         <b>(Mobile only)</b> RND/RNDSIG validation
     </p>
+    <p class="text-muted">
+        Please tap a HaLo card on your smartphone to generate a unique signed URL, then paste it below to validate the signature.
+    </p>
     <div class="mb-3">
         <label class="form-label">URL</label>
         <input type="text" class="form-control" id="url"
-               value="https://eth.vrfy.ch/?av=A02.03.000001.390DE7BD&v=01.C8.000005.E582A2D2&pk1=04F80774B09C70BD8C572F57C2D05835D0E324BE9133B49285EAC24E177BC56D92BCF464C3B12CECE362D91FAF37D7ACBA0996C61922A3535CBAEA855416EA6034&pk2=0463D44E9708131505F8E8C5917DF96919624173EEF726DF3F0569865CE83BC9CD9A018879E56C2FF8DC12531A354A6E669714871D0A5F2B5D63E100E98F930DA5&rnd=00000001FBAD9E01AA882F8669123390768FC8AF11916589DF638787A2C2700A&rndsig=304502203D6CBC47D7257FC8C324AB7ED3E9F00B478EFDE41967BDB2923D6C8393291B0C022100BE6601EA37CA66EEB74F3E38C9B37CE44ECC99B6CF1D49D7A5271BBB573BF58A04&cmd=0000&res=00">
+        value="https://eth.vrfy.ch/?av=A02.03.000001.390DE7BD&v=01.C8.000005.E582A2D2&pk1=04F80774B09C70BD8C572F57C2D05835D0E324BE9133B49285EAC24E177BC56D92BCF464C3B12CECE362D91FAF37D7ACBA0996C61922A3535CBAEA855416EA6034&pk2=0463D44E9708131505F8E8C5917DF96919624173EEF726DF3F0569865CE83BC9CD9A018879E56C2FF8DC12531A354A6E669714871D0A5F2B5D63E100E98F930DA5&rnd=00000001FBAD9E01AA882F8669123390768FC8AF11916589DF638787A2C2700A&rndsig=304502203D6CBC47D7257FC8C324AB7ED3E9F00B478EFDE41967BDB2923D6C8393291B0C022100BE6601EA37CA66EEB74F3E38C9B37CE44ECC99B6CF1D49D7A5271BBB573BF58A04&cmd=0000&res=00">
     </div>
 
     <button class="btn btn-primary" onclick="btnClicked()">Validate</button>
-    <p id="noArgsError" class="text-danger mt-3" style="display:none">Please provide a url</p>
+    <p id="noArgsError" class="text-danger mt-3" style="display:none">Please provide a URL</p>
 
     <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
 
@@ -55,6 +59,7 @@ License: MIT
             const pk2 = urlParams.get('pk2');
             const rnd = urlParams.get('rnd');
             const rndsig = urlParams.get('rndsig');
+
             // Handle displaying/hiding the noArgsError message
             if (!url) {
                 document
@@ -69,46 +74,65 @@ License: MIT
                     .display = 'none';
             }
 
-            // utility functions for hex encoding/decoding
-            function hex2arr(hexString) {
-                return new Uint8Array(
-                    hexString.match(/.{1,2}/g).map(
-                        byte => parseInt(byte, 16)));
-            }
-
-            function arr2hex(buffer) {
-                return [...new Uint8Array(buffer)]
-                    .map(x => x.toString(16).padStart(2, '0'))
-                    .join('');
-            }
-
-            // assemble the message to be verified
+            // Assemble the message to be verified
             const header = new TextEncoder().encode("\x19Attest counter pk2:\n");
             const rnd_b = hex2arr(rnd);
 
-            // \/ full message before hashing
+            // Message before hashing
             const data = [
                 ...header,
                 ...rnd_b
             ];
 
-            // hash the assembled message
-            const hashBuffer = await crypto.subtle.digest('SHA-256', Uint8Array.from(data));
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            try {
+                // Hash the assembled message
+                const hashBuffer = await crypto
+                    .subtle
+                    .digest('SHA-256', Uint8Array.from(data));
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join('');
 
-            // trim the signature in case it contains excess null bytes
-            // (the signature could be padded with null bytes in case when it's shorter than the field
-            // reserved in the dynamic URL's query string, that's a performance optimization on the HaLo tag itself)
-            let sig = hex2arr(rndsig);
-            sig = sig.slice(0, sig[1] + 2);
-            sig = arr2hex(sig);
+                // Trim the signature in case it contains excess null bytes
+                // (the signature could be padded with null bytes in case when it's shorter than the field
+                // reserved in the dynamic URL's query string, that's a performance optimization on the HaLo tag itself)
+                let sig = hex2arr(rndsig);
+                sig = sig.slice(0, sig[1] + 2);
+                sig = arr2hex(sig);
 
-            // actually verify the signature
-            const ec = new elliptic.ec('secp256k1');
-            const key = ec.keyFromPublic(pk2, "hex");
+                // Verify the signature
+                const ec = new elliptic.ec('secp256k1');
+                const key = ec.keyFromPublic(pk2, "hex");
+                const verificationResult = key.verify(hashHex, sig)
 
-            console.log('verify result', key.verify(hashHex, sig));
+                // Display the result of the verification
+                displayVerificationResult(verificationResult);
+            } catch (e) {
+                // Log any errors
+                log(e);
+            }
+        }
+
+        // Convert hex string to an array of 8-bit integers
+        function hex2arr(hexString) {
+            return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+        }
+
+        // Convert an array of 8-bit integers to a hex string
+        function arr2hex(buffer) {
+            return [...new Uint8Array(buffer)]
+                .map(x => x.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // Display the result of the verification
+        function displayVerificationResult(verificationResult) {
+            if (verificationResult) {
+                log("Signature is valid");
+            } else {
+                log("Signature is invalid");
+            }
         }
     </script>
 </div>
