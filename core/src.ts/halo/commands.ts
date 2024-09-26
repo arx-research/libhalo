@@ -742,6 +742,7 @@ async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDat
         "publicKeyAttest": 0x02,
         "keySlotFlags": 0x03,
         "keySlotFailedAuthCtr": 0x04,
+        "compressedPublicKey": 0x05,
         "latchValue": 0x20,
         "latchAttest": 0x21,
         "graffiti": 0x22,
