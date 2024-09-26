@@ -9,10 +9,30 @@ import {
     HaloTagError
 } from "../halo/exceptions.js";
 import {
-    cmdGetPkeys, cmdSign, cmdCfgNDEF, cmdWriteLatch, cmdSignRandom, cmdGenKey, cmdGenKeyConfirm, cmdGenKeyFinalize,
-    cmdSignChallenge, cmdSetURLSubdomain, cmdSetPassword, cmdUnsetPassword, cmdReplacePassword, cmdGetKeyInfo,
-    cmdGetTransportPK, cmdLoadTransportPK, cmdExportKey, cmdImportKey, cmdImportKeyInit, cmdGetDataStruct,
-    cmdGetGraffiti, cmdStoreGraffiti
+    cmdGetPkeys,
+    cmdSign,
+    cmdCfgNDEF,
+    cmdWriteLatch,
+    cmdSignRandom,
+    cmdGenKey,
+    cmdGenKeyConfirm,
+    cmdGenKeyFinalize,
+    cmdSignChallenge,
+    cmdSetURLSubdomain,
+    cmdSetPassword,
+    cmdUnsetPassword,
+    cmdReplacePassword,
+    cmdGetKeyInfo,
+    cmdGetTransportPK,
+    cmdLoadTransportPK,
+    cmdExportKey,
+    cmdImportKey,
+    cmdImportKeyInit,
+    cmdGetDataStruct,
+    cmdGetGraffiti,
+    cmdStoreGraffiti,
+    cmdCfgNDEFStoreGraffiti,
+    cmdReplacePasswordStoreGraffiti
 } from "../halo/commands.js";
 import {ERROR_CODES} from "../halo/errors.js";
 import {
@@ -73,6 +93,10 @@ async function execHaloCmd(command: HaloCommandObject, options: ExecHaloCmdOptio
             return await cmdGetGraffiti(options, command);
         case 'store_graffiti':
             return await cmdStoreGraffiti(options, command);
+        case 'replace_password_store_graffiti':
+            return await cmdReplacePasswordStoreGraffiti(options, command);
+        case 'cfg_ndef_store_graffiti':
+            return await cmdCfgNDEFStoreGraffiti(options, command);
         default:
             throw new HaloLogicError("Unsupported command.name parameter specified.");
     }

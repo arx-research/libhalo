@@ -10,13 +10,13 @@ import {Buffer} from 'buffer/index.js';
 import {ethers} from 'ethers';
 import {HaloLogicError, HaloTagError} from "./exceptions.js";
 import {
+    BJJ_ORDER,
     convertSignature,
     mode,
-    parseSig,
     parsePublicKeys,
+    parseSig,
     randomBuffer,
     SECP256k1_ORDER,
-    BJJ_ORDER,
     sigToDer
 } from "./util.js";
 import {FLAGS} from "./flags.js";
@@ -27,35 +27,61 @@ import pbkdf2 from 'pbkdf2';
 import {KEY_FLAGS, parseKeyFlags} from "./keyflags.js";
 import {
     ExecHaloCmdOptions,
-    ExecReturnStruct, HaloCmdCFGNDEF, HaloCmdGenKey, HaloCmdGenKeyConfirm, HaloCmdGenKeyFinalize,
-    HaloResCFGNDEF, HaloResGenKey, HaloResGenKeyConfirm, HaloResGenKeyFinalize, KeyFlags,
+    ExecReturnStruct,
+    HaloCmdCFGNDEF,
+    HaloCmdCFGNDEFStoreGraffiti,
+    HaloCmdGenKey,
+    HaloCmdGenKeyConfirm,
+    HaloCmdGenKeyFinalize,
+    HaloCmdReplacePasswordStoreGraffiti,
+    HaloResCFGNDEF,
+    HaloResCFGNDEFStoreGraffiti,
+    HaloResGenKey,
+    HaloResGenKeyConfirm,
+    HaloResGenKeyFinalize,
+    HaloResReplacePasswordStoreGraffiti,
+    KeyFlags,
     PublicKeyList
 } from "../types.js";
 import {
     HaloCmdExportKey,
     HaloCmdGetDataStruct,
-    HaloCmdGetGraffiti, HaloCmdGetKeyInfo,
+    HaloCmdGetGraffiti,
+    HaloCmdGetKeyInfo,
     HaloCmdGetPkeys,
     HaloCmdGetTransportPK,
     HaloCmdImportKey,
-    HaloCmdImportKeyInit, HaloCmdLoadTransportPK, HaloCmdReplacePassword, HaloCmdSetPassword, HaloCmdSetURLSubdomain,
+    HaloCmdImportKeyInit,
+    HaloCmdLoadTransportPK,
+    HaloCmdReplacePassword,
+    HaloCmdSetPassword,
+    HaloCmdSetURLSubdomain,
     HaloCmdSign,
     HaloCmdSignChallenge,
     HaloCmdSignRandom,
-    HaloCmdStoreGraffiti, HaloCmdUnsetPassword,
+    HaloCmdStoreGraffiti,
+    HaloCmdUnsetPassword,
     HaloCmdWriteLatch,
     HaloResExportKey,
     HaloResGetDataStruct,
-    HaloResGetGraffiti, HaloResGetKeyInfo,
-    HaloResGetPkeys, HaloResGetTransportPK,
+    HaloResGetGraffiti,
+    HaloResGetKeyInfo,
+    HaloResGetPkeys,
+    HaloResGetTransportPK,
     HaloResImportKey,
     HaloResImportKeyInit,
-    HaloResInputObj, HaloResLoadTransportPK, HaloResReplacePassword, HaloResSetPassword, HaloResSetURLSubdomain,
+    HaloResInputObj,
+    HaloResLoadTransportPK,
+    HaloResReplacePassword,
+    HaloResSetPassword,
+    HaloResSetURLSubdomain,
     HaloResSign,
     HaloResSignChallenge,
     HaloResSignRandom,
-    HaloResStoreGraffiti, HaloResUnsetPassword,
-    HaloResWriteLatch, StructErrorResponse
+    HaloResStoreGraffiti,
+    HaloResUnsetPassword,
+    HaloResWriteLatch,
+    StructErrorResponse
 } from "./command_types.js";
 
 const ec = new elliptic.ec('secp256k1');
@@ -340,7 +366,7 @@ async function cmdSignChallenge(options: ExecHaloCmdOptions, args: HaloCmdSignCh
     };
 }
 
-async function cmdCfgNDEF(options: ExecHaloCmdOptions, args: HaloCmdCFGNDEF): Promise<HaloResCFGNDEF> {
+function prepareCfgNDEFInput(args: HaloCmdCFGNDEF): Buffer {
     if (args.flagHidePk1 && args.flagHidePk2) {
         throw new HaloLogicError("It's not allowed to use both flagHidePk1 and flagHidePk2.");
     }
@@ -361,15 +387,19 @@ async function cmdCfgNDEF(options: ExecHaloCmdOptions, args: HaloCmdCFGNDEF): Pr
         flagBuf[2] = args.pkN;
     }
 
-    const payload = Buffer.concat([
+    return Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_SET_NDEF_MODE]),
         flagBuf
     ]);
+}
+
+async function cmdCfgNDEF(options: ExecHaloCmdOptions, args: HaloCmdCFGNDEF): Promise<HaloResCFGNDEF> {
+    const payload = prepareCfgNDEFInput(args);
     await options.exec(payload);
 
     return {
         "status": "ok",
-        "cfgBytes": flagBuf.toString('hex').toUpperCase()
+        "cfgBytes": payload.slice(1).toString('hex').toUpperCase()
     };
 }
 
@@ -589,7 +619,7 @@ async function cmdUnsetPassword(options: ExecHaloCmdOptions, args: HaloCmdUnsetP
     return {"status": "ok"};
 }
 
-async function cmdReplacePassword(options: ExecHaloCmdOptions, args: HaloCmdReplacePassword): Promise<HaloResReplacePassword> {
+function prepareReplacePasswordInput(args: HaloCmdReplacePassword): Buffer {
     const curPassword = pbkdf2.pbkdf2Sync(args.currentPassword, 'HaLoChipSalt', 5000, 16, 'sha512');
     const newPassword = pbkdf2.pbkdf2Sync(args.newPassword, 'HaLoChipSalt', 5000, 16, 'sha512');
 
@@ -610,13 +640,16 @@ async function cmdReplacePassword(options: ExecHaloCmdOptions, args: HaloCmdRepl
         curPassword
     ])), "hex");
 
-    const payload = Buffer.concat([
+    return Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_REPLACE_PASSWORD]),
         Buffer.from([args.keyNo]),
         ct,
         authHash
     ]);
+}
 
+async function cmdReplacePassword(options: ExecHaloCmdOptions, args: HaloCmdReplacePassword): Promise<HaloResReplacePassword> {
+    const payload = prepareReplacePasswordInput(args);
     await options.exec(payload);
 
     return {"status": "ok"};
@@ -843,18 +876,51 @@ async function cmdGetGraffiti(options: ExecHaloCmdOptions, args: HaloCmdGetGraff
     }
 }
 
-async function cmdStoreGraffiti(options: ExecHaloCmdOptions, args: HaloCmdStoreGraffiti): Promise<HaloResStoreGraffiti> {
-    const payload = Buffer.concat([
+function prepareStoreGraffitiInput(args: HaloCmdStoreGraffiti): Buffer {
+    return Buffer.concat([
         Buffer.from([CMD.SHARED_CMD_STORE_GRAFFITI]),
         Buffer.from([args.slotNo]),
         Buffer.from(args.data, 'ascii')
     ]);
+}
 
+async function cmdStoreGraffiti(options: ExecHaloCmdOptions, args: HaloCmdStoreGraffiti): Promise<HaloResStoreGraffiti> {
+    const payload = prepareStoreGraffitiInput(args);
     await options.exec(payload);
 
     return {
         "status": "ok"
     }
+}
+
+async function cmdReplacePasswordStoreGraffiti(options: ExecHaloCmdOptions, args: HaloCmdReplacePasswordStoreGraffiti): Promise<HaloResReplacePasswordStoreGraffiti> {
+    const setPasswordInput = prepareReplacePasswordInput(args);
+    const storeGraffitiInput = prepareStoreGraffitiInput(args);
+
+    await options.exec(Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_REPLACE_PASSWORD_STORE_GRAFFITI]),
+        Buffer.from([setPasswordInput.length]),
+        setPasswordInput,
+        Buffer.from([storeGraffitiInput.length]),
+        storeGraffitiInput
+    ]));
+
+    return {"status": "ok"};
+}
+
+async function cmdCfgNDEFStoreGraffiti(options: ExecHaloCmdOptions, args: HaloCmdCFGNDEFStoreGraffiti): Promise<HaloResCFGNDEFStoreGraffiti> {
+    const cfgNDEFInput = prepareCfgNDEFInput(args);
+    const storeGraffitiInput = prepareStoreGraffitiInput(args);
+
+    await options.exec(Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_SET_NDEF_MODE_STORE_GRAFFITI]),
+        Buffer.from([cfgNDEFInput.length]),
+        cfgNDEFInput,
+        Buffer.from([storeGraffitiInput.length]),
+        storeGraffitiInput
+    ]));
+
+    return {"status": "ok"};
 }
 
 export {
@@ -880,6 +946,8 @@ export {
     cmdGetDataStruct,
     cmdGetGraffiti,
     cmdStoreGraffiti,
+    cmdReplacePasswordStoreGraffiti,
+    cmdCfgNDEFStoreGraffiti,
 };
 
 export type * from "./command_types.js";

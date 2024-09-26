@@ -1,4 +1,4 @@
-import {ASCIIString, HexString, KeyFlags, KeySlotNo, KeyState, PublicKeyList} from "../types.js";
+import {ASCIIString, HaloCmdCFGNDEF, HexString, KeyFlags, KeySlotNo, KeyState, PublicKeyList} from "../types.js";
 import {TypedDataDomain, TypedDataField} from "ethers";
 
 export interface HaloCmdGetPkeys {}
@@ -221,5 +221,16 @@ export interface HaloCmdSetURLSubdomain {
 }
 
 export interface HaloResSetURLSubdomain {
+    status: "ok"
+}
+
+export type HaloCmdReplacePasswordStoreGraffiti = HaloCmdReplacePassword & HaloCmdStoreGraffiti;
+export type HaloCmdCFGNDEFStoreGraffiti = HaloCmdCFGNDEF & HaloCmdStoreGraffiti;
+
+export interface HaloResReplacePasswordStoreGraffiti {
+    status: "ok"
+}
+
+export interface HaloResCFGNDEFStoreGraffiti {
     status: "ok"
 }
