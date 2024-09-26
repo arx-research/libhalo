@@ -8,6 +8,107 @@ import {ArgumentParser} from "argparse";
 import {JSONParseAction} from "./actions.js";
 import {printVersionInfo} from "./version.js";
 
+function configureNDEFCFGParserArgs(parser: ArgumentParser): ArgumentParser {
+    parser.add_argument("--flag-use-text", {
+        dest: "flagUseText",
+        help: "Use text NDEF record instead of the URL record.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-hide-pk1", {
+        dest: "flagHidePk1",
+        help: "Hide public key #1 in the dynamic URL.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-hide-pk2", {
+        dest: "flagHidePk2",
+        help: "Hide public key #2 in the dynamic URL.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-hide-pk3", {
+        dest: "flagHidePk3",
+        help: "Hide public key #3 in the dynamic URL (if it's generated).",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-show-pk1-attest", {
+        dest: "flagShowPk1Attest",
+        help: "Display public key #1 attest signature in the dynamic URL.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-show-pk2-attest", {
+        dest: "flagShowPk2Attest",
+        help: "Display public key #2 attest signature in the dynamic URL.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-show-pk3-attest", {
+        dest: "flagShowPk3Attest",
+        help: "Display public key #3 attest signature in the dynamic URL (if it's generated).",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-show-latch1-sig", {
+        dest: "flagShowLatch1Sig",
+        help: "Display the signature of latch #1 (if latch is set).",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-show-latch2-sig", {
+        dest: "flagShowLatch2Sig",
+        help: "Display the signature of latch #2 (if latch is set).",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-hide-rndsig", {
+        dest: "flagHideRNDSIG",
+        help: "Hide \"rnd\" and \"rndsig\" fields. The counter's signature will be generated only upon manual request.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-hide-cmdres", {
+        dest: "flagHideCMDRES",
+        help: "Hide \"cmd\" and \"res\" fields. With this flag set, it will be not possible to execute commands through WebNFC.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-legacy-static", {
+        dest: "flagLegacyStatic",
+        help: "Display public keys in the legacy format, using the \"static\" field with all keys concatenated together.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-show-pkn", {
+        dest: "flagShowPkN",
+        help: "Display the public key of the selected key slot in the URL.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-show-pkn-attest", {
+        dest: "flagShowPkNAttest",
+        help: "Display the attest of the public key of the selected key slot in the URL.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--flag-rndsig-use-bjj62", {
+        dest: "flagRNDSIGUseBJJ62",
+        help: "Use BJJ key slot #62 for the \"rndsig\" signature.",
+        action: 'store_true',
+        required: false
+    });
+    parser.add_argument("--pkn", {
+        dest: "pkN",
+        help: "Key slot number for --flag-show-pkn and --flag-show-pkn-attest",
+        type: 'int',
+        required: false
+    });
+
+    return parser;
+}
+
 const parser = new ArgumentParser({
     description: 'HaLo - Command Line Tool for PC/SC'
 });
@@ -92,102 +193,7 @@ writeLatchParser.add_argument("-d", "--data", {
 });
 
 const setNDEFCfgParser = subparsers.add_parser("cfg_ndef", {help: "Configure the tag's NDEF data."});
-setNDEFCfgParser.add_argument("--flag-use-text", {
-    dest: "flagUseText",
-    help: "Use text NDEF record instead of the URL record.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-hide-pk1", {
-    dest: "flagHidePk1",
-    help: "Hide public key #1 in the dynamic URL.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-hide-pk2", {
-    dest: "flagHidePk2",
-    help: "Hide public key #2 in the dynamic URL.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-hide-pk3", {
-    dest: "flagHidePk3",
-    help: "Hide public key #3 in the dynamic URL (if it's generated).",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-show-pk1-attest", {
-    dest: "flagShowPk1Attest",
-    help: "Display public key #1 attest signature in the dynamic URL.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-show-pk2-attest", {
-    dest: "flagShowPk2Attest",
-    help: "Display public key #2 attest signature in the dynamic URL.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-show-pk3-attest", {
-    dest: "flagShowPk3Attest",
-    help: "Display public key #3 attest signature in the dynamic URL (if it's generated).",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-show-latch1-sig", {
-    dest: "flagShowLatch1Sig",
-    help: "Display the signature of latch #1 (if latch is set).",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-show-latch2-sig", {
-    dest: "flagShowLatch2Sig",
-    help: "Display the signature of latch #2 (if latch is set).",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-hide-rndsig", {
-    dest: "flagHideRNDSIG",
-    help: "Hide \"rnd\" and \"rndsig\" fields. The counter's signature will be generated only upon manual request.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-hide-cmdres", {
-    dest: "flagHideCMDRES",
-    help: "Hide \"cmd\" and \"res\" fields. With this flag set, it will be not possible to execute commands through WebNFC.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-legacy-static", {
-    dest: "flagLegacyStatic",
-    help: "Display public keys in the legacy format, using the \"static\" field with all keys concatenated together.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-show-pkn", {
-    dest: "flagShowPkN",
-    help: "Display the public key of the selected key slot in the URL.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-show-pkn-attest", {
-    dest: "flagShowPkNAttest",
-    help: "Display the attest of the public key of the selected key slot in the URL.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--flag-rndsig-use-bjj62", {
-    dest: "flagRNDSIGUseBJJ62",
-    help: "Use BJJ key slot #62 for the \"rndsig\" signature.",
-    action: 'store_true',
-    required: false
-});
-setNDEFCfgParser.add_argument("--pkn", {
-    dest: "pkN",
-    help: "Key slot number for --flag-show-pkn and --flag-show-pkn-attest",
-    type: 'int',
-    required: false
-});
+configureNDEFCFGParserArgs(setNDEFCfgParser);
 
 const genKeyParser = subparsers.add_parser("gen_key", {help: "Perform the first step of the key generation procedure."});
 genKeyParser.add_argument("-k", "--key-no", {
@@ -371,6 +377,51 @@ storeGraffitiParser.add_argument("-n", "--slot-no", {
     required: true
 });
 storeGraffitiParser.add_argument("--data", {
+    dest: 'data',
+    help: "Data to be stored (ASCII string).",
+    required: true,
+    default: ''
+});
+
+const replacePasswordStoreGraffitiParser = subparsers.add_parser("replace_password_store_graffiti", {help: "Replace key slot password and store graffiti data to the tag."});
+replacePasswordStoreGraffitiParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    'default': 3,
+    type: 'int',
+    help: "Target key slot number (default: 3)."
+});
+replacePasswordStoreGraffitiParser.add_argument("--cur-password", {
+    dest: 'currentPassword',
+    help: "Current slot password (utf-8 string).",
+    required: true
+});
+replacePasswordStoreGraffitiParser.add_argument("--new-password", {
+    dest: 'newPassword',
+    help: "New slot password (utf-8 string).",
+    required: true
+});
+replacePasswordStoreGraffitiParser.add_argument("-n", "--slot-no", {
+    dest: 'slotNo',
+    type: 'int',
+    help: "Target data slot number.",
+    required: true
+});
+replacePasswordStoreGraffitiParser.add_argument("--data", {
+    dest: 'data',
+    help: "Data to be stored (ASCII string).",
+    required: true,
+    default: ''
+});
+
+const cfgNDEFStoreGraffitiParser = subparsers.add_parser("cfg_ndef_store_graffiti", {help: "Configure the tag's NDEF data and store graffiti data to the tag."});
+configureNDEFCFGParserArgs(cfgNDEFStoreGraffitiParser);
+cfgNDEFStoreGraffitiParser.add_argument("-n", "--slot-no", {
+    dest: 'slotNo',
+    type: 'int',
+    help: "Target data slot number.",
+    required: true
+});
+cfgNDEFStoreGraffitiParser.add_argument("--data", {
     dest: 'data',
     help: "Data to be stored (ASCII string).",
     required: true,
