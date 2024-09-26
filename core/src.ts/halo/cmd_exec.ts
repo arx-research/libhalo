@@ -4,6 +4,7 @@
  * License: MIT
  */
 import {
+    HaloCmdCFGNDEFStoreGraffiti,
     HaloCmdExportKey,
     HaloCmdGetDataStruct,
     HaloCmdGetGraffiti,
@@ -13,7 +14,7 @@ import {
     HaloCmdImportKey,
     HaloCmdImportKeyInit,
     HaloCmdLoadTransportPK,
-    HaloCmdReplacePassword,
+    HaloCmdReplacePassword, HaloCmdReplacePasswordStoreGraffiti,
     HaloCmdSetPassword,
     HaloCmdSetURLSubdomain,
     HaloCmdSign,
@@ -21,7 +22,7 @@ import {
     HaloCmdSignRandom,
     HaloCmdStoreGraffiti,
     HaloCmdUnsetPassword,
-    HaloCmdWriteLatch,
+    HaloCmdWriteLatch, HaloResCFGNDEFStoreGraffiti,
     HaloResExportKey,
     HaloResGetDataStruct,
     HaloResGetGraffiti,
@@ -31,7 +32,7 @@ import {
     HaloResImportKey,
     HaloResImportKeyInit,
     HaloResLoadTransportPK,
-    HaloResReplacePassword,
+    HaloResReplacePassword, HaloResReplacePasswordStoreGraffiti,
     HaloResSetPassword,
     HaloResSetURLSubdomain,
     HaloResSign,
@@ -54,6 +55,7 @@ import {
     HaloResGenKeyFinalize,
     HaloResponseObject
 } from "../types.js";
+import {cmdCfgNDEFStoreGraffiti} from "./commands.js";
 
 export abstract class BaseHaloAPI {
     abstract executeCommand(args: HaloCommandObject, options?: HaloAPICallOptions): Promise<HaloResponseObject>;
@@ -144,5 +146,13 @@ export abstract class BaseHaloAPI {
 
     storeGraffiti(args: HaloCmdStoreGraffiti, options?: HaloAPICallOptions): Promise<HaloResStoreGraffiti> {
         return this.executeCommand({...args, name: "store_graffiti"}, options);
+    }
+
+    replacePasswordStoreGraffiti(args: HaloCmdReplacePasswordStoreGraffiti, options?: HaloAPICallOptions): Promise<HaloResReplacePasswordStoreGraffiti> {
+        return this.executeCommand({...args, name: "replace_password_store_graffiti"}, options);
+    }
+
+    cfgNDEFStoreGraffiti(args: HaloCmdCFGNDEFStoreGraffiti, options?: HaloAPICallOptions): Promise<HaloResCFGNDEFStoreGraffiti> {
+        return this.executeCommand({...args, name: "cfg_ndef_store_graffiti"}, options);
     }
 }
