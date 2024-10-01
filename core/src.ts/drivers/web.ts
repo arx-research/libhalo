@@ -30,19 +30,11 @@ function makeDefault<Type>(curValue: Type | null | undefined, defaultValue: Type
 
 /**
  * Detect the best command execution method for the current device.
- * @returns {string} Either "credential" or "webnfc".
+ * Historically, this method was trying to pick the best among "credential" or "webnfc".
+ * Right now it is going to statically return "credential" in all cases.
  */
-export function detectMethod() {
-    try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        new window.NDEFReader();
-    } catch (e) {
-        // WebNFC not supported
-        return "credential";
-    }
-
-    return "webnfc";
+export function detectMethod(): "credential" {
+    return "credential";
 }
 
 function defaultStatusCallback(cause: string, statusObj: StatusCallbackDetails) {
