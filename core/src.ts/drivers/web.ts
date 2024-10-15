@@ -6,9 +6,12 @@ import {emulatedPromptStatusCallback} from "../web/soft_prompt.js";
 import {isWebDebugEnabled} from "../halo/util.js";
 import {
     ExecHaloCmdOptions,
-    ExecHaloCmdWebOptions, HaloAPICallOptions,
-    HaloCommandObject, HaloResponseObject, HaloWebAPICallOptions,
-    HaloWebMethod, NDEFReader,
+    ExecHaloCmdWebOptions,
+    HaloCommandObject,
+    HaloResponseObject,
+    HaloWebAPICallOptions,
+    HaloWebMethod,
+    NDEFReader,
     StatusCallbackDetails
 } from "../types.js";
 import {Buffer} from 'buffer/index.js';
