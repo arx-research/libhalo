@@ -39,7 +39,7 @@ function makeDefault<Type>(curValue: Type | null | undefined, defaultValue: Type
 export function detectMethod() {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    if (navigator && navigator.userAgentData && navigator.userAgentData.brands) {
+    if (navigator && navigator.userAgentData && navigator.userAgentData.mobile && navigator.userAgentData.brands) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         const chromeVerObj = navigator.userAgentData.brands.filter(
