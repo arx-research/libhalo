@@ -8,7 +8,7 @@ import {
     ExecHaloCmdOptions,
     ExecHaloCmdWebOptions, HaloAPICallOptions,
     HaloCommandObject, HaloResponseObject, HaloWebAPICallOptions,
-    HaloWebMethod,
+    HaloWebMethod, NDEFReader,
     StatusCallbackDetails
 } from "../types.js";
 import {Buffer} from 'buffer/index.js';
@@ -33,7 +33,32 @@ function makeDefault<Type>(curValue: Type | null | undefined, defaultValue: Type
  * Historically, this method was trying to pick the best among "credential" or "webnfc".
  * Right now it is going to statically return "credential" in all cases.
  */
-export function detectMethod(): "credential" {
+export function detectMethod() {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    if (navigator && navigator.userAgentData && navigator.userAgentData.brands) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        const chromeVerObj = navigator.userAgentData.brands.filter(
+            (o: { brand: string; version: string; }) => o.brand == "Google Chrome");
+
+        if (chromeVerObj.length === 1 && typeof chromeVerObj[0].version === "string") {
+            const chromeVer = parseInt(chromeVerObj[0].version);
+
+            if (chromeVer < 124) {
+                // we want to use WebNFC on older Chrome Android (version <124)
+                // newer Chrome versions contain proper Credential API UX
+
+                try {
+                    new NDEFReader();
+                    return "webnfc";
+                } catch (e) {
+                    // pass
+                }
+            }
+        }
+    }
+
     return "credential";
 }
 
