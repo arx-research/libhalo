@@ -53,7 +53,9 @@ export function detectMethod() {
                 // newer Chrome versions contain proper Credential API UX
 
                 try {
-                    new NDEFReader();
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-expect-error
+                    new window.NDEFReader();
                     return "webnfc";
                 } catch (e) {
                     // pass
