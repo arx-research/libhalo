@@ -24,9 +24,15 @@
         <b>(Mobile only)</b>
     </p>
     <div class="mb-4">
-        <strong>Key slot number:</strong>
+        <strong>Source key slot number:</strong>
         <input type="text" class="form-control" id="keySlot" value="8">
-        <p class="text-muted">Supported key slots: 8, 9. The key on the source card must already exist.</p>
+        <p class="text-muted">Key will be exported from the indicated slot on the source tag. Supported key slots: 8, 9. The key on the source tag must already exist.</p>
+    </div>
+
+    <div class="mb-4">
+        <strong>Target key slot number:</strong>
+        <input type="text" class="form-control" id="targetKeySlot" value="8">
+        <p class="text-muted">Key will be imported into the indicated slot on the target tag. Supported key slots: 8, 9. The slot on the target tag must be empty.</p>
     </div>
 
     <div class="mb-4">
@@ -42,42 +48,42 @@
     <div class="mt-2">
         <h2>Step 1</h2>
         <button class="btn btn-secondary" onclick="btnExecuteNFC('get_transport_pk');">
-            [source card] get_transport_pk
+            [source tag] get_transport_pk
         </button>
     </div>
 
     <div class="mt-2">
         <h2>Step 2</h2>
         <button class="btn btn-secondary" onclick="btnExecuteNFC('target_load_transport_pk');">
-            [target card] load_transport_pk
+            [target tag] load_transport_pk
         </button>
     </div>
 
     <div class="mt-2">
         <h2>Step 3</h2>
         <button class="btn btn-secondary" onclick="btnExecuteNFC('source_load_transport_pk');">
-            [source card] load_transport_pk
+            [source tag] load_transport_pk
         </button>
     </div>
 
     <div class="mt-2">
         <h2>Step 4</h2>
         <button class="btn btn-secondary" onclick="btnExecuteNFC('export_key');">
-            [source card] export_key
+            [source tag] export_key
         </button>
     </div>
 
     <div class="mt-2">
         <h2>Step 5</h2>
         <button class="btn btn-secondary" onclick="btnExecuteNFC('import_key_init');">
-            [target card] import_key_init
+            [target tag] import_key_init
         </button>
     </div>
 
     <div class="mt-2">
         <h2>Step 6</h2>
         <button class="btn btn-secondary" onclick="btnExecuteNFC('import_key');">
-            [target card] import_key
+            [target tag] import_key
         </button>
     </div>
 
@@ -88,6 +94,7 @@
 
         function btnExecuteNFC(method) {
             let keyNo = document.getElementById('keySlot').value;
+            let targetKeyNo = document.getElementById('targetKeySlot').value;
             let password = document.getElementById('password').value;
 
             let command;
@@ -116,13 +123,13 @@
             } else if (method === 'import_key_init') {
                 command = {
                     name: "import_key_init",
-                    keyNo: keyNo,
+                    keyNo: targetKeyNo,
                     data: keyCT
                 };
             } else if (method === 'import_key') {
                 command = {
                     name: "import_key",
-                    keyNo: keyNo
+                    keyNo: targetKeyNo
                 };
             }
 
