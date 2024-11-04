@@ -12,10 +12,11 @@ import queryString from 'query-string';
 import {execHaloCmd, unwrapResultFromU2F, wrapCommandForU2F} from "../drivers/common.js";
 import {Buffer} from "buffer/index.js";
 import {BaseHaloAPI} from "./cmd_exec.js";
-import {SignJWT} from "jose";
+import {decodeJwt, SignJWT} from "jose";
 import {HaloLogicError, HaloTagError, NFCBadTransportError} from "./exceptions.js";
 import {arr2hex} from "./util.js";
 import {ERROR_CODES} from "./errors.js";
+import {readNDEF} from "../drivers/read_ndef.js";
 
 class HaloSimulator {
     protected url: string | null;
@@ -62,7 +63,7 @@ class HaloSimulator {
         const tmpConsoleUrl = (options.url + "/console")
             .replace("ws://", "http://")
             .replace("wss://", "https://");
-        this.consoleUrl = await this.makeSignedURL(tmpConsoleUrl, options.authSecret, options.csetId, options.simInstance, "8 hours");
+        this.consoleUrl = await this.makeSignedURL(tmpConsoleUrl, options.authSecret, options.csetId, decodeJwt(options.simInstance), "8 hours");
 
         this.ws = new WebSocketAsPromised(this.url, {
             createWebSocket: url => this.createWebSocket(url),
@@ -82,14 +83,16 @@ class HaloSimulator {
             this._onDisconnected.dispatch();
         });
 
+        const timeout = options.timeout ? options.timeout : 30000;
+        const cardReadyPacketPromise = this.waitForPacket("card_ready", timeout);
         await this.ws.open();
-        const welcomePacket = await this.waitForWelcomePacket();
+        const cardReadyPacket = await cardReadyPacketPromise;
 
         if (!this.noDebugPrints) {
             console.log('[libhalo][simulator] Connected, console URL: ', this.consoleUrl);
         }
 
-        return welcomePacket;
+        return cardReadyPacket;
     }
 
     getDisconnectReason() {
@@ -128,19 +131,19 @@ class HaloSimulator {
         }
     }
 
-    protected waitForWelcomePacket() {
+    protected waitForPacket(packetType: string, timeout: number) {
         return new Promise((resolve, reject) => {
-            const welcomeWaitTimeout = setTimeout(() => {
-                reject(new NFCBadTransportError("Server doesn't send welcome packet for 6 seconds after accepting the connection."));
-            }, 6000);
+            const packetWaitTimeout = setTimeout(() => {
+                reject(new NFCBadTransportError("Server didn't send " + packetType + " packet within " + timeout + " ms."));
+            }, timeout);
 
             this.ws!.onClose.addListener((event) => {
-                reject(new NFCBadTransportError("WebSocket closed when waiting for welcome packet. Reason: [" + event.code + "] " + event.reason));
+                reject(new NFCBadTransportError("WebSocket closed when waiting for " + packetType + " packet. Reason: [" + event.code + "] " + event.reason));
             });
 
             this.ws!.onUnpackedMessage.addListener(data => {
-                if (data.type === "welcome") {
-                    clearTimeout(welcomeWaitTimeout);
+                if (data.type === packetType) {
+                    clearTimeout(packetWaitTimeout);
                     resolve(data);
                 }
             });
@@ -233,7 +236,24 @@ class HaloSimulator {
             console.log('[libhalo][simulator] => ', command);
         }
         try {
-            res = await execHaloCmd(command, cmdOpts);
+            if (command.name === "read_ndef") {
+                const transceive = async (data: Buffer): Promise<Buffer> => {
+                    const res = await this.ws!.sendRequest({
+                        "type": "apdu",
+                        "data": data.toString('hex').toUpperCase()
+                    });
+
+                    if (res.type !== "rapdu") {
+                        throw new NFCBadTransportError("Simulator returned an incorrect packet type, expected 'rapdu', got: '" + res.type + "'");
+                    }
+
+                    return Buffer.from(res.data, "hex");
+                };
+
+                res = await readNDEF(transceive);
+            } else {
+                res = await execHaloCmd(command, cmdOpts);
+            }
         } catch (e) {
             if (!this.noDebugPrints) {
                 console.error('[libhalo][simulator] err', e);

@@ -115,6 +115,7 @@ export interface ConnectSimulatorOptions {
     csetId: string
     simInstance: string
     authSecret: string
+    timeout?: number
 }
 
 export interface BridgeEvent {
