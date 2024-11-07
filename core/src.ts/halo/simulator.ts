@@ -292,8 +292,12 @@ class SimHaloAPI extends BaseHaloAPI {
         await this.sim.swapCard(cardId);
     }
 
-    executeCommand(args: HaloCommandObject): Promise<HaloResponseObject> {
-        return this.sim.execHaloCmd(args);
+    async execRawAPDU(data: Buffer): Promise<Buffer> {
+        return await this.sim.execRawAPDU(data);
+    }
+
+    async executeCommand(args: HaloCommandObject): Promise<HaloResponseObject> {
+        return await this.sim.execHaloCmd(args);
     }
 }
 
