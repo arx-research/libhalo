@@ -20,7 +20,7 @@ yarn add @arx-research/libhalo
 Import the library method:
 
 ```javascript
-import {execHaloCmdWeb} from '@arx-research/libhalo/api/web.js';
+import {execHaloCmdWeb} from '@arx-research/libhalo/api/web';
 ```
 
 Add a state for displaying information to the user:
