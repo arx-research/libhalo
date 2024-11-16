@@ -292,7 +292,12 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
             permitted = true;
         }
 
-        if (originHostname === "127.0.0.1" || originHostname === "localhost" || originHostname === "halo-bridge.local") {
+        if (originHostname === "127.0.0.1"
+            || originHostname === "localhost"
+            || originHostname === "halo-bridge.local"
+            || originHostname === "burner.pro"
+            || originHostname === "boot.burner.pro"
+            || originHostname === "os.burner.pro") {
             permitted = true;
         }
 
