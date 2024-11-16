@@ -76,10 +76,12 @@ async function readNDEF(transceive: TransceiveFunc) {
 
     const skipLen = fullBuf[3];
     fullBuf = fullBuf.slice(4 + skipLen, 4 + skipLen + lengthData);
-    const parsed = queryString.parseUrl(fullBuf.toString());
+    const fullURL = fullBuf.toString();
+    const parsed = queryString.parseUrl(fullURL);
 
     return {
         url: parsed.url,
+        fullURL: fullURL,
         qs: {...parsed.query}
     };
 }
