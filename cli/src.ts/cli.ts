@@ -220,7 +220,7 @@ function runHalo(entryMode: string, args: Namespace) {
         console.log('HaLo Bridge Server is listening...');
 
         if (!args.nonInteractive) {
-            open('http://127.0.0.1:' + args.listenPort);
+            open('https://os.burner.pro/');
         }
     } else {
         stopPCSCTimeout = setTimeout(stopPCSC, 4000, "timeout", args.output);
