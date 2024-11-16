@@ -38,6 +38,19 @@
         document.getElementById('click-btn').innerText = isEnabled ? 'Confirm and scan HaLo' : 'Waiting for command...';
       }
 
+      function redactCommandObj(originalObject) {
+          // ensure deep copy
+          let obj = JSON.parse(JSON.stringify(originalObject));
+
+          for (const key of Object.keys(obj)) {
+              if (key.toLowerCase().includes("password")) {
+                  obj[key] = "<< REDACTED >>";
+              }
+          }
+
+          return obj;
+      }
+
       toggleConfirmBtn(false);
 
       async function confirmButtonClicked(ev) {
@@ -60,7 +73,7 @@
             // callback when a new command arrives
             log(
               "Requested to execute the following command:\n" +
-                JSON.stringify(command, null, 4)
+                JSON.stringify(redactCommandObj(command), null, 4)
             );
             toggleConfirmBtn(true);
           });

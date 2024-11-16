@@ -8,7 +8,7 @@ import path from "path";
 import os from "os";
 import util from "util";
 
-import {dirname, randomBuffer} from "./util.js";
+import {dirname, randomBuffer, redactLogObject} from "./util.js";
 import {getBuildInfo} from "./version.js";
 
 import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
@@ -320,7 +320,8 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
             }
 
             const packet = JSON.parse(data.toString('utf-8'));
-            console.log('recv', util.inspect(packet, {showHidden: false, depth: null, colors: true}));
+            const packetToPrint = redactLogObject(packet);
+            console.log('recv', util.inspect(packetToPrint, {showHidden: false, depth: null, colors: true}));
 
             if (packet.type === "exec_halo") {
                 try {

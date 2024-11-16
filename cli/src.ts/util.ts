@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'node:url';
-import { dirname as path_dirname, join as path_join } from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {dirname as path_dirname, join as path_join} from 'node:path';
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
@@ -7,6 +7,23 @@ import os from "os";
 
 function randomBuffer() {
     return Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
+}
+
+function redactLogObject(originalObject: Record<string, unknown>) {
+    // ensure deep copy
+    const obj = JSON.parse(JSON.stringify(originalObject));
+
+    if (Object.prototype.hasOwnProperty.call(obj, "command")) {
+        const cmdObj = obj["command"] as Record<string, unknown>;
+
+        for (const key of Object.keys(cmdObj)) {
+            if (key.toLowerCase().includes("password")) {
+                obj["command"][key] = "<< REDACTED >>"
+            }
+        }
+    }
+
+    return obj
 }
 
 function saveLog(log: Record<string, string | string[]>) {
@@ -63,4 +80,13 @@ if (process.pkg && process.pkg.entrypoint) {
     dirname = path_join(path_dirname(filename), '..');
 }
 
-export {dirname, randomBuffer, saveLog, getSimConfigPath, simConfigExists, getSimConfig, saveSimConfig};
+export {
+    dirname,
+    randomBuffer,
+    saveLog,
+    getSimConfigPath,
+    simConfigExists,
+    getSimConfig,
+    saveSimConfig,
+    redactLogObject
+};
