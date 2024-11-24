@@ -9,11 +9,13 @@
  * The "name" property will contain the exact error name (e.g. ERROR_CODE_INVALID_KEY_NO).
  */
 class HaloTagError extends Error {
+    public errorName: string;
     public stackOnExecutor: string | undefined;
 
     constructor(name: string, message: string, stackOnExecutor?: string) {
         super("The NFC tag encountered an error when executing command: " + message);
         this.name = name;
+        this.errorName = "HaloTagError";
         this.stackOnExecutor = stackOnExecutor;
     }
 }
@@ -23,11 +25,13 @@ class HaloTagError extends Error {
  * Check "message" property for the detailed information.
  */
 class HaloLogicError extends Error {
+    public errorName: string;
     public stackOnExecutor: string | undefined;
 
     constructor(message: string, stackOnExecutor?: string) {
         super(message);
         this.name = "HaloLogicError";
+        this.errorName = this.name;
         this.stackOnExecutor = stackOnExecutor;
     }
 }
@@ -36,9 +40,12 @@ class HaloLogicError extends Error {
  * The user has denied NFC access permission.
  */
 class NFCPermissionRequestDenied extends Error {
+    public errorName: string;
+
     constructor(message: string) {
         super(message);
         this.name = "NFCPermissionRequestDenied";
+        this.errorName = this.name;
     }
 }
 
@@ -48,9 +55,12 @@ class NFCPermissionRequestDenied extends Error {
  * for the detailed explanation.
  */
 class NFCMethodNotSupported extends Error {
+    public errorName: string;
+
     constructor(message: string) {
         super(message);
         this.name = "NFCMethodNotSupported";
+        this.errorName = this.name;
     }
 }
 
@@ -60,9 +70,12 @@ class NFCMethodNotSupported extends Error {
  * This error should be ignored on the frontend.
  */
 class NFCAbortedError extends Error {
+    public errorName: string;
+
     constructor(message: string) {
         super(message);
         this.name = "NFCAbortedError";
+        this.errorName = this.name;
     }
 }
 
@@ -71,11 +84,13 @@ class NFCAbortedError extends Error {
  * Check "message" property for more details.
  */
 class NFCOperationError extends Error {
+    public errorName: string;
     public stackOnExecutor: string | undefined;
 
     constructor(message: string, stackOnExecutor?: string) {
         super(message);
         this.name = "NFCOperationError";
+        this.errorName = this.name;
         this.stackOnExecutor = stackOnExecutor;
     }
 }
@@ -85,9 +100,12 @@ class NFCOperationError extends Error {
  * and can no longer be used without creating a completely new instance first.
  */
 class NFCBadTransportError extends Error {
+    public errorName: string;
+
     constructor(message: string) {
         super(message);
         this.name = "NFCBadTransportError";
+        this.errorName = this.name;
     }
 }
 
@@ -95,9 +113,12 @@ class NFCBadTransportError extends Error {
  * The current origin is not on the HaLo Bridge's allow list.
  */
 class NFCBridgeConsentError extends Error {
+    public errorName: string;
+
     constructor(message: string) {
         super(message);
         this.name = "NFCBridgeConsentError";
+        this.errorName = this.name;
     }
 }
 
@@ -105,10 +126,12 @@ class NFCBridgeConsentError extends Error {
  * Bridge has encountered an internal unexpected error.
  */
 class NFCBridgeUnexpectedError extends Error {
+    public errorName: string;
     public stackOnExecutor: string;
 
     constructor(message: string, stackOnExecutor: string) {
         super(message);
+        this.errorName = this.name;
         this.stackOnExecutor = stackOnExecutor;
     }
 }
@@ -117,10 +140,12 @@ class NFCBridgeUnexpectedError extends Error {
  * Gateway has encountered an internal unexpected error.
  */
 class NFCGatewayUnexpectedError extends Error {
+    public errorName: string;
     public stackOnExecutor: string;
 
     constructor(message: string, stackOnExecutor: string) {
         super(message);
+        this.errorName = this.name;
         this.stackOnExecutor = stackOnExecutor;
     }
 }

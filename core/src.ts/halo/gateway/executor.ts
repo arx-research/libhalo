@@ -104,7 +104,9 @@ async function haloGateExecutorUserConfirm(logCallback: ExecutorLogCallback) {
         res = {
             status: "exception",
             exception: {
-                kind: err.constructor.name,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                kind: err.errorName ?? err.constructor.name,
                 name: err.name,
                 message: err.message,
                 stack: err.stack

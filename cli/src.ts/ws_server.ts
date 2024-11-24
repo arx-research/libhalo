@@ -344,7 +344,9 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
                         "uid": packet.uid,
                         "data": {
                             "exception": {
-                                "kind": e.constructor.name,
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-expect-error
+                                "kind": e.errorName ?? e.constructor.name,
                                 "name": e.name,
                                 "message": e.message,
                                 "stack": e.stack
