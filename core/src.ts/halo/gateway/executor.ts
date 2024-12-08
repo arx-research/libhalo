@@ -89,14 +89,29 @@ async function haloGateExecutorCreateWs(logCallback: ExecutorLogCallback, newCom
 
 async function haloGateExecutorUserConfirm(logCallback: ExecutorLogCallback) {
     let res;
+    let options = {};
+
+    const credentialExecCmds = [
+        "get_transport_pk",
+        "load_transport_pk",
+        "export_key",
+        "import_key_init",
+        "import_key"
+    ];
+
     const nonce = currentCmd.nonce;
+
+    if (currentCmd && currentCmd.command && currentCmd.command.name
+            && credentialExecCmds.indexOf(currentCmd.command.name) !== -1) {
+        options = {"method": "credential"};
+    }
 
     logCallback('Please tap HaLo tag to the back of your smartphone and hold it for a while...');
 
     try {
         res = {
             status: "success",
-            output: await execHaloCmdWeb(currentCmd.command)
+            output: await execHaloCmdWeb(currentCmd.command, options)
         };
     } catch (e) {
         const err = e as Error;
