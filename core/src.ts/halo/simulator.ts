@@ -13,7 +13,7 @@ import {execHaloCmd, unwrapResultFromU2F, wrapCommandForU2F} from "../drivers/co
 import {Buffer} from "buffer/index.js";
 import {BaseHaloAPI} from "./cmd_exec.js";
 import {decodeJwt, SignJWT} from "jose";
-import {HaloLogicError, HaloTagError, NFCBadTransportError} from "./exceptions.js";
+import {HaloLogicError, HaloTagError, NFCBadTransportError, NFCOperationError} from "./exceptions.js";
 import {arr2hex} from "./util.js";
 import {ERROR_CODES} from "./errors.js";
 import {readNDEF} from "../drivers/read_ndef.js";
@@ -50,9 +50,11 @@ class HaloSimulator {
     }
 
     async makeSignedURL(url: string, authSecret: string, csetId: string, simInstance: string, exp: string) {
-        return queryString.stringifyUrl({url: url, query: {
-            jwt: await this.signJWT(url, authSecret, csetId, simInstance, exp)
-        }});
+        return queryString.stringifyUrl({
+            url: url, query: {
+                jwt: await this.signJWT(url, authSecret, csetId, simInstance, exp)
+            }
+        });
     }
 
     async connect(options: ConnectSimulatorOptions) {
@@ -160,6 +162,10 @@ class HaloSimulator {
     }
 
     protected unwrapRAPDU(response: Record<string, string>) {
+        if (response.type === "transceive-fail") {
+            throw new NFCOperationError("Simulated transceive failure.")
+        }
+
         if (response.type !== "rapdu") {
             throw new NFCBadTransportError("Simulator returned an incorrect packet type, expected 'rapdu', got: '" + response.type + "'");
         }
@@ -179,6 +185,10 @@ class HaloSimulator {
             "type": "apdu",
             "data": data.toString('hex').toUpperCase()
         });
+
+        if (res.type === "transceive-fail") {
+            throw new NFCOperationError("Simulated transceive failure.")
+        }
 
         if (res.type !== "rapdu") {
             throw new Error("Unexpected packet returned by simulator.");
@@ -205,11 +215,13 @@ class HaloSimulator {
                         "data": wrappedCmd.toString('hex').toUpperCase() // execute wrapped command
                     }));
                 } catch (e) {
-                    if (e instanceof NFCBadTransportError || e instanceof HaloLogicError) {
+                    if (e instanceof NFCOperationError
+                        || e instanceof NFCBadTransportError
+                        || e instanceof HaloLogicError) {
                         throw e;
                     }
 
-                    throw new NFCBadTransportError("Failed to send command to the simulator: " + (<Error> e).toString());
+                    throw new NFCBadTransportError("Failed to send command to the simulator: " + (<Error>e).toString());
                 }
 
                 const unwrappedRes = unwrapResultFromU2F(execRes.slice(0, -2));
