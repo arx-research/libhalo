@@ -1,6 +1,6 @@
 {
   "name": "@arx-research/halocli",
-  "version": "1.10.11",
+  "version": "1.10.12",
   "description": "HaLo Command Line Interface Tool for PC/SC",
   "contributors": [
     {
@@ -46,7 +46,7 @@
     "@arx-research/libhalo": "../core",
     "argparse": "^2.0.1",
     "bufferutil": "^4.0.8",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "nfc-pcsc": "^0.8.1",
     "nunjucks": "^3.2.4",
@@ -68,7 +68,7 @@
     "ts-loader": "^9.5.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.16.0",
-    "webpack": "^5.92.1",
+    "webpack": "^5.98.0",
     "webpack-cli": "^5.1.4"
   }
 }
