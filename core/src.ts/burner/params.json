@@ -1,0 +1,22 @@
+{
+  "chainId": 8453,
+  "safeContractParams": {
+    "safeProxyFactoryAddress": "0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67",
+    "safeSingletonAddress": "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+    "fallbackHandler": "0x75cf11467937ce3F2f357CE24ffc3DBF8fD5c226",
+    "multisendAddress": "0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526",
+    "setUpContractAddress": "0x2dd68b007B46fBe91B9A7c3EDa5A7a1063cB5b47",
+    "safeWebAuthnSharedSignerContractAddress": "0xfD90FAd33ee8b58f32c00aceEad1358e4AFC23f9",
+    "safeWebAuthnSignerFactory": "0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf",
+    "p256Verifier": "0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765",
+    "safe4337ModuleAddress": "0x75cf11467937ce3F2f357CE24ffc3DBF8fD5c226",
+    "migrationContractAddress": "0x526643F69b81B008F46d95CD5ced5eC0edFFDaC6"
+  },
+  "recoveryParams": {
+    "moduleFactoryAddress": "0x000000000000aDdB49795b0f9bA5BC298cDda236",
+    "delayModuleAddress": "0xd54895B1121A2eE3f37b502F507631FA1331BED6",
+    "recoveryCooldown": 86400,
+    "recoveryExpiration": 604800,
+    "guardianAddress": "0x7804C019128438994cC9b5f9e9a8FC35f27Ac5d9"
+  }
+}
