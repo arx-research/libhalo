@@ -80,7 +80,7 @@
     "@types/pbkdf2": "^3.1.2",
     "@types/qrcode": "^1.5.5",
     "crypto-browserify": "^3.12.0",
-    "eslint": "8.57.1",
+    "eslint": "^9.22.0",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "ts-loader": "^9.5.1",
