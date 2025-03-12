@@ -71,6 +71,7 @@
     "qrcode": "^1.5.3",
     "query-string": "^9.0.0",
     "strongly-typed-events": "^3.0.11",
+    "viem": "2.23.10",
     "websocket-as-promised": "^2.1.0"
   },
   "peerDependencies": {
@@ -82,7 +83,7 @@
     "@types/pbkdf2": "^3.1.2",
     "@types/qrcode": "^1.5.5",
     "crypto-browserify": "^3.12.0",
-    "eslint": "^9.7.0",
+    "eslint": "8.57.1",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "ts-loader": "^9.5.1",

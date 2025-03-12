@@ -28,6 +28,7 @@ jobs:
         run: |
           cd core
           yarn install --frozen-lockfile --production=false
+          npx --yes check-peer-dependencies --yarn --install
       - name: Run tsc (root)
         run: |
           cd core
