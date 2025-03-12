@@ -144,10 +144,11 @@ jobs:
         with:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
-      - name: Run npm ci
+      - name: Run yarn install
         run: |
           cd core
           yarn install --frozen-lockfile --production=false
+          yarn install-peers -f
           ./node_modules/.bin/tsc
           ./node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
