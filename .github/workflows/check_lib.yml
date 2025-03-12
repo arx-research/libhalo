@@ -28,6 +28,7 @@ jobs:
         run: |
           cd core
           yarn install --frozen-lockfile --production=false
+          yarn install-peers -f
       - name: Run tsc (root)
         run: |
           cd core
