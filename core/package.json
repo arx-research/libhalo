@@ -71,11 +71,8 @@
     "qrcode": "^1.5.3",
     "query-string": "^9.0.0",
     "strongly-typed-events": "^3.0.11",
-    "viem": "2.23.10",
+    "viem": "^2.23.10",
     "websocket-as-promised": "^2.1.0"
-  },
-  "peerDependencies": {
-    "viem": "^2.23.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.7.0",

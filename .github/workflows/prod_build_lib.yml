@@ -58,7 +58,6 @@ jobs:
         run: |
           cd core
           yarn install --frozen-lockfile --production=false
-          npx --yes check-peer-dependencies --yarn --install
       - name: Run webpack
         run: |
           cd core
