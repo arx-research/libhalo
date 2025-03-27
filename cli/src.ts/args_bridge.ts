@@ -33,6 +33,12 @@ parser.add_argument("-a", "--allow-origins", {
     default: null,
     dest: "allowOrigins"
 });
+parser.add_argument("--require-origin", {
+    help: "Drop connection if Origin header was not provided at all",
+    dest: "requireOrigin",
+    action: "store_true",
+    default: false,
+});
 parser.add_argument("--non-interactive", {
     help: "Non-interactive mode (don't launch the web browser)",
     dest: "nonInteractive",

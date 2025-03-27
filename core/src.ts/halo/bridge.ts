@@ -121,10 +121,6 @@ class HaloBridge {
             throw new NFCBadTransportError("Bridge is not open.");
         }
 
-        if (this.lastHandle) {
-            return this.lastHandle;
-        }
-
         return new Promise((resolve, reject) => {
             const msgListener = (data: BridgeEvent) => {
                 if (data.event === "handle_added") {
@@ -152,6 +148,17 @@ class HaloBridge {
                 this.ws.onUnpackedMessage.addListener(msgListener);
                 this.ws.onClose.addListener(closeListener);
             }
+
+            setTimeout(() => {
+                if (this.lastHandle) {
+                    if (this.ws) {
+                        this.ws.onUnpackedMessage.removeListener(msgListener);
+                        this.ws.onClose.removeListener(closeListener);
+                    }
+
+                    resolve(this.lastHandle);
+                }
+            }, 0)
         });
     }
 

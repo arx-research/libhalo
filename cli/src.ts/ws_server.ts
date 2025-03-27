@@ -271,13 +271,15 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
         }
 
         let permitted = false;
-        let originHostname;
+        let originHostname = "(none)";
 
-        try {
-            originHostname = new URL(req.headers.origin!).hostname;
-        } catch (e) {
-            ws.close(4003, "Failed to parse origin URL.");
-            return;
+        if (typeof req.headers.origin !== "undefined" || args.requireOrigin) {
+            try {
+                originHostname = new URL(req.headers.origin!).hostname;
+            } catch (e) {
+                ws.close(4003, "Failed to parse origin URL.");
+                return;
+            }
         }
 
         if (args.allowOrigins) {
@@ -292,7 +294,8 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
             permitted = true;
         }
 
-        if (originHostname === "127.0.0.1"
+        if (originHostname === "(none)"
+            || originHostname === "127.0.0.1"
             || originHostname === "localhost"
             || originHostname === "halo-bridge.local"
             || originHostname === "burner.pro"
