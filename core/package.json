@@ -1,6 +1,6 @@
 {
   "name": "@arx-research/libhalo",
-  "version": "1.10.15",
+  "version": "1.10.16",
   "description": "LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.",
   "contributors": [
     {
@@ -65,32 +65,32 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "elliptic": "^6.6.1",
-    "ethers": "^6.13.1",
-    "jose": "^5.6.3",
+    "ethers": "^6.13.5",
+    "jose": "^6.0.10",
     "js-sha256": "^0.11.0",
     "pbkdf2": "^3.1.2",
-    "qrcode": "^1.5.3",
-    "query-string": "^9.0.0",
+    "qrcode": "^1.5.4",
+    "query-string": "^9.1.1",
     "strongly-typed-events": "^3.0.11",
-    "websocket-as-promised": "^2.1.0"
+    "websocket-as-promised": "^3.0.0"
   },
   "peerDependencies": {
-    "viem": "^2.23.10"
+    "viem": "^2.27.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.7.0",
+    "@eslint/js": "^9.25.0",
     "@types/elliptic": "^6.4.18",
     "@types/pbkdf2": "^3.1.2",
     "@types/qrcode": "^1.5.5",
     "crypto-browserify": "^3.12.0",
-    "eslint": "^9.22.0",
+    "eslint": "^9.25.0",
     "install-peers-cli": "^2.2.0",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
-    "ts-loader": "^9.5.1",
-    "typescript": "^5.5.3",
-    "typescript-eslint": "^7.16.0",
-    "webpack": "^5.98.0",
-    "webpack-cli": "^5.1.4"
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "webpack": "^5.99.6",
+    "webpack-cli": "^6.0.1"
   }
 }
