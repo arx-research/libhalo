@@ -20,7 +20,6 @@ import {
     parsePublicKeys, convertSignature, recoverPublicKey, sigToDer,
     SECP256k1_ORDER, BJJ_ORDER
 } from "../halo/util.js";
-import {createViemHaloAccount} from "../viem_account.js"
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
@@ -32,9 +31,6 @@ export {
     // internal - for testing
     HaloSimulator,
     SimHaloAPI,
-
-    // for Viem integration
-    createViemHaloAccount,
 
     // exported utils
     parsePublicKeys as haloParsePublicKeys,
