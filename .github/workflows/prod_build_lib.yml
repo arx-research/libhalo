@@ -58,7 +58,6 @@ jobs:
         run: |
           cd core
           yarn install --frozen-lockfile --production=false
-          yarn install-peers -f
       - name: Run webpack
         run: |
           cd core
@@ -148,7 +147,6 @@ jobs:
         run: |
           cd core
           yarn install --frozen-lockfile --production=false
-          yarn install-peers -f
           ./node_modules/.bin/tsc
           ./node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
