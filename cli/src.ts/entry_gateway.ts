@@ -372,7 +372,7 @@ function createServer(args: Namespace) {
         }
 
         if (sobj.themeName === 'default') {
-            res.render('gateway_index.html');
+            res.render('gateway_executor.html');
         } else {
             let data;
 
