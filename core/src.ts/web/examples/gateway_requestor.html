@@ -48,6 +48,10 @@
         <p class="text-muted">Only for debugging. It's recommended to keep this as it is.</p>
     </div>
     <div class="mb-3">
+        <label class="form-label">Override theme name</label>
+        <input type="text" class="form-control" id="theme_name" value="default">
+    </div>
+    <div class="mb-3">
         <label class="form-label">How would you like to sign the message</label>
         <select class="form-select" id="signMethod" onchange="onChangeSelect(this);">
             <option value="message" selected>EIP191</option>
@@ -107,10 +111,10 @@
             const rnd = new Uint8Array(6);
             crypto.getRandomValues(rnd);
 
-            const msgBuffer = new TextEncoder().encode(rnd);     
+            const msgBuffer = new TextEncoder().encode(rnd);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
-  
+
             const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
             document.getElementById('digest').value = hashHex;
@@ -138,7 +142,8 @@
             const cmd = generateCmd();
 
             document.getElementById('pairSignBtn').disabled = true;
-            gate = new HaloGateway(document.getElementById('gatewayURL').value);
+            const themeName = document.getElementById('theme_name').value;
+            gate = new HaloGateway(document.getElementById('gatewayURL').value, { themeName: themeName });
 
             if (document.getElementById('httpURL').value) {
                 gate.gatewayServerHttp = document.getElementById('httpURL').value;

@@ -35,6 +35,7 @@ interface SocketState {
     executor: WebSocket | null
     requestUID: null
     reconnects: number
+    themeName: string
 }
 
 const sessionIds: Record<string, SocketState> = {};
@@ -68,7 +69,8 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
         "requestor": ws,
         "executor": null,
         "requestUID": null,
-        "reconnects": 0
+        "reconnects": 0,
+        "themeName": "default",
     };
 
     const sobj = sessionIds[sessionId];
@@ -96,7 +98,18 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
             return;
         }
 
-        if (obj.type === "request_cmd") {
+        if (obj.type === "set_theme") {
+            if (typeof obj.themeName !== "string" || !(/^([a-z0-9_]+)$/.test(obj.themeName))) {
+                sobj.requestor.close(4055, "Protocol error on requestor side.");
+            }
+
+            console.log('[' + sessionId + '] Set theme: ' + obj.themeName);
+            sobj.themeName = obj.themeName;
+            sobj.requestor.send(JSON.stringify({
+                "type": "set_theme_ack",
+                "uid": obj.uid
+            }));
+        } else if (obj.type === "request_cmd") {
             if (sobj.requestUID !== null) {
                 sobj.requestor.close(4055, "Protocol error on requestor side.");
             } else if (sobj.executor) {
@@ -315,6 +328,7 @@ function createServer(args: Namespace) {
 
     app.use(express.urlencoded({extended: false}));
     app.use('/assets/static', express.static(dirname + '/assets/static'));
+    app.use('/themes', express.static('themes'))
 
     nunjucks.configure(dirname + '/assets/views', {
         autoescape: true,
@@ -330,7 +344,34 @@ function createServer(args: Namespace) {
     });
 
     app.get('/e', (req, res) => {
-        res.render('gateway_executor.html');
+        const sessionId = req.query.id;
+
+        if (!sessionId || typeof sessionId !== 'string') {
+            res.status(400).type('text/plain').send('Missing session ID.');
+            return;
+        }
+
+        const sobj = sessionIds[sessionId]
+
+        if (!sobj) {
+            res.status(400).type('text/plain').send('Invalid session ID.');
+            return;
+        }
+
+        if (sobj.themeName === 'default') {
+            res.render('gateway_index.html');
+        } else {
+            let data;
+
+            try {
+                data = fs.readFileSync('themes/' + sobj.themeName + '/gateway_executor.html', {encoding: 'utf-8'});
+            } catch (e) {
+                res.status(400).type('text/plain').send('Invalid theme name.');
+                return;
+            }
+
+            res.send(data);
+        }
     });
 
     app.get('/ws', (req, res) => {
@@ -384,7 +425,7 @@ function createServer(args: Namespace) {
         }
     });
 
-    console.log('HaLo Gateway server is listening...');
+    console.log('HaLo Gateway server is listening on ' + args.listenHost + ':' + args.listenPort);
 }
 
 printVersionInfo();
