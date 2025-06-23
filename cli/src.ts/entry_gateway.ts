@@ -38,9 +38,20 @@ interface SocketState {
     themeName: string
 }
 
+const cachedFiles: Record<string, string> = {};
 const sessionIds: Record<string, SocketState> = {};
 let cachedStatsObj: unknown | null = null;
 let cachedStatsTimestamp: number = +new Date();
+
+function loadCachedFile(path: string) {
+    if (Object.prototype.hasOwnProperty.call(cachedFiles, path)) {
+        return cachedFiles[path];
+    }
+
+    const data = fs.readFileSync(path, {encoding: "utf-8"});
+    cachedFiles[path] = data;
+    return data;
+}
 
 function processRequestor(ws: WebSocket, req: IncomingMessage) {
     if (Object.keys(sessionIds).length >= MAX_SESSION_LIMIT) {
@@ -366,7 +377,13 @@ function createServer(args: Namespace) {
             let data;
 
             try {
-                data = fs.readFileSync('themes/' + sobj.themeName + '/gateway_executor.html', {encoding: 'utf-8'});
+                const filePath = path_join('themes', sobj.themeName, 'gateway_executor.html');
+
+                if (!args.disableCache) {
+                    data = loadCachedFile(filePath);
+                } else {
+                    data = fs.readFileSync(filePath, { encoding: 'utf-8' });
+                }
             } catch (e) {
                 res.status(400).type('text/plain').send('Invalid theme name.');
                 return;

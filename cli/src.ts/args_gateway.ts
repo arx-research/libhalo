@@ -27,6 +27,12 @@ parser.add_argument("-d", "--disable-stats", {
     dest: "disableStats",
     action: "store_true"
 });
+parser.add_argument("--disable-cache", {
+    help: "Whether to disable template caching for easier development",
+    default: false,
+    dest: "disableCache",
+    action: "store_true"
+});
 
 function parseArgs() {
     return parser.parse_args();
