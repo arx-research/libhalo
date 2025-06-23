@@ -1,6 +1,6 @@
 {
   "name": "@arx-research/halocli",
-  "version": "1.10.16",
+  "version": "1.12.0",
   "description": "HaLo Command Line Interface Tool for PC/SC",
   "contributors": [
     {
