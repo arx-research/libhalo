@@ -101,3 +101,4 @@ The Gateway could allow to use a compatible web application on the desktop compu
 
 Guides:
 * [Using HaLo Gateway](https://github.com/arx-research/libhalo/blob/master/docs/halo-gateway.md)
+* [Creating custom themes for HaLo Gateway](https://github.com/arx-research/libhalo/blob/master/docs/gateway-custom-themes.md)
