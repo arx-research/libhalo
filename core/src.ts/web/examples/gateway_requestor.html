@@ -68,6 +68,7 @@
     </div>
     <button class="btn btn-primary" id="pairSignBtn" onclick="btnSignMessageClicked();">Pair and request to sign with key #1</button>
     <button class="btn btn-secondary" id="signBtn" onclick="btnInitiateSessClicked();">Request another signature with key #1</button>
+    <button class="btn btn-secondary" id="disconnectBtn" onclick="btnDisconnectClicked();">Disconnect</button>
 
     <br>
     <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
@@ -105,6 +106,7 @@
             document.getElementById('message').value = arr2hex(rnd);
             document.getElementById('signBtn').disabled = true;
             document.getElementById('signBtn').style.display = 'none';
+            document.getElementById('disconnectBtn').style.display = 'none';
         }
 
         async function generateRandomDigest() {
@@ -139,7 +141,10 @@
         }
 
         async function btnSignMessageClicked() {
-            const cmd = generateCmd();
+            document.getElementById('statusText').innerText = '';
+            document.getElementById('qr').style.display = 'none';
+            document.getElementById('qr-link').href = 'about:blank';
+            document.getElementById('qr-link').innerText = '';
 
             document.getElementById('pairSignBtn').disabled = true;
             const themeName = document.getElementById('theme_name').value;
@@ -152,6 +157,7 @@
             try {
                 let pairInfo = await gate.startPairing();
                 console.log('URL in the QR code:', pairInfo.execURL);
+                document.getElementById('qr').style.display = 'block';
                 document.getElementById('qr').src = pairInfo.qrCode;
                 document.getElementById('qr-link').href = pairInfo.execURL;
                 document.getElementById('qr-link').innerText = pairInfo.execURL;
@@ -159,9 +165,10 @@
                     'Server version: ' + pairInfo.serverVersion.tagName + '; ' + pairInfo.serverVersion.commitId;
                 log('Please scan the QR code presented below with your smartphone.');
             } catch (e) {
-                document.getElementById('pairSignBtn').disabled = false;
                 log('Failed to start pairing: ' + e.stack);
             }
+
+            document.getElementById('pairSignBtn').disabled = false;
 
             try {
                 await gate.waitConnected();
@@ -179,7 +186,8 @@
             await btnInitiateSessClicked();
 
             document.getElementById('pairSignBtn').style.display = 'none';
-            document.getElementById('signBtn').style.display = 'block';
+            document.getElementById('signBtn').style.display = 'inline';
+            document.getElementById('disconnectBtn').style.display = 'inline';
         }
 
         async function btnInitiateSessClicked() {
@@ -196,6 +204,19 @@
             }
 
             document.getElementById('signBtn').disabled = false;
+        }
+
+        async function btnDisconnectClicked() {
+            if (gate) {
+                await gate.close();
+            }
+
+            document.getElementById('pairSignBtn').style.display = 'inline';
+            document.getElementById('signBtn').style.display = 'none';
+            document.getElementById('disconnectBtn').style.display = 'none';
+            document.getElementById('qr').style.display = 'none';
+            document.getElementById('qr-link').href = 'about:blank';
+            document.getElementById('qr-link').innerText = '';
         }
     </script>
 </div>
