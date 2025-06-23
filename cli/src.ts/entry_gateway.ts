@@ -99,8 +99,10 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
         }
 
         if (obj.type === "set_theme") {
-            if (typeof obj.themeName !== "string" || !(/^([a-z0-9_]+)$/.test(obj.themeName))) {
+            if (typeof obj.themeName !== "string" || obj.themeName.length < 3 || !(/^([a-z0-9_]+)$/.test(obj.themeName))) {
+                console.log('[' + sessionId + '] Received invalid set_theme packet. Theme name must be at least 3 characters long, and may only contain the following: a-z, 0-9 and _.');
                 sobj.requestor.close(4055, "Protocol error on requestor side.");
+                return;
             }
 
             console.log('[' + sessionId + '] Set theme: ' + obj.themeName);
