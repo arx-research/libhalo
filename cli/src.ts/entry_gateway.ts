@@ -35,11 +35,23 @@ interface SocketState {
     executor: WebSocket | null
     requestUID: null
     reconnects: number
+    themeName: string
 }
 
+const cachedFiles: Record<string, string> = {};
 const sessionIds: Record<string, SocketState> = {};
 let cachedStatsObj: unknown | null = null;
 let cachedStatsTimestamp: number = +new Date();
+
+function loadCachedFile(path: string) {
+    if (Object.prototype.hasOwnProperty.call(cachedFiles, path)) {
+        return cachedFiles[path];
+    }
+
+    const data = fs.readFileSync(path, {encoding: "utf-8"});
+    cachedFiles[path] = data;
+    return data;
+}
 
 function processRequestor(ws: WebSocket, req: IncomingMessage) {
     if (Object.keys(sessionIds).length >= MAX_SESSION_LIMIT) {
@@ -68,7 +80,8 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
         "requestor": ws,
         "executor": null,
         "requestUID": null,
-        "reconnects": 0
+        "reconnects": 0,
+        "themeName": "default",
     };
 
     const sobj = sessionIds[sessionId];
@@ -96,7 +109,20 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
             return;
         }
 
-        if (obj.type === "request_cmd") {
+        if (obj.type === "set_theme") {
+            if (typeof obj.themeName !== "string" || obj.themeName.length < 3 || !(/^([a-z0-9_]+)$/.test(obj.themeName))) {
+                console.log('[' + sessionId + '] Received invalid set_theme packet. Theme name must be at least 3 characters long, and may only contain the following: a-z, 0-9 and _.');
+                sobj.requestor.close(4055, "Protocol error on requestor side.");
+                return;
+            }
+
+            console.log('[' + sessionId + '] Set theme: ' + obj.themeName);
+            sobj.themeName = obj.themeName;
+            sobj.requestor.send(JSON.stringify({
+                "type": "set_theme_ack",
+                "uid": obj.uid
+            }));
+        } else if (obj.type === "request_cmd") {
             if (sobj.requestUID !== null) {
                 sobj.requestor.close(4055, "Protocol error on requestor side.");
             } else if (sobj.executor) {
@@ -315,6 +341,7 @@ function createServer(args: Namespace) {
 
     app.use(express.urlencoded({extended: false}));
     app.use('/assets/static', express.static(dirname + '/assets/static'));
+    app.use('/themes', express.static('themes'))
 
     nunjucks.configure(dirname + '/assets/views', {
         autoescape: true,
@@ -330,7 +357,40 @@ function createServer(args: Namespace) {
     });
 
     app.get('/e', (req, res) => {
-        res.render('gateway_executor.html');
+        const sessionId = req.query.id;
+
+        if (!sessionId || typeof sessionId !== 'string') {
+            res.status(400).type('text/plain').send('Missing session ID.');
+            return;
+        }
+
+        const sobj = sessionIds[sessionId]
+
+        if (!sobj) {
+            res.status(400).type('text/plain').send('Invalid session ID.');
+            return;
+        }
+
+        if (sobj.themeName === 'default') {
+            res.render('gateway_index.html');
+        } else {
+            let data;
+
+            try {
+                const filePath = path_join('themes', sobj.themeName, 'gateway_executor.html');
+
+                if (!args.disableCache) {
+                    data = loadCachedFile(filePath);
+                } else {
+                    data = fs.readFileSync(filePath, { encoding: 'utf-8' });
+                }
+            } catch (e) {
+                res.status(400).type('text/plain').send('Invalid theme name.');
+                return;
+            }
+
+            res.send(data);
+        }
     });
 
     app.get('/ws', (req, res) => {
@@ -384,7 +444,7 @@ function createServer(args: Namespace) {
         }
     });
 
-    console.log('HaLo Gateway server is listening...');
+    console.log('HaLo Gateway server is listening on ' + args.listenHost + ':' + args.listenPort);
 }
 
 printVersionInfo();

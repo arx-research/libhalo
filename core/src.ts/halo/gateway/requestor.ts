@@ -38,11 +38,14 @@ class HaloGateway {
     private gatewayServer: string;
     private gatewayServerHttp: string;
 
+    private themeName: string;
+
     private ws: WebSocketAsPromised;
     private _onDisconnected = new SignalDispatcher();
 
     constructor(gatewayServer: string, options: {
         createWebSocket?: (url: string) => WebSocket
+        themeName?: string
     }) {
         this.jweUtil = new JWEUtil();
         this.isRunning = false;
@@ -52,6 +55,7 @@ class HaloGateway {
 
         this.lastCommand = null;
         this.gatewayServer = gatewayServer;
+        this.themeName = options.themeName ?? 'default'
 
         options = Object.assign({}, options);
         const createWebSocket = options.createWebSocket ? options.createWebSocket : (url: string) => new WebSocket(url);
@@ -156,6 +160,13 @@ class HaloGateway {
         const welcomeMsg = promiseRes[1] as GatewayWelcomeMsg;
 
         const serverVersion = welcomeMsg.serverVersion;
+
+        if (serverVersion.commitId === 'SNAPSHOT' || (serverVersion.version[0] >= 1 && serverVersion.version[1] >= 12)) {
+            await this.ws.sendRequest({
+                "type": "set_theme",
+                "themeName": this.themeName,
+            })
+        }
 
         /**
          * URL format in the QR Code:

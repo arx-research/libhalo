@@ -48,6 +48,10 @@
         <p class="text-muted">Only for debugging. It's recommended to keep this as it is.</p>
     </div>
     <div class="mb-3">
+        <label class="form-label">Override theme name</label>
+        <input type="text" class="form-control" id="theme_name" value="default">
+    </div>
+    <div class="mb-3">
         <label class="form-label">How would you like to sign the message</label>
         <select class="form-select" id="signMethod" onchange="onChangeSelect(this);">
             <option value="message" selected>EIP191</option>
@@ -64,6 +68,7 @@
     </div>
     <button class="btn btn-primary" id="pairSignBtn" onclick="btnSignMessageClicked();">Pair and request to sign with key #1</button>
     <button class="btn btn-secondary" id="signBtn" onclick="btnInitiateSessClicked();">Request another signature with key #1</button>
+    <button class="btn btn-secondary" id="disconnectBtn" onclick="btnDisconnectClicked();">Disconnect</button>
 
     <br>
     <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
@@ -101,16 +106,17 @@
             document.getElementById('message').value = arr2hex(rnd);
             document.getElementById('signBtn').disabled = true;
             document.getElementById('signBtn').style.display = 'none';
+            document.getElementById('disconnectBtn').style.display = 'none';
         }
 
         async function generateRandomDigest() {
             const rnd = new Uint8Array(6);
             crypto.getRandomValues(rnd);
 
-            const msgBuffer = new TextEncoder().encode(rnd);     
+            const msgBuffer = new TextEncoder().encode(rnd);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
-  
+
             const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
             document.getElementById('digest').value = hashHex;
@@ -135,10 +141,14 @@
         }
 
         async function btnSignMessageClicked() {
-            const cmd = generateCmd();
+            document.getElementById('statusText').innerText = '';
+            document.getElementById('qr').style.display = 'none';
+            document.getElementById('qr-link').href = 'about:blank';
+            document.getElementById('qr-link').innerText = '';
 
             document.getElementById('pairSignBtn').disabled = true;
-            gate = new HaloGateway(document.getElementById('gatewayURL').value);
+            const themeName = document.getElementById('theme_name').value;
+            gate = new HaloGateway(document.getElementById('gatewayURL').value, { themeName: themeName });
 
             if (document.getElementById('httpURL').value) {
                 gate.gatewayServerHttp = document.getElementById('httpURL').value;
@@ -147,6 +157,7 @@
             try {
                 let pairInfo = await gate.startPairing();
                 console.log('URL in the QR code:', pairInfo.execURL);
+                document.getElementById('qr').style.display = 'block';
                 document.getElementById('qr').src = pairInfo.qrCode;
                 document.getElementById('qr-link').href = pairInfo.execURL;
                 document.getElementById('qr-link').innerText = pairInfo.execURL;
@@ -154,9 +165,10 @@
                     'Server version: ' + pairInfo.serverVersion.tagName + '; ' + pairInfo.serverVersion.commitId;
                 log('Please scan the QR code presented below with your smartphone.');
             } catch (e) {
-                document.getElementById('pairSignBtn').disabled = false;
                 log('Failed to start pairing: ' + e.stack);
             }
+
+            document.getElementById('pairSignBtn').disabled = false;
 
             try {
                 await gate.waitConnected();
@@ -174,7 +186,8 @@
             await btnInitiateSessClicked();
 
             document.getElementById('pairSignBtn').style.display = 'none';
-            document.getElementById('signBtn').style.display = 'block';
+            document.getElementById('signBtn').style.display = 'inline';
+            document.getElementById('disconnectBtn').style.display = 'inline';
         }
 
         async function btnInitiateSessClicked() {
@@ -191,6 +204,19 @@
             }
 
             document.getElementById('signBtn').disabled = false;
+        }
+
+        async function btnDisconnectClicked() {
+            if (gate) {
+                await gate.close();
+            }
+
+            document.getElementById('pairSignBtn').style.display = 'inline';
+            document.getElementById('signBtn').style.display = 'none';
+            document.getElementById('disconnectBtn').style.display = 'none';
+            document.getElementById('qr').style.display = 'none';
+            document.getElementById('qr-link').href = 'about:blank';
+            document.getElementById('qr-link').innerText = '';
         }
     </script>
 </div>
