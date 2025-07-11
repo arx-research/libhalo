@@ -29,7 +29,7 @@ async function execCoreCommandRN(nfcManager: RNNFCManager, command: Buffer) {
     checkErrors(res);
 
     return {
-        result: res.toString('hex'),
+        result: res.slice(0, -2).toString('hex'),
         extra: {}
     };
 }
