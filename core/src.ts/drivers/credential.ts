@@ -4,11 +4,11 @@
  * License: MIT
  */
 
-import {HaloTagError, NFCOperationError, NFCMethodNotSupported} from "../halo/exceptions.js";
-import {ERROR_CODES} from "../halo/errors.js";
+import {NFCOperationError, NFCMethodNotSupported} from "../halo/exceptions.js";
 import {arr2hex, isWebDebugEnabled} from "../halo/util.js";
 import {ExecOptions, ExecReturnStruct} from "../types.js";
 import {Buffer} from 'buffer/index.js';
+import {checkErrors} from "./common.js";
 
 async function execCredential(request: Buffer, options: ExecOptions): Promise<ExecReturnStruct> {
     const webDebug = isWebDebugEnabled();
@@ -87,19 +87,7 @@ async function execCredential(request: Buffer, options: ExecOptions): Promise<Ex
     const res = (u2fRes.response as AuthenticatorAssertionResponse).signature;
     const resBuf = new Uint8Array(res);
 
-    if (resBuf.length === 2 && resBuf[0] === 0xE1) {
-        if (webDebug) {
-            console.log('[libhalo] execCredential() command fail:', arr2hex(resBuf));
-        }
-
-        if (Object.prototype.hasOwnProperty.call(ERROR_CODES, resBuf[1])) {
-            const err = ERROR_CODES[resBuf[1]];
-            throw new HaloTagError(err[0], err[1]);
-        } else {
-            const errCode = arr2hex([resBuf[1]]);
-            throw new HaloTagError("ERROR_CODE_" + errCode, "Command returned an unknown error: " + arr2hex(resBuf));
-        }
-    }
+    checkErrors(Buffer.from(resBuf));
 
     if (webDebug) {
         console.log('[libhalo] execCredential() command result:', arr2hex(resBuf));
