@@ -14,6 +14,7 @@ export interface BaseHaloCmdSign {
     keyNo: KeySlotNo
     format?: "text" | "hex"
     password?: ASCIIString
+    rawPwdDigest?: ASCIIString
 
     legacySignCommand?: boolean
 }

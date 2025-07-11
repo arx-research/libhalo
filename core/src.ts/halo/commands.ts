@@ -194,7 +194,19 @@ async function cmdSign(options: ExecHaloCmdOptions, args: HaloCmdSign): Promise<
     let payload;
     let pwdHash = null;
 
-    if (args.password) {
+    if (args.rawPwdDigest && args.password) {
+        throw new HaloLogicError("Arguments authDigest and password are mutually exclusive.")
+    }
+
+    if (args.rawPwdDigest) {
+        pwdHash = Buffer.from(sha256(Buffer.concat([
+            Buffer.from([0x19]),
+            Buffer.from("Password authentication:\n"),
+            Buffer.from([args.keyNo]),
+            digestBuf,
+            Buffer.from(args.rawPwdDigest, "hex")
+        ])), "hex");
+    } else if (args.password) {
         const derivedKey = pbkdf2.pbkdf2Sync(args.password, 'HaLoChipSalt', 5000, 16, 'sha512');
 
         pwdHash = Buffer.from(sha256(Buffer.concat([

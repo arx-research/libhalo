@@ -26,7 +26,7 @@ async function execCoreCommandRN(nfcManager: RNNFCManager, command: Buffer) {
     ]);
 
     const res = Buffer.from(await nfcManager.isoDepHandler.transceive([...cmdBuf]));
-    checkErrors(res);
+    checkErrors(res.slice(0, -2));
 
     return {
         result: res.slice(0, -2).toString('hex'),
