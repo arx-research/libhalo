@@ -15,12 +15,8 @@ jobs:
         run: |
           ( echo -n "version=" && ( echo "$GITHUB_REF" | cut -f2 -d- | tr -d '\n' ) ) >> "$GITHUB_OUTPUT"
       - name: Draft release
-        id: create_release
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
           name: HaLo Tools ${{ steps.parse_version.outputs.version }}
           draft: true
           prerelease: false
@@ -33,14 +29,6 @@ jobs:
             * `halo-tools-macos-x64.pkg` - Mac OS x64 build (installer; signed)
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
-      - name: Store release upload URL
-        run: |
-          echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
-      - name: Store release upload URL artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-upload-url
-          path: release-upload-url.txt
 
   build_cli_tool:
     permissions:
@@ -283,48 +271,16 @@ jobs:
         run: |
           xcrun stapler staple ./halo-tools-macos-x64.pkg
           rm -rf ./root/
-      - name: Download release upload URL
-        uses: actions/download-artifact@v4
-        with:
-          name: release-upload-url
-      - name: Store release upload URL output
-        id: out_store
-        shell: bash
-        run: |
-          echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Sign output binaries with cosign
         run: |
           echo y | cosign sign-blob ./${{ matrix.out_name }} --output-certificate ./${{ matrix.out_name }}-keyless.pem --output-signature ./${{ matrix.out_name }}-keyless.sig
-      - name: Upload release asset (binary)
-        id: upload-release-asset-binary
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release assets
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}
-          asset_name: ${{ matrix.out_name }}
-          asset_content_type: application/octet-stream
-      - name: Upload release asset (cosign pem)
-        id: upload-release-asset-cosign-pem
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}-keyless.pem
-          asset_name: ${{ matrix.out_name }}-keyless.pem
-          asset_content_type: application/octet-stream
-      - name: Upload release asset (cosign sig)
-        id: upload-release-asset-cosign-sig
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}-keyless.sig
-          asset_name: ${{ matrix.out_name }}-keyless.sig
-          asset_content_type: application/octet-stream
+          files: |
+            ./${{ matrix.out_name }}
+            ./${{ matrix.out_name }}-keyless.pem
+            ./${{ matrix.out_name }}-keyless.sig
       - name: Delete binary artifact
         if: always()
         uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
