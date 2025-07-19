@@ -16,7 +16,7 @@ jobs:
           ( echo -n "version=" && ( echo "$GITHUB_REF" | cut -f2 -d- | tr -d '\n' ) ) >> "$GITHUB_OUTPUT"
       - name: Draft release
         id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -156,7 +156,7 @@ jobs:
           cd cli/dist
           tar -pczf ../dist.tgz .
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.5.0
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
       - name: Sign output with cosign
         run: |
           echo y | cosign sign-blob ./cli/dist.tgz --output-certificate ./cli/dist.tgz-keyless.pem --output-signature ./cli/dist.tgz-keyless.sig
@@ -195,7 +195,7 @@ jobs:
         with:
           name: binary-${{ matrix.os }}
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.5.0
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
       - name: Validate signatures from previous stage
         shell: bash
         run: |
@@ -212,14 +212,14 @@ jobs:
           tar -pczf halo-tools-linux-x64.tgz halocli halo-bridge halo-gateway
       - name: Write certificate file (Windows)
         if: matrix.platform == 'windows'
-        uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
+        uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: ./chain.cer
           write-mode: overwrite
           contents: ${{ vars.WINDOWS_CODE_SIGN_CERT_CHAIN }}
       - name: Authenticate with gcloud (Windows)
         if: matrix.platform == 'windows'
-        uses: google-github-actions/auth@v2.1.11
+        uses: google-github-actions/auth@140bb5113ffb6b65a7e9b937a81fa96cf5064462 # v2.1.11
         with:
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
@@ -243,16 +243,16 @@ jobs:
       - name: Sign application (Windows)
         if: matrix.platform == 'windows'
         run: |
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halocli.exe
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-bridge.exe
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-gateway.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /td sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halocli.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /td sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-bridge.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /td sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-gateway.exe
       - name: Compress application (Windows)
         if: matrix.platform == 'windows'
         run: |
           Compress-Archive -Path halocli.exe,halo-bridge.exe,halo-gateway.exe halo-tools-win-x64.zip
       - name: Load signing credentials (Mac OS)
         if: matrix.platform == 'macos'
-        uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
+        uses: apple-actions/import-codesign-certs@65cfbc37e1464d733524cb555b724878f278b8c3 # v5.0.2
         with:
           p12-file-base64: ${{ secrets.MACOS_SIGN_P12 }}
           p12-password: ${{ secrets.MACOS_SIGN_P12_PASSWORD }}
@@ -327,6 +327,6 @@ jobs:
           asset_content_type: application/octet-stream
       - name: Delete binary artifact
         if: always()
-        uses: geekyeggo/delete-artifact@v5.0.0
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
         with:
           name: binary-${{ matrix.os }}
