@@ -8,7 +8,7 @@ on:
 jobs:
   create_release:
     name: Create halo-tools release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Prepare version number
         id: parse_version
@@ -36,11 +36,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             platform: ubuntu
           - os: windows-2025
             platform: windows
-          - os: macos-14-large
+          - os: macos-15-large
             platform: macos
     name: Build halo-tools (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
@@ -165,13 +165,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             out_name: halo-tools-linux-x64.tgz
             platform: ubuntu
           - os: windows-2025
             out_name: halo-tools-win-x64.zip
             platform: windows
-          - os: macos-14-large
+          - os: macos-15-large
             out_name: halo-tools-macos-x64.pkg
             platform: macos
     name: Sign halo-tools and release (${{ matrix.platform }})
