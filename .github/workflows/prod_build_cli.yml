@@ -217,13 +217,6 @@ jobs:
           path: ./chain.cer
           write-mode: overwrite
           contents: ${{ vars.WINDOWS_CODE_SIGN_CERT_CHAIN }}
-      - name: Download jsign and verify (Windows)
-        if: matrix.platform == 'windows'
-        shell: bash
-        run: |
-          curl -s -L -o jsign.jar https://github.com/ebourg/jsign/releases/download/4.2/jsign-4.2.jar
-          echo "290377fc4f593256200b3ea4061b7409e8276255f449d4c6de7833faf0850cc1 jsign.jar" > jsign.sum
-          sha256sum -c jsign.sum
       - name: Authenticate with gcloud (Windows)
         if: matrix.platform == 'windows'
         uses: google-github-actions/auth@v2.1.11
@@ -250,9 +243,9 @@ jobs:
       - name: Sign application (Windows)
         if: matrix.platform == 'windows'
         run: |
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /t "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halocli.exe
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /t "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-bridge.exe
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /t "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-gateway.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halocli.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-bridge.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-gateway.exe
       - name: Compress application (Windows)
         if: matrix.platform == 'windows'
         run: |
