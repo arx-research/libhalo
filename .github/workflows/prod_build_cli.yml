@@ -249,7 +249,6 @@ jobs:
           msiexec /package "kmscng-1.2-windows-amd64\kmscng.msi" /quiet
       - name: Sign application (Windows)
         if: matrix.platform == 'windows'
-        shell: bash
         run: |
           & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /t "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halocli.exe
           & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /t "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-bridge.exe
