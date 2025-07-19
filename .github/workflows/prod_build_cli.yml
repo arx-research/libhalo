@@ -50,7 +50,7 @@ jobs:
         include:
           - os: ubuntu-22.04
             platform: ubuntu
-          - os: windows-2022
+          - os: windows-2025
             platform: windows
           - os: macos-14-large
             platform: macos
@@ -180,7 +180,7 @@ jobs:
           - os: ubuntu-22.04
             out_name: halo-tools-linux-x64.tgz
             platform: ubuntu
-          - os: windows-2022
+          - os: windows-2025
             out_name: halo-tools-win-x64.zip
             platform: windows
           - os: macos-14-large
@@ -229,19 +229,29 @@ jobs:
         uses: google-github-actions/auth@v2.1.3
         with:
           credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
-      - name: Set up Cloud SDK (Windows)
-        uses: google-github-actions/setup-gcloud@v2.1.0
+      - name: Download and verify KMS CNG
         if: matrix.platform == 'windows'
-        with:
-          install_components: 'gcloud'
-          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
+        shell: bash
+        run: |
+          curl -s -L -o kmscng.zip https://github.com/GoogleCloudPlatform/kms-integrations/releases/download/cng-v1.2/kmscng-1.2-windows-amd64.zip
+          echo "2ef04422c33a7f3323acddaf8c096f2b5f11036bca6dce6f84f0e6650fcec42b kmscng.zip" > kmscng.sum
+          sha256sum -c kmscng.sum
+      - name: Unzip KMS CNG
+        if: matrix.platform == 'windows'
+        shell: bash
+        run: |
+          unzip kmscng.zip
+      - name: Install KMS CNG
+        if: matrix.platform == 'windows'
+        run: |
+          msiexec /package "kmscng-1.2-windows-amd64\kmscng.msi" /quiet
       - name: Sign application (Windows)
         if: matrix.platform == 'windows'
         shell: bash
         run: |
-          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
-          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halo-bridge.exe
-          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halo-gateway.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /t "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.WINDOWS_CODE_SIGN_CRYPTO_KEY_RESOURCE }}" halocli.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /t "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.WINDOWS_CODE_SIGN_CRYPTO_KEY_RESOURCE }}" halo-bridge.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /v /debug /fd sha256 /t "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /f chain.cer /csp "Google Cloud KMS Provider" /kc "${{ secrets.WINDOWS_CODE_SIGN_CRYPTO_KEY_RESOURCE }}" halo-gateway.exe
       - name: Compress application (Windows)
         if: matrix.platform == 'windows'
         run: |
