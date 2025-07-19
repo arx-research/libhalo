@@ -229,8 +229,8 @@ jobs:
         uses: google-github-actions/auth@v2.1.11
         with:
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
       - name: Download and verify KMS CNG
         if: matrix.platform == 'windows'
         shell: bash
