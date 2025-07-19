@@ -8,19 +8,15 @@ on:
 jobs:
   create_release:
     name: Create halo-tools release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Prepare version number
         id: parse_version
         run: |
           ( echo -n "version=" && ( echo "$GITHUB_REF" | cut -f2 -d- | tr -d '\n' ) ) >> "$GITHUB_OUTPUT"
       - name: Draft release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
-          tag_name: ${{ github.ref }}
           name: HaLo Tools ${{ steps.parse_version.outputs.version }}
           draft: true
           prerelease: false
@@ -33,14 +29,6 @@ jobs:
             * `halo-tools-macos-x64.pkg` - Mac OS x64 build (installer; signed)
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
-      - name: Store release upload URL
-        run: |
-          echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
-      - name: Store release upload URL artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-upload-url
-          path: release-upload-url.txt
 
   build_cli_tool:
     permissions:
@@ -48,11 +36,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             platform: ubuntu
-          - os: windows-2022
+          - os: windows-2025
             platform: windows
-          - os: macos-14-large
+          - os: macos-15-large
             platform: macos
     name: Build halo-tools (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
@@ -156,7 +144,7 @@ jobs:
           cd cli/dist
           tar -pczf ../dist.tgz .
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.5.0
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
       - name: Sign output with cosign
         run: |
           echo y | cosign sign-blob ./cli/dist.tgz --output-certificate ./cli/dist.tgz-keyless.pem --output-signature ./cli/dist.tgz-keyless.sig
@@ -177,13 +165,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             out_name: halo-tools-linux-x64.tgz
             platform: ubuntu
-          - os: windows-2022
+          - os: windows-2025
             out_name: halo-tools-win-x64.zip
             platform: windows
-          - os: macos-14-large
+          - os: macos-15-large
             out_name: halo-tools-macos-x64.pkg
             platform: macos
     name: Sign halo-tools and release (${{ matrix.platform }})
@@ -195,7 +183,7 @@ jobs:
         with:
           name: binary-${{ matrix.os }}
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.5.0
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
       - name: Validate signatures from previous stage
         shell: bash
         run: |
@@ -212,43 +200,47 @@ jobs:
           tar -pczf halo-tools-linux-x64.tgz halocli halo-bridge halo-gateway
       - name: Write certificate file (Windows)
         if: matrix.platform == 'windows'
-        uses: DamianReeves/write-file-action@0a7fcbe1960c53fc08fe789fa4850d24885f4d84
+        uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: ./chain.cer
           write-mode: overwrite
           contents: ${{ vars.WINDOWS_CODE_SIGN_CERT_CHAIN }}
-      - name: Download jsign and verify (Windows)
-        if: matrix.platform == 'windows'
-        shell: bash
-        run: |
-          curl -s -L -o jsign.jar https://github.com/ebourg/jsign/releases/download/4.2/jsign-4.2.jar
-          echo "290377fc4f593256200b3ea4061b7409e8276255f449d4c6de7833faf0850cc1 jsign.jar" > jsign.sum
-          sha256sum -c jsign.sum
       - name: Authenticate with gcloud (Windows)
         if: matrix.platform == 'windows'
-        uses: google-github-actions/auth@v2.1.3
+        uses: google-github-actions/auth@140bb5113ffb6b65a7e9b937a81fa96cf5064462 # v2.1.11
         with:
-          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
-      - name: Set up Cloud SDK (Windows)
-        uses: google-github-actions/setup-gcloud@v2.1.0
-        if: matrix.platform == 'windows'
-        with:
-          install_components: 'gcloud'
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
-      - name: Sign application (Windows)
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      - name: Download and verify KMS CNG
         if: matrix.platform == 'windows'
         shell: bash
         run: |
-          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halocli.exe
-          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halo-bridge.exe
-          java -jar jsign.jar --storetype GOOGLECLOUD --storepass "$(gcloud auth print-access-token)" --keystore "${{ vars.WINDOWS_CODE_SIGN_KEYSTORE }}" --alias "${{ vars.WINDOWS_CODE_SIGN_KEY_ALIAS }}" --certfile "chain.cer" --tsmode RFC3161 --tsaurl http://timestamp.globalsign.com/tsa/r6advanced1 halo-gateway.exe
+          curl -s -L -o kmscng.zip https://github.com/GoogleCloudPlatform/kms-integrations/releases/download/cng-v1.2/kmscng-1.2-windows-amd64.zip
+          echo "2ef04422c33a7f3323acddaf8c096f2b5f11036bca6dce6f84f0e6650fcec42b kmscng.zip" > kmscng.sum
+          sha256sum -c kmscng.sum
+      - name: Unzip KMS CNG
+        if: matrix.platform == 'windows'
+        shell: bash
+        run: |
+          unzip kmscng.zip
+      - name: Install KMS CNG
+        if: matrix.platform == 'windows'
+        run: |
+          msiexec /package "kmscng-1.2-windows-amd64\kmscng.msi" /quiet
+      - name: Sign application (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halocli.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-bridge.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-gateway.exe
       - name: Compress application (Windows)
         if: matrix.platform == 'windows'
         run: |
           Compress-Archive -Path halocli.exe,halo-bridge.exe,halo-gateway.exe halo-tools-win-x64.zip
       - name: Load signing credentials (Mac OS)
         if: matrix.platform == 'macos'
-        uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
+        uses: apple-actions/import-codesign-certs@65cfbc37e1464d733524cb555b724878f278b8c3 # v5.0.2
         with:
           p12-file-base64: ${{ secrets.MACOS_SIGN_P12 }}
           p12-password: ${{ secrets.MACOS_SIGN_P12_PASSWORD }}
@@ -279,50 +271,18 @@ jobs:
         run: |
           xcrun stapler staple ./halo-tools-macos-x64.pkg
           rm -rf ./root/
-      - name: Download release upload URL
-        uses: actions/download-artifact@v4
-        with:
-          name: release-upload-url
-      - name: Store release upload URL output
-        id: out_store
-        shell: bash
-        run: |
-          echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Sign output binaries with cosign
         run: |
           echo y | cosign sign-blob ./${{ matrix.out_name }} --output-certificate ./${{ matrix.out_name }}-keyless.pem --output-signature ./${{ matrix.out_name }}-keyless.sig
-      - name: Upload release asset (binary)
-        id: upload-release-asset-binary
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release assets
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}
-          asset_name: ${{ matrix.out_name }}
-          asset_content_type: application/octet-stream
-      - name: Upload release asset (cosign pem)
-        id: upload-release-asset-cosign-pem
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}-keyless.pem
-          asset_name: ${{ matrix.out_name }}-keyless.pem
-          asset_content_type: application/octet-stream
-      - name: Upload release asset (cosign sig)
-        id: upload-release-asset-cosign-sig
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./${{ matrix.out_name }}-keyless.sig
-          asset_name: ${{ matrix.out_name }}-keyless.sig
-          asset_content_type: application/octet-stream
+          files: |
+            ./${{ matrix.out_name }}
+            ./${{ matrix.out_name }}-keyless.pem
+            ./${{ matrix.out_name }}-keyless.sig
       - name: Delete binary artifact
         if: always()
-        uses: geekyeggo/delete-artifact@v5.0.0
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
         with:
           name: binary-${{ matrix.os }}
