@@ -231,9 +231,9 @@ jobs:
       - name: Sign application (Windows)
         if: matrix.platform == 'windows'
         run: |
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halocli.exe
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-bridge.exe
-          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}" halo-gateway.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}/cryptoKeyVersions/${{ vars.GCP_SIGN_CRYPTO_KEY_VERSION }}" halocli.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}/cryptoKeyVersions/${{ vars.GCP_SIGN_CRYPTO_KEY_VERSION }}" halo-bridge.exe
+          & 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe' sign /fd sha256 /td sha256 /f chain.cer /csp "Google Cloud KMS Provider" /tr "${{ vars.WINDOWS_CODE_SIGN_TIMESTAMP_SERVER }}" /kc "${{ secrets.GCP_SIGN_CRYPTO_KEY_RESOURCE }}/cryptoKeyVersions/${{ vars.GCP_SIGN_CRYPTO_KEY_VERSION }}" halo-gateway.exe
       - name: Compress application (Windows)
         if: matrix.platform == 'windows'
         run: |
