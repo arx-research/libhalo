@@ -17,6 +17,7 @@ export interface BaseHaloCmdSign {
     rawPwdDigest?: ASCIIString
 
     legacySignCommand?: boolean
+    skipPostprocessing?: boolean
 }
 
 export interface HaloCmdSignVariant1 extends BaseHaloCmdSign {
