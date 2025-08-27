@@ -283,6 +283,16 @@ async function cmdSign(options: ExecHaloCmdOptions, args: HaloCmdSign): Promise<
         "digest": digestBuf.toString('hex')
     };
 
+    if (args.skipPostprocessing) {
+        return {
+            "input": inputObj,
+            "signature": {
+                "der": sig,
+            },
+            "publicKey": publicKey ? publicKey.toString('hex') : undefined
+        };
+    }
+
     if (messageBuf !== null) {
         inputObj.message = messageBuf.toString('hex');
     } else if (args.typedData) {
