@@ -1,7 +1,7 @@
 import {Buffer} from 'buffer/index.js';
 import crypto from 'crypto';
 const subtle = crypto.webcrypto && crypto.webcrypto.subtle ? crypto.webcrypto.subtle : globalThis.crypto.subtle;
-import * as jose from 'jose';
+import {CompactEncrypt, decodeProtectedHeader, compactDecrypt} from 'jose';
 
 class JWEUtil {
     private sharedKeyObj: CryptoKey | null;
@@ -49,7 +49,7 @@ class JWEUtil {
             throw new Error("Key is not loaded nor was generated.");
         }
 
-        return await new jose.CompactEncrypt(
+        return await new CompactEncrypt(
             new TextEncoder().encode(JSON.stringify(data)))
             .setProtectedHeader({alg: 'dir', enc: 'A128GCM'})
             .encrypt(this.sharedKeyObj);
@@ -60,13 +60,13 @@ class JWEUtil {
             throw new Error("Key is not loaded nor was generated.");
         }
 
-        const hdr = jose.decodeProtectedHeader(jwe);
+        const hdr = decodeProtectedHeader(jwe);
 
         if (Object.keys(hdr).length !== 2 || hdr.alg !== "dir" || hdr.enc !== "A128GCM") {
             throw new Error("Unexpected type of JWE provided.");
         }
 
-        const { plaintext, protectedHeader } = await jose.compactDecrypt(jwe, this.sharedKeyObj);
+        const { plaintext, protectedHeader } = await compactDecrypt(jwe, this.sharedKeyObj);
         return JSON.parse(new TextDecoder().decode(plaintext));
     }
 }
