@@ -14,7 +14,8 @@ import {
     HaloCmdImportKey,
     HaloCmdImportKeyInit,
     HaloCmdLoadTransportPK,
-    HaloCmdReplacePassword, HaloCmdReplacePasswordStoreGraffiti,
+    HaloCmdReplacePassword,
+    HaloCmdReplacePasswordStoreGraffiti,
     HaloCmdSetPassword,
     HaloCmdSetURLSubdomain,
     HaloCmdSign,
@@ -22,7 +23,8 @@ import {
     HaloCmdSignRandom,
     HaloCmdStoreGraffiti,
     HaloCmdUnsetPassword,
-    HaloCmdWriteLatch, HaloResCFGNDEFStoreGraffiti,
+    HaloCmdWriteLatch,
+    HaloResCFGNDEFStoreGraffiti,
     HaloResExportKey,
     HaloResGetDataStruct,
     HaloResGetGraffiti,
@@ -32,7 +34,8 @@ import {
     HaloResImportKey,
     HaloResImportKeyInit,
     HaloResLoadTransportPK,
-    HaloResReplacePassword, HaloResReplacePasswordStoreGraffiti,
+    HaloResReplacePassword,
+    HaloResReplacePasswordStoreGraffiti,
     HaloResSetPassword,
     HaloResSetURLSubdomain,
     HaloResSign,
@@ -55,7 +58,6 @@ import {
     HaloResGenKeyFinalize,
     HaloResponseObject
 } from "../types.js";
-import {cmdCfgNDEFStoreGraffiti} from "./commands.js";
 
 export abstract class BaseHaloAPI {
     abstract executeCommand(args: HaloCommandObject, options?: HaloAPICallOptions): Promise<HaloResponseObject>;

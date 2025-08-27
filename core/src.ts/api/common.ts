@@ -23,7 +23,7 @@ import {
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
- * except the lib's index.js. The library's structure is subject to change in the next versions.
+ * except the lib's api/ subdirectory. The library's structure is subject to change in the next versions.
  */
 export {
     BaseHaloAPI,

@@ -1,6 +1,6 @@
 {
   "name": "@arx-research/libhalo",
-  "version": "1.13.2",
+  "version": "1.14.0",
   "description": "LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.",
   "contributors": [
     {
@@ -37,6 +37,10 @@
       "require": "./lib.commonjs/api/common.js",
       "import": "./lib.esm/api/common.js"
     },
+    "./api/custom": {
+      "require": "./lib.commonjs/api/custom.js",
+      "import": "./lib.esm/api/custom.js"
+    },
     "./api/desktop": {
       "require": "./lib.commonjs/api/desktop.js",
       "import": "./lib.esm/api/desktop.js"
@@ -66,7 +70,7 @@
     "buffer": "^6.0.3",
     "elliptic": "^6.6.1",
     "ethers": "^6.13.5",
-    "jose": "^6.0.10",
+    "jose": "^6.0.13",
     "js-sha256": "^0.11.0",
     "pbkdf2": "^3.1.2",
     "qrcode": "^1.5.4",
