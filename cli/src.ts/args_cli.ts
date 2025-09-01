@@ -99,6 +99,12 @@ function configureNDEFCFGParserArgs(parser: ArgumentParser): ArgumentParser {
         action: 'store_true',
         required: false
     });
+    parser.add_argument("--flag-fallback-domain", {
+        dest: "flagFallbackDomain",
+        help: "Force to use fallback domain on the NDEF layer.",
+        action: 'store_true',
+        required: false
+    });
     parser.add_argument("--pkn", {
         dest: "pkN",
         help: "Key slot number for --flag-show-pkn and --flag-show-pkn-attest",

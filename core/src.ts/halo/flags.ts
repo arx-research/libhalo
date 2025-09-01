@@ -24,7 +24,8 @@ const FLAGS: FlagLookup = {
     flagLegacyStatic:   [1, 0x08],
     flagShowPkN:        [1, 0x10],
     flagShowPkNAttest:  [1, 0x20],
-    flagRNDSIGUseBJJ62: [1, 0x40]
+    flagRNDSIGUseBJJ62: [1, 0x40],
+    flagFallbackDomain: [1, 0x80],
 };
 
 export {FLAGS};

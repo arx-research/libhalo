@@ -57,7 +57,8 @@
             flagLegacyStatic:   ["Use legacy public key format with the 'static' field."],
             flagShowPkN:        ["Show additional public key (requires public key #3 to be hidden)."],
             flagShowPkNAttest:  ["Show additional public key's attest signature."],
-            flagRNDSIGUseBJJ62: ["Use BJJ key slot 0x62 for 'rndsig' signature (only on selected tag batches)."]
+            flagRNDSIGUseBJJ62: ["Use BJJ key slot 0x62 for 'rndsig' signature (only on selected tag batches)."],
+            flagFallbackDomain: ["Force to use fallback domain on the NDEF layer."]
         };
 
         for (let flag of Object.keys(FLAGS)) {
