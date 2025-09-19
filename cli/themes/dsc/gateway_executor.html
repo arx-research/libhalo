@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/themes/dsc/style.css" />
+
+    <title>Digital Spenders Club Gateway</title>
+</head>
+<body>
+<div class="wrapper">
+    <img width="32" src="/themes/dsc/logo.png" alt="Digital Spenders Club" />
+    <h1 id="heading">Verify your DSC membership</h1>
+    <button id="button" disabled>Scan Membership Card</button>
+</div>
+
+<script src="/assets/static/libhalo.js"></script>
+<script>
+    var heading = document.querySelector("#heading");
+    var btn = document.querySelector("#button");
+
+    function log(msg) {
+        console.log(msg);
+    }
+
+    async function confirmButtonClicked(ev) {
+        try {
+            await haloGateExecutorUserConfirm(log);
+            btn.textContent = "Verified";
+            btn.disabled = true;
+            heading.textContent = "All done. thanks for verifying.";
+        } catch (e) {
+            btn.textContent = "Scan membership card";
+            btn.disabled = true;
+            heading.textContent = "Verify your DSC membership";
+        }
+    }
+
+    async function run() {
+        try {
+            await haloGateExecutorCreateWs(log, (command) => {
+                btn.disabled = false;
+            });
+        } catch (e) {
+            return;
+        }
+
+       btn.onclick = confirmButtonClicked;
+    }
+
+    run();
+</script>
+</body>
+</html>
