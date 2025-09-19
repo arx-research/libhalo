@@ -40,7 +40,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "reload-libhalo": "cd ../core && ./node_modules/.bin/tsc && cd ../cli && yarn add ../core"
+    "reload-libhalo": "cd ../core && yarn tsc && yarn webpack && cd ../cli && yarn add ../core"
   },
   "dependencies": {
     "@arx-research/libhalo": "../core",
