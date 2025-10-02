@@ -1,53 +1,48 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/themes/dsc/style.css" />
 
     <title>Digital Spenders Club Gateway</title>
-</head>
-<body>
-<div class="wrapper">
-    <img width="32" src="/themes/dsc/logo.png" alt="Digital Spenders Club" />
-    <h1 id="heading">Verify your DSC membership</h1>
-    <button id="button" disabled>Scan Membership Card</button>
-</div>
+  </head>
+  <body>
+    <div class="wrapper">
+      <img width="32" src="/themes/dsc/logo.png" alt="Digital Spenders Club" />
+      <h1 id="heading">Verify your DSC membership</h1>
+      <button id="button" disabled>Scan Membership Card</button>
+    </div>
 
-<script src="/assets/static/libhalo.js"></script>
-<script>
-    var heading = document.querySelector("#heading");
-    var btn = document.querySelector("#button");
+    <script src="/assets/static/libhalo.js"></script>
+    <script>
+      var heading = document.querySelector("#heading");
+      var btn = document.querySelector("#button");
 
-    function log(msg) {
+      function log(msg) {
         console.log(msg);
-    }
+      }
 
-    async function confirmButtonClicked(ev) {
+      async function confirmButtonClicked(ev) {
         try {
-            await haloGateExecutorUserConfirm(log);
-            btn.textContent = "Verified";
-            btn.disabled = true;
-            heading.textContent = "All done. thanks for verifying.";
+          await haloGateExecutorUserConfirm(log);
         } catch (e) {
-            btn.textContent = "Scan membership card";
-            btn.disabled = true;
-            heading.textContent = "Verify your DSC membership";
+          btn.disabled = true;
         }
-    }
+      }
 
-    async function run() {
+      async function run() {
         try {
-            await haloGateExecutorCreateWs(log, (command) => {
-                btn.disabled = false;
-            });
+          await haloGateExecutorCreateWs(log, (command) => {
+            btn.disabled = false;
+          });
         } catch (e) {
-            return;
+          return;
         }
 
-       btn.onclick = confirmButtonClicked;
-    }
+        btn.onclick = confirmButtonClicked;
+      }
 
-    run();
-</script>
-</body>
+      run();
+    </script>
+  </body>
 </html>
