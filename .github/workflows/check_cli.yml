@@ -35,14 +35,6 @@ jobs:
           cd core
           yarn workspaces focus --all
           yarn install --immutable
-      - name: Run tsc (root)
-        run: |
-          cd core
-          ./node_modules/.bin/tsc
-      - name: Run webpack (root)
-        run: |
-          cd core
-          ./node_modules/.bin/webpack
       - name: Install dependencies (cli)
         run: |
           cd cli
