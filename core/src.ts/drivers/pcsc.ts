@@ -13,27 +13,30 @@ import {
     Reader
 } from "../types.js";
 import {Buffer} from 'buffer/index.js';
+import {ISO7816_SELECT_CMDS} from "../aid.js";
 
 async function selectCore(reader: Reader) {
     let res;
 
-    try {
-        res = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
-    } catch (e) {
-        throw new NFCOperationError((<Error> e).message);
+    for (const aid of ISO7816_SELECT_CMDS) {
+        try {
+            res = await reader.transmit(Buffer.from(aid, "hex"), 255);
+        } catch (e) {
+            throw new NFCOperationError((<Error> e).message);
+        }
+
+        if (res.slice(-2).compare(Buffer.from([0x90, 0x00])) === 0) {
+            return;
+        }
     }
 
-    const statusCheck = res.slice(-2).compare(Buffer.from([0x91, 0x00])) !== 0;
-
-    if (!statusCheck) {
-        throw new HaloLogicError("Unable to select HaLo core.");
-    }
+    throw new HaloLogicError("Unable to select HaLo core.");
 }
 
 async function selectU2FLayer(reader: Reader) {
     try {
         const res = await reader.transmit(Buffer.from("00A4040008A0000006472F0001", "hex"), 255);
-        const statusCheck = res.slice(-2).compare(Buffer.from([0x91, 0x00])) !== 0;
+        const statusCheck = res.slice(-2).compare(Buffer.from([0x90, 0x00])) === 0;
 
         if (!statusCheck) {
             throw new HaloLogicError("Unable to select HaLo U2F layer.");
