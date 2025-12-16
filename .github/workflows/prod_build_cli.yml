@@ -78,11 +78,6 @@ jobs:
           cd cli
           yarn workspaces focus --all
           yarn install --immutable
-      - name: Build libhalo with webpack
-        shell: bash
-        run: |
-          cd core
-          ./node_modules/.bin/webpack
       - name: Build halo-tools with webpack
         shell: bash
         run: |
