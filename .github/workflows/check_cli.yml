@@ -16,7 +16,7 @@ on:
 
 jobs:
   check_cli_tool:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Install native dependencies (Linux)
         run: |
@@ -27,6 +27,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Enable corepack
+        run: |
+          corepack enable
       - name: Install dependencies (root)
         run: |
           cd core
