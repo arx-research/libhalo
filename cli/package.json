@@ -61,7 +61,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/nunjucks": "^3.2.6",
     "@types/ws": "^8.18.1",
-    "@yao-pkg/pkg": "^6.11.0",
+    "@yao-pkg/pkg": "6.4.0",
     "eslint": "^9.25.0",
     "resedit": "^2.0.3",
     "ts-loader": "^9.5.2",
