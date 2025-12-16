@@ -1,0 +1,6 @@
+export const ISO7816_SELECT_CMDS = [
+    // new AID with Arx RID
+    "00A404000AA0000009490148614C6F00",
+    // legacy AID
+    "00A4040007481199130E9F0100"
+];

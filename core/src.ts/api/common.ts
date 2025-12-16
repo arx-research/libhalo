@@ -20,6 +20,7 @@ import {
     parsePublicKeys, convertSignature, recoverPublicKey, sigToDer,
     SECP256k1_ORDER, BJJ_ORDER
 } from "../halo/util.js";
+import {ISO7816_SELECT_CMDS} from "../aid.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else
@@ -40,6 +41,7 @@ export {
 
     SECP256k1_ORDER,
     BJJ_ORDER,
+    ISO7816_SELECT_CMDS,
 
     // exceptions
     HaloTagError,

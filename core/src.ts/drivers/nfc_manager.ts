@@ -9,14 +9,23 @@ import {HaloLogicError} from "../halo/exceptions.js";
 import {readNDEF} from "./read_ndef.js";
 import {Buffer} from 'buffer/index.js';
 import {EmptyOptions, HaloCommandObject, RNNFCManager} from "../types.js";
+import {ISO7816_SELECT_CMDS} from "../aid.js";
+
+async function selectCore(nfcManager: RNNFCManager) {
+    for (const selectCmdHex of ISO7816_SELECT_CMDS) {
+        const selectCmdBuf = [...Buffer.from(selectCmdHex, "hex")];
+        const resSelect = Buffer.from(await nfcManager.isoDepHandler.transceive(selectCmdBuf));
+
+        if (resSelect.compare(Buffer.from([0x90, 0x00])) === 0) {
+            return true;
+        }
+    }
+
+    throw new HaloLogicError("Unable to initiate communication with the tag. Failed to select HaLo core.");
+}
 
 async function execCoreCommandRN(nfcManager: RNNFCManager, command: Buffer) {
-    const selectCmd = [...Buffer.from("00A4040007481199130E9F0100", "hex")];
-    const resSelect = Buffer.from(await nfcManager.isoDepHandler.transceive(selectCmd));
-
-    if (resSelect.compare(Buffer.from([0x90, 0x00])) !== 0) {
-        throw new HaloLogicError("Unable to initiate communication with the tag. Failed to select HaLo core.");
-    }
+    await selectCore(nfcManager);
 
     const cmdBuf = Buffer.concat([
         Buffer.from("B0510000", "hex"),

@@ -22,6 +22,7 @@ import {
 } from "./ws_server.js";
 import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
 import {ConnectSimulatorOptions, HaloCommandObject, Reader} from "@arx-research/libhalo/types";
+import {ISO7816_SELECT_CMDS} from "@arx-research/libhalo/api/common";
 import {Namespace} from "argparse";
 import {INFC, SimNFC} from "./simulator_nfc.js";
 import fs from "fs";
@@ -48,15 +49,21 @@ let stopPCSCTimeout: number | null = null;
 let isConnected = false;
 let isClosing = false;
 
-async function checkCard(reader: Reader) {
+async function checkCard(reader: Reader): Promise<boolean> {
     // try to select Halo ETH Core Layer
-    try {
-        const resSelect = await reader.transmit(Buffer.from("00A4040007481199130E9F0100", "hex"), 255);
-        return resSelect.compare(Buffer.from([0x90, 0x00])) === 0;
-    } catch (e) {
-        console.error(e);
-        return false;
+    for (const aid of ISO7816_SELECT_CMDS) {
+        try {
+            const resSelect = await reader.transmit(Buffer.from(aid, "hex"), 255);
+
+            if (resSelect.slice(-2).compare(Buffer.from([0x90, 0x00])) === 0) {
+                return true;
+            }
+        } catch (e) {
+            console.error(e);
+        }
     }
+
+    return false;
 }
 
 function ensureSimulator() {
