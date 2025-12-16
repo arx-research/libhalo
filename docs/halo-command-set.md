@@ -935,29 +935,20 @@ This command doesn't accept any arguments.
 
 ### Return value
 
-* `version` (str) - full version string;
-* `parts.verMajor` (int) - major version number;
-* `parts.verMinor` (str) - minor version identifier;
-* `parts.verSeq` (int) - minor version sequential number;
-* `parts.verShortId` (str) - unique identifier;
-
-**Note:** Comparing versions: All versions are sortable on `(verMajor, verSeq)` pair.
-The version with higher `verMajor` is always more recent than the version with lower `verMajor` value.
-If two versions have the same `verMajor` value, the version with the higher `verSeq` is always more recent.
+* `core.ver` (str) - full version string;
+* `addons.ver` (str) - reserved;
 
 ### Examples
 Command:
-```json
-{
-    "name": "version"
-}
+```
+halocli version
 ```
 
 Response:
 ```json
 {
-    "version": "01.C5.000083.633916E1",
-    "parts": { "verMajor": 1, "verMinor": "C5", "verSeq": 83, "verShortId": "633916E1" }
+    "core": { "ver": "HWV1.000026.0D97E811" },
+    "addons": { "ver": "HWV1.000026.0D97E811" }
 }
 ```
 
