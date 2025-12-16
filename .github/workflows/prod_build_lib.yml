@@ -48,6 +48,9 @@ jobs:
       id-token: write
     needs: create_release
     steps:
+      - name: Install native dependencies (Linux)
+        run: |
+          sudo apt-get update && sudo apt-get install -y libpcsclite-dev
       - name: Checkout the repository
         uses: actions/checkout@v4
       - name: Install Node.JS
@@ -65,7 +68,7 @@ jobs:
       - name: Run webpack
         run: |
           cd core
-          webpack
+          ../node_modules/.bin/webpack
       - name: Download release upload URL
         uses: actions/download-artifact@v4
         with:
