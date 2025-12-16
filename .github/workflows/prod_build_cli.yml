@@ -88,11 +88,19 @@ jobs:
           mv dist_webpack/* .
           mkdir build
           cp ../node_modules/@pokusew/pcsclite/build/Release/pcsclite.node build/pcsclite.node
+          echo pwd
+          pwd
+          echo pwd
+          find build/
       - name: Package HaLo CLI tool (Linux)
         if: matrix.platform == 'ubuntu'
         shell: bash
         run: |
           cd cli
+          echo pwd
+          pwd
+          echo pwd
+          find build/
           node ./build_scripts/ci_scripts.js --platform linux --product cli
           ../node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.cjs
           node ./build_scripts/ci_scripts.js --platform linux --product bridge
