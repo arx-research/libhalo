@@ -156,48 +156,20 @@ function makeOptions(reader: Reader): ExecHaloCmdOptions {
 
 async function execHaloCmdPCSC(command: HaloCommandObject, reader: Reader) {
     await selectCore(reader);
-    const version = await getVersion(reader);
-
-    const [verMajor, verMinor, verSeqStr, verShortId] = version.split('.');
-    const verMajorNum = parseInt(verMajor, 10);
-    const verSeq = parseInt(verSeqStr, 10);
-
-    if (verMajorNum > 1) {
-        throw new HaloLogicError("This version of CLI doesn't support major release version " + verMajor + ". Please update.");
-    }
 
     const options = makeOptions(reader);
     command = {...command};
 
     if (command.name === "version") {
-        // PCSC-specific version retrieval command
+        const version = await getVersion(reader);
         const addonVersion = await getAddonVersion(reader);
-        let addonParts = null;
-
-        if (addonVersion) {
-            const [verAMajor, verAMinor, verASeqStr, verAShortId] = addonVersion.split('.');
-            const verASeq = parseInt(verASeqStr, 10);
-            addonParts = {
-                verAMajor,
-                verAMinor,
-                verASeq,
-                verAShortId
-            };
-        }
 
         return {
             "core": {
-                "ver": version,
-                "parts": {
-                    verMajor,
-                    verMinor,
-                    verSeq,
-                    verShortId
-                }
+                "ver": version
             },
             "addons": {
-                "ver": addonVersion,
-                "parts": addonParts
+                "ver": addonVersion
             }
         };
     } else if (command.name === "read_ndef") {
