@@ -1,4 +1,4 @@
-name: Check libhalo.js
+name: Check build
 
 on:
   push:
@@ -15,7 +15,7 @@ on:
       - master
 
 jobs:
-  check_js_lib:
+  check:
     runs-on: ubuntu-24.04
     steps:
       - name: Install native dependencies (Linux)
@@ -38,8 +38,20 @@ jobs:
         run: |
           cd core
           ../node_modules/.bin/tsc
-          ../node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Run webpack (core)
         run: |
           cd core
           ../node_modules/.bin/webpack
+      - name: Run tsc (cli)
+        run: |
+          cd cli
+          ../node_modules/.bin/tsc
+      - name: Run webpack (cli)
+        run: |
+          cd cli
+          ../node_modules/.bin/webpack
+          mv dist_webpack/* .
+      - name: Package HaLo CLI tool (Linux)
+        run: |
+          cd cli
+          ../node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.cjs

@@ -60,24 +60,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
       - name: Enable corepack
         run: |
           corepack enable
-      - name: Install dependencies (root)
+      - name: Install dependencies
         shell: bash
+        run: |
+          yarn workspaces focus --all
+          yarn install --immutable
+      - name: Run tsc (core)
         run: |
           cd core
-          yarn workspaces focus --all
-          yarn install --immutable
           ../node_modules/.bin/tsc
-      - name: Install dependencies (cli)
-        shell: bash
+      - name: Run webpack (core)
         run: |
           cd cli
-          yarn workspaces focus --all
-          yarn install --immutable
+          ../node_modules/.bin/webpack
+      - name: Run tsc (cli)
+        run: |
+          cd cli
+          ../node_modules/.bin/tsc
       - name: Build halo-tools with webpack
         shell: bash
         run: |

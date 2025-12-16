@@ -152,9 +152,9 @@ jobs:
           corepack enable
       - name: Run yarn install
         run: |
-          cd core
           yarn workspaces focus --all
           yarn install --immutable
+          cd core
           ../node_modules/.bin/tsc
           ../node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
