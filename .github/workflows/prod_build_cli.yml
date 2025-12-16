@@ -69,13 +69,15 @@ jobs:
         shell: bash
         run: |
           cd core
-          yarn install --frozen-lockfile --production=false
+          yarn workspaces focus --all
+          yarn install --immutable
           ./node_modules/.bin/tsc
       - name: Install dependencies (cli)
         shell: bash
         run: |
           cd cli
-          yarn install --frozen-lockfile --production=false
+          yarn workspaces focus --all
+          yarn install --immutable
       - name: Build libhalo with webpack
         shell: bash
         run: |

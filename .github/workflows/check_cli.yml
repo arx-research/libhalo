@@ -33,7 +33,8 @@ jobs:
       - name: Install dependencies (root)
         run: |
           cd core
-          yarn install --frozen-lockfile --production=false
+          yarn workspaces focus --all
+          yarn install --immutable
       - name: Run tsc (root)
         run: |
           cd core
@@ -45,7 +46,8 @@ jobs:
       - name: Install dependencies (cli)
         run: |
           cd cli
-          yarn install --frozen-lockfile --production=false
+          yarn workspaces focus --all
+          yarn install --immutable
       - name: Run tsc (root)
         run: |
           cd cli

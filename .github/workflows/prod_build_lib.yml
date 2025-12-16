@@ -60,7 +60,8 @@ jobs:
       - name: Install dependencies (root)
         run: |
           cd core
-          yarn install --frozen-lockfile --production=false
+          yarn workspaces focus --all
+          yarn install --immutable
       - name: Run webpack
         run: |
           cd core
@@ -152,7 +153,8 @@ jobs:
       - name: Run yarn install
         run: |
           cd core
-          yarn install --frozen-lockfile --production=false
+          yarn workspaces focus --all
+          yarn install --immutable
           ./node_modules/.bin/tsc
           ./node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
