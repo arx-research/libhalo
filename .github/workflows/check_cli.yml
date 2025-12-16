@@ -34,6 +34,14 @@ jobs:
         run: |
           yarn workspaces focus --all
           yarn install --immutable
+      - name: Run tsc (core)
+        run: |
+          cd core
+          ../node_modules/.bin/tsc
+      - name: Run webpack (core)
+        run: |
+          cd cli
+          ../node_modules/.bin/webpack
       - name: Run tsc (cli)
         run: |
           cd cli

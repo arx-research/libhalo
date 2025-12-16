@@ -18,6 +18,9 @@ jobs:
   check_js_lib:
     runs-on: ubuntu-24.04
     steps:
+      - name: Install native dependencies (Linux)
+        run: |
+          sudo apt-get update && sudo apt-get install -y libpcsclite-dev
       - name: Checkout the repository
         uses: actions/checkout@v4
       - name: Install Node.JS
