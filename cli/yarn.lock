@@ -46,7 +46,7 @@ __metadata:
 
 "@arx-research/libhalo@file:../core::locator=%40arx-research%2Fhalocli%40workspace%3A.":
   version: 1.16.0
-  resolution: "@arx-research/libhalo@file:../core#../core::hash=aa2a93&locator=%40arx-research%2Fhalocli%40workspace%3A."
+  resolution: "@arx-research/libhalo@file:../core#../core::hash=ca3a36&locator=%40arx-research%2Fhalocli%40workspace%3A."
   dependencies:
     buffer: "npm:^6.0.3"
     elliptic: "npm:^6.6.1"
@@ -58,7 +58,7 @@ __metadata:
     query-string: "npm:^9.1.1"
     strongly-typed-events: "npm:^3.0.11"
     websocket-as-promised: "npm:^3.0.0"
-  checksum: 10c0/692ea17470b0e28ad088e5c4f76ae6856b2a25f34bcc54967dfb3120f0bf665c58972a7e4b8f75ccb90018bad8ce5bf41d8dd7f0193cf5c4b57de347d6452eb0
+  checksum: 10c0/57f2f5231d3f16706f7cab93464f527f2718e146348f5988031f9a3779cfd4724024d778180d2479247ec90c41e1ab7bbdfcc7fe499ba1bd95560b910fb2476a
   languageName: node
   linkType: hard
 
