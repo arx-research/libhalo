@@ -155,8 +155,8 @@ jobs:
           cd core
           yarn workspaces focus --all
           yarn install --immutable
-          ./node_modules/.bin/tsc
-          ./node_modules/.bin/tsc -p tsconfig.commonjs.json
+          ../node_modules/.bin/tsc
+          ../node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
         run: cd core && yarn publish --provenance
       - name: Re-setup Node.JS with GitHub pkg

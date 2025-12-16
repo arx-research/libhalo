@@ -37,9 +37,9 @@ jobs:
       - name: Run tsc (core)
         run: |
           cd core
-          ./node_modules/.bin/tsc
-          ./node_modules/.bin/tsc -p tsconfig.commonjs.json
+          ../node_modules/.bin/tsc
+          ../node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Run webpack (core)
         run: |
           cd core
-          ./node_modules/.bin/webpack
+          ../node_modules/.bin/webpack
