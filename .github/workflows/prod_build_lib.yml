@@ -151,8 +151,6 @@ jobs:
           ./node_modules/.bin/tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
         run: cd core && yarn publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.RELEASE_NPM_TOKEN }}
       - name: Re-setup Node.JS with GitHub pkg
         uses: actions/setup-node@v4
         with:
