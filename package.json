@@ -1,0 +1,7 @@
+{
+  "workspaces": [
+    "core",
+    "cli"
+  ],
+  "packageManager": "yarn@4.12.0"
+}

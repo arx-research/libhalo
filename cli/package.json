@@ -39,11 +39,10 @@
   },
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "reload-libhalo": "cd ../core && yarn && yarn tsc && yarn webpack && cd ../cli && yarn add ../core"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@arx-research/libhalo": "../core",
+    "@arx-research/libhalo": "workspace:*",
     "argparse": "^2.0.1",
     "bufferutil": "^4.0.9",
     "express": "^5.1.0",
