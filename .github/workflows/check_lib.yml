@@ -27,17 +27,16 @@ jobs:
       - name: Enable corepack
         run: |
           corepack enable
-      - name: Install dependencies (root)
+      - name: Install dependencies
         run: |
-          cd core
           yarn workspaces focus --all
           yarn install --immutable
-      - name: Run tsc (root)
+      - name: Run tsc (core)
         run: |
           cd core
           ./node_modules/.bin/tsc
           ./node_modules/.bin/tsc -p tsconfig.commonjs.json
-      - name: Run webpack (root)
+      - name: Run webpack (core)
         run: |
           cd core
           ./node_modules/.bin/webpack

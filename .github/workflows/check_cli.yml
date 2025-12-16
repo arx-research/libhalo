@@ -30,26 +30,20 @@ jobs:
       - name: Enable corepack
         run: |
           corepack enable
-      - name: Install dependencies (root)
+      - name: Install dependencies
         run: |
-          cd core
           yarn workspaces focus --all
           yarn install --immutable
-      - name: Install dependencies (cli)
+      - name: Run tsc (cli)
         run: |
           cd cli
-          yarn workspaces focus --all
-          yarn install --immutable
-      - name: Run tsc (root)
+          ../node_modules/.bin/tsc
+      - name: Run webpack (cli)
         run: |
           cd cli
-          ./node_modules/.bin/tsc
-      - name: Run webpack (root)
-        run: |
-          cd cli
-          ./node_modules/.bin/webpack
+          ../node_modules/.bin/webpack
           mv dist_webpack/* .
       - name: Package HaLo CLI tool (Linux)
         run: |
           cd cli
-          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.cjs
+          ../node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.cjs
