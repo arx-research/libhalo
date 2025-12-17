@@ -66,5 +66,6 @@ jobs:
       - name: Test produced binary
         shell: bash
         run: |
+          cd cli
           chmod +x dist/halocli
           ./dist/halocli cli_version
