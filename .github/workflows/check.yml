@@ -31,6 +31,7 @@ jobs:
         run: |
           corepack enable
       - name: Install dependencies
+        shell: bash
         run: |
           yarn workspaces focus --all
           yarn install --immutable
@@ -46,18 +47,24 @@ jobs:
         run: |
           cd cli
           yarn tsc
-      - name: Run webpack (cli)
+      - name: Build halo-tools with webpack
+        shell: bash
         run: |
           cd cli
           yarn webpack
           mv dist_webpack/* .
-      - name: Package HaLo CLI tool (Linux)
-        run: |
-          cd cli
           mkdir build
           cp ../node_modules/@pokusew/pcsclite/build/Release/pcsclite.node build/pcsclite.node
           cp package.json orig-package.json
+      - name: Package HaLo CLI tool (Linux)
+        shell: bash
+        run: |
+          cd cli
+          node ./build_scripts/ci_scripts.js --platform linux --product cli
           npx json-merger orig-package.json bin-cli.json -p -o package.json
-          ../node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -o dist/halocli .
-          chmod +x ./dist/halocli
+          yarn pkg --compress GZip -t node20-linux-x64 -o dist/halocli .
+      - name: Test produced binary
+        shell: bash
+        run: |
+          chmod +x dist/halocli
           ./dist/halocli cli_version
