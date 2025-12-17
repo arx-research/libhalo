@@ -34,9 +34,9 @@ export default {
         },
         fallback: {
             vm: false,
-            buffer: resolve(__dirname, './node_modules/buffer/index.js'),
-            crypto: resolve(__dirname, './node_modules/crypto-browserify'),
-            stream: resolve(__dirname, './node_modules/stream-browserify')
+            buffer: resolve(__dirname, '../node_modules/buffer/index.js'),
+            crypto: resolve(__dirname, '../node_modules/crypto-browserify'),
+            stream: resolve(__dirname, '../node_modules/stream-browserify')
         },
     },
     plugins: [

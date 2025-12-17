@@ -1,4 +1,4 @@
-name: Check halocli tool
+name: Check build
 
 on:
   push:
@@ -15,8 +15,8 @@ on:
       - master
 
 jobs:
-  check_cli_tool:
-    runs-on: ubuntu-22.04
+  check:
+    runs-on: ubuntu-24.04
     steps:
       - name: Install native dependencies (Linux)
         run: |
@@ -27,32 +27,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install dependencies (root)
+      - name: Enable corepack
+        run: |
+          corepack enable
+      - name: Install dependencies
+        run: |
+          yarn workspaces focus --all
+          yarn install --immutable
+      - name: Run tsc (core)
         run: |
           cd core
-          yarn install --frozen-lockfile --production=false
-      - name: Run tsc (root)
+          yarn tsc
+      - name: Run webpack (core)
         run: |
           cd core
-          ./node_modules/.bin/tsc
-      - name: Run webpack (root)
-        run: |
-          cd core
-          ./node_modules/.bin/webpack
-      - name: Install dependencies (cli)
+          yarn webpack
+      - name: Run tsc (cli)
         run: |
           cd cli
-          yarn install --frozen-lockfile --production=false
-      - name: Run tsc (root)
+          yarn tsc
+      - name: Run webpack (cli)
         run: |
           cd cli
-          ./node_modules/.bin/tsc
-      - name: Run webpack (root)
-        run: |
-          cd cli
-          ./node_modules/.bin/webpack
+          yarn webpack
           mv dist_webpack/* .
       - name: Package HaLo CLI tool (Linux)
         run: |
           cd cli
-          ./node_modules/.bin/pkg --compress GZip -t node20-linux-x64 -c package.json -o dist/halocli entry_cli.bundle.cjs
+          cp package.json orig-package.json
+          npx json-merger orig-package.json bin-cli.json -p -o package.json
+          yarn pkg --compress GZip -t node20-linux-x64 -o dist/halocli .
+          chmod +x ./dist/halocli
+          ./dist/halocli cli_version

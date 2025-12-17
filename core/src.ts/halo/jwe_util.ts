@@ -18,6 +18,8 @@ class JWEUtil {
             .replaceAll('/', '_')
             .replaceAll('==', '');
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         this.sharedKeyObj = await subtle.importKey("raw", sharedKey, "AES-GCM", true, [
             "encrypt",
             "decrypt",
@@ -38,6 +40,8 @@ class JWEUtil {
             .replaceAll('-', '+')
             .replaceAll('_', '/');
         const sharedKeyBuf = Buffer.from(fixedKeyStr, 'base64');
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         this.sharedKeyObj = await subtle.importKey("raw", sharedKeyBuf, "AES-GCM", true, [
             "encrypt",
             "decrypt",
