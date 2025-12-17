@@ -95,13 +95,13 @@ jobs:
         run: |
           cd cli
           node ./build_scripts/ci_scripts.js --platform linux --product cli
-          npx json-merger orig-package.json bin-cli.json > package.json
+          npx json-merger orig-package.json bin-cli.json -p -o package.json
           yarn pkg --compress GZip -t node20-linux-x64 -o dist/halocli .
           node ./build_scripts/ci_scripts.js --platform linux --product bridge
-          npx json-merger orig-package.json bin-bridge.json > package.json
+          npx json-merger orig-package.json bin-bridge.json -p -o package.json
           yarn pkg --compress GZip -t node20-linux-x64 -o dist/halo-bridge .
           node ./build_scripts/ci_scripts.js --platform linux --product gateway
-          npx json-merger orig-package.json bin-gateway.json > package.json
+          npx json-merger orig-package.json bin-gateway.json -p -o package.json
           yarn pkg --compress GZip -t node20-linux-x64 -o dist/halo-gateway .
       - name: Package HaLo CLI tool (Windows)
         if: matrix.platform == 'windows'
@@ -111,7 +111,7 @@ jobs:
           node ./build_scripts/ci_scripts.js --platform windows --product cli
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          npx json-merger orig-package.json bin-cli.json > package.json
+          npx json-merger orig-package.json bin-cli.json -p -o package.json
           yarn pkg --compress GZip -t node20-win-x64 -o dist/halocli.exe .
       - name: Package HaLo Bridge tool (Windows)
         if: matrix.platform == 'windows'
@@ -121,7 +121,7 @@ jobs:
           node ./build_scripts/ci_scripts.js --platform windows --product bridge
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          npx json-merger orig-package.json bin-bridge.json > package.json
+          npx json-merger orig-package.json bin-bridge.json -p -o package.json
           yarn pkg --compress GZip -t node20-win-x64 -o dist/halo-bridge.exe .
       - name: Package HaLo Gateway tool (Windows)
         if: matrix.platform == 'windows'
@@ -131,7 +131,7 @@ jobs:
           node ./build_scripts/ci_scripts.js --platform windows --product gateway
           export PKG_CACHE_PATH='./.pkg-cache/'
           export PKG_IGNORE_TAG='1'
-          npx json-merger orig-package.json bin-gateway.json > package.json
+          npx json-merger orig-package.json bin-gateway.json -p -o package.json
           yarn pkg --compress GZip -t node20-win-x64 -o dist/halo-gateway.exe .
       - name: Package HaLo CLI tool (MacOS)
         if: matrix.platform == 'macos'
@@ -139,13 +139,13 @@ jobs:
         run: |
           cd cli
           node ./build_scripts/ci_scripts.js --platform macos --product cli
-          npx json-merger orig-package.json bin-cli.json > package.json
+          npx json-merger orig-package.json bin-cli.json -p -o package.json
           yarn pkg --compress GZip -t node20-macos-x64 -o dist/halocli .
           node ./build_scripts/ci_scripts.js --platform macos --product bridge
-          npx json-merger orig-package.json bin-bridge.json > package.json
+          npx json-merger orig-package.json bin-bridge.json -p -o package.json
           yarn pkg --compress GZip -t node20-macos-x64 -o dist/halo-bridge .
           node ./build_scripts/ci_scripts.js --platform macos --product gateway
-          npx json-merger orig-package.json bin-gateway.json > package.json
+          npx json-merger orig-package.json bin-gateway.json -p -o package.json
           yarn pkg --compress GZip -t node20-macos-x64 -o dist/halo-gateway .
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
           mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
