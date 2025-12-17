@@ -74,8 +74,8 @@ jobs:
           yarn tsc
       - name: Run webpack (core)
         run: |
-          cd cli
-          ../node_modules/.bin/webpack
+          cd core
+          yarn webpack
       - name: Run tsc (cli)
         run: |
           cd cli
@@ -84,7 +84,7 @@ jobs:
         shell: bash
         run: |
           cd cli
-          ../node_modules/.bin/webpack
+          yarn webpack
           mv dist_webpack/* .
           mkdir build
           cp ../node_modules/@pokusew/pcsclite/build/Release/pcsclite.node build/pcsclite.node

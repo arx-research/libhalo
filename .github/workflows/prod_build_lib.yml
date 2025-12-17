@@ -68,7 +68,7 @@ jobs:
       - name: Run webpack
         run: |
           cd core
-          ../node_modules/.bin/webpack
+          yarn webpack
       - name: Download release upload URL
         uses: actions/download-artifact@v4
         with:
@@ -158,8 +158,8 @@ jobs:
           yarn workspaces focus --all
           yarn install --immutable
           cd core
-          ../node_modules/.bin/tsc
-          ../node_modules/.bin/tsc -p tsconfig.commonjs.json
+          yarn tsc
+          yarn tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
         run: cd core && yarn publish --provenance
       - name: Re-setup Node.JS with GitHub pkg
