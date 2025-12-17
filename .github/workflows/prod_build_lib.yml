@@ -164,13 +164,13 @@ jobs:
           yarn tsc
           yarn tsc -p tsconfig.commonjs.json
       - name: Publish package to npmjs
-        run: cd core && yarn npm publish --provenance
+        run: cd core && yarn npm publish --provenance --access public
       - name: Re-setup Node.JS with GitHub pkg
         uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
       - name: Publish package to GitHub
-        run: cd core && yarn npm publish --provenance
+        run: cd core && yarn npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
