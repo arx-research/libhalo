@@ -54,6 +54,8 @@ jobs:
       - name: Package HaLo CLI tool (Linux)
         run: |
           cd cli
+          mkdir build
+          cp ../node_modules/@pokusew/pcsclite/build/Release/pcsclite.node build/pcsclite.node
           cp package.json orig-package.json
           npx json-merger orig-package.json bin-cli.json -p -o package.json
           yarn pkg --compress GZip -t node20-linux-x64 -o dist/halocli .
