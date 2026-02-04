@@ -4,18 +4,29 @@
  * License: MIT
  */
 
+import {Buffer} from 'buffer/index.js';
+
+interface HaloTagErrorArgs {
+    name: string
+    message: string
+    payload?: Buffer | null
+    stackOnExecutor?: string
+}
+
 /**
  * This error is thrown when there is an error response from the tag itself.
  * The "name" property will contain the exact error name (e.g. ERROR_CODE_INVALID_KEY_NO).
  */
 class HaloTagError extends Error {
     public errorName: string;
+    public payload: Buffer | null;
     public stackOnExecutor: string | undefined;
 
-    constructor(name: string, message: string, stackOnExecutor?: string) {
+    constructor({ name, message, payload, stackOnExecutor }: HaloTagErrorArgs) {
         super("The NFC tag encountered an error when executing command: " + message);
         this.name = name;
         this.errorName = "HaloTagError";
+        this.payload = payload ?? null;
         this.stackOnExecutor = stackOnExecutor;
     }
 }

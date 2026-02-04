@@ -32,7 +32,8 @@ import {
     cmdGetGraffiti,
     cmdStoreGraffiti,
     cmdCfgNDEFStoreGraffiti,
-    cmdReplacePasswordStoreGraffiti
+    cmdReplacePasswordStoreGraffiti,
+    cmdUnlockOnline
 } from "../halo/commands.js";
 import {ERROR_CODES} from "../halo/errors.js";
 import {
@@ -41,7 +42,7 @@ import {
     HaloResponseObject
 } from "../types.js";
 import {Buffer} from 'buffer/index.js';
-import {arr2hex, isWebDebugEnabled} from "../halo/util.js";
+import {arr2hex, webDebug} from "../halo/util.js";
 
 async function execHaloCmd(command: HaloCommandObject, options: ExecHaloCmdOptions): Promise<HaloResponseObject> {
     command = Object.assign({}, command);
@@ -98,26 +99,52 @@ async function execHaloCmd(command: HaloCommandObject, options: ExecHaloCmdOptio
             return await cmdReplacePasswordStoreGraffiti(options, command);
         case 'cfg_ndef_store_graffiti':
             return await cmdCfgNDEFStoreGraffiti(options, command);
+        case 'unlock_online':
+            return await cmdUnlockOnline(options, command);
         default:
             throw new HaloLogicError("Unsupported command.name parameter specified.");
     }
 }
 
-function checkErrors(res: Buffer) {
-    const webDebug = isWebDebugEnabled();
+function buildHaloTagError(code: number, payload?: Buffer | null): HaloTagError {
+    if (Object.prototype.hasOwnProperty.call(ERROR_CODES, code)) {
+        const err = ERROR_CODES[code];
+        return new HaloTagError({
+            name: err[0],
+            message: err[1],
+            payload,
+        });
+    } else {
+        const errCode = arr2hex([code]);
+        return new HaloTagError({
+            name: "ERROR_CODE_" + errCode,
+            message: "Command returned an unknown error: " + arr2hex([code]),
+            payload,
+        });
+    }
+};
 
+function getHaloTagError(res: Buffer): HaloTagError | null {
+    // generic HaLo error
     if (res.length === 2 && res[0] === 0xE1) {
-        if (webDebug) {
-            console.log('[libhalo] execCredential() command fail:', arr2hex(res));
-        }
+        webDebug('[libhalo] command fail:', arr2hex(res));
+        return buildHaloTagError(res[1]);
+    }
 
-        if (Object.prototype.hasOwnProperty.call(ERROR_CODES, res[1])) {
-            const err = ERROR_CODES[res[1]];
-            throw new HaloTagError(err[0], err[1]);
-        } else {
-            const errCode = arr2hex([res[1]]);
-            throw new HaloTagError("ERROR_CODE_" + errCode, "Command returned an unknown error: " + arr2hex(res));
-        }
+    // ERROR_CODE_AUTH_SOFT_LOCKED
+    if (res.length === 2+16 && res[0] == 0xE1 && res[1] == 0x21) {
+        webDebug('[libhalo] command fail:', arr2hex(res));
+        return buildHaloTagError(res[1], res.slice(2));
+    }
+
+    return null;
+}
+
+function checkHaloTagError(res: Buffer) {
+    const err = getHaloTagError(res);
+
+    if (err) {
+        throw err;
     }
 }
 
@@ -140,10 +167,10 @@ function unwrapResultFromU2F(res: Buffer) {
     return res.slice(5);
 }
 
-
 export {
     execHaloCmd,
-    checkErrors,
+    getHaloTagError,
+    checkHaloTagError,
     wrapCommandForU2F,
     unwrapResultFromU2F
 };

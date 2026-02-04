@@ -282,7 +282,11 @@ class HaloGateway {
                         e = new HaloLogicError(resolution.exception.message, resolution.exception.stack);
                         break;
                     case 'HaloTagError':
-                        e = new HaloTagError(resolution.exception.name, resolution.exception.message, resolution.exception.stack);
+                        e = new HaloTagError({
+                            name: resolution.exception.name,
+                            message: resolution.exception.message,
+                            stackOnExecutor: resolution.exception.stack,
+                        });
                         break;
                     case 'NFCOperationError':
                         e = new NFCOperationError(resolution.exception.message, resolution.exception.stack);

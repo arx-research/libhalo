@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-import {execHaloCmd, checkErrors} from "../drivers/common.js";
+import {execHaloCmd, checkHaloTagError as checkErrors} from "../drivers/common.js";
 
 /**
  * The LibHaLo stable API. Please don't depend on the functions imported from anywhere else

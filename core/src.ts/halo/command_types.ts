@@ -236,3 +236,12 @@ export interface HaloResReplacePasswordStoreGraffiti {
 export interface HaloResCFGNDEFStoreGraffiti {
     status: "ok"
 }
+
+export interface HaloCmdUnlockOnline {
+    keyNo: KeySlotNo
+    unlockSig: ASCIIString
+}
+
+export interface HaloResUnlockOnline {
+    status: "ok"
+}

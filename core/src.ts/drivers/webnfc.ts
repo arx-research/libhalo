@@ -15,6 +15,7 @@ import {arr2hex, hex2arr, isWebDebugEnabled} from "../halo/util.js";
 import {ExecOptions, ExecReturnStruct} from "../types.js";
 import type {NDEFReader} from "../types_webnfc.js";
 import {Buffer} from 'buffer/index.js';
+import {getHaloTagError} from "./common.js";
 
 let ndef: NDEFReader | null = null;
 let ctrl: AbortController | null = null;
@@ -225,25 +226,16 @@ async function execWebNFC(request: Buffer, options: ExecOptions): Promise<ExecRe
                 }
 
                 const resBuf = hex2arr(out.res);
+                const exc = getHaloTagError(Buffer.from(resBuf));
 
-                if (resBuf[0] === 0xE1) {
+                if (exc) {
                     if (webDebug) {
                         console.log('[libhalo] execWebNFC() command fail:', arr2hex(resBuf));
                     }
 
-                    if (Object.prototype.hasOwnProperty.call(ERROR_CODES, resBuf[1])) {
-                        const err = ERROR_CODES[resBuf[1]];
-                        ndef!.onreading = () => null;
-                        ndef!.onreadingerror = () => null;
-                        reject(new HaloTagError(err[0], err[1]));
-                    } else {
-                        ndef!.onreading = () => null;
-                        ndef!.onreadingerror = () => null;
-
-                        const errCode = arr2hex([resBuf[1]]);
-                        reject(new HaloTagError("ERROR_CODE_" + errCode, "Command returned an unknown error: " + arr2hex(resBuf)));
-                    }
-
+                    ndef!.onreading = () => null;
+                    ndef!.onreadingerror = () => null;
+                    reject(exc);
                     return;
                 }
 
