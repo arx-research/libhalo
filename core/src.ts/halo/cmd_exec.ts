@@ -22,6 +22,7 @@ import {
     HaloCmdSignChallenge,
     HaloCmdSignRandom,
     HaloCmdStoreGraffiti,
+    HaloCmdUnlockOnline,
     HaloCmdUnsetPassword,
     HaloCmdWriteLatch,
     HaloResCFGNDEFStoreGraffiti,
@@ -42,6 +43,7 @@ import {
     HaloResSignChallenge,
     HaloResSignRandom,
     HaloResStoreGraffiti,
+    HaloResUnlockOnline,
     HaloResUnsetPassword,
     HaloResWriteLatch
 } from "./command_types.js";
@@ -156,5 +158,9 @@ export abstract class BaseHaloAPI {
 
     cfgNDEFStoreGraffiti(args: HaloCmdCFGNDEFStoreGraffiti, options?: HaloAPICallOptions): Promise<HaloResCFGNDEFStoreGraffiti> {
         return this.executeCommand({...args, name: "cfg_ndef_store_graffiti"}, options);
+    }
+
+    unlockOnline(args: HaloCmdUnlockOnline, options?: HaloAPICallOptions): Promise<HaloResUnlockOnline> {
+        return this.executeCommand({...args, name: "unlock_online"}, options);
     }
 }
