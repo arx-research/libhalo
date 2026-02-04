@@ -800,6 +800,8 @@ async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDat
         "keySlotFlags": 0x03,
         "keySlotFailedAuthCtr": 0x04,
         "compressedPublicKey": 0x05,
+        "keySlotAuthFailState": 0x06,
+        "keySlotAuthUnlockChallenge": 0x07,
         "latchValue": 0x20,
         "latchAttest": 0x21,
         "graffiti": 0x22,
@@ -810,7 +812,8 @@ async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDat
         0x01: "keySlotOutOfBounds",
         0x02: "keySlotNotGenerated",
         0x03: "latchNotSet",
-        0x04: "latchAttestNotSet"
+        0x04: "latchAttestNotSet",
+        0x05: "authFailStateInvalid"
     }
 
     let data = Buffer.alloc(0);
