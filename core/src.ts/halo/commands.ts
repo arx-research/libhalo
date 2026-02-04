@@ -33,13 +33,15 @@ import {
     HaloCmdGenKey,
     HaloCmdGenKeyConfirm,
     HaloCmdGenKeyFinalize,
-    HaloCmdReplacePasswordStoreGraffiti, HaloCmdUnlockOnline,
+    HaloCmdReplacePasswordStoreGraffiti,
+    HaloCmdUnlockOnline,
     HaloResCFGNDEF,
     HaloResCFGNDEFStoreGraffiti,
     HaloResGenKey,
     HaloResGenKeyConfirm,
     HaloResGenKeyFinalize,
-    HaloResReplacePasswordStoreGraffiti, HaloResUnlockOnline,
+    HaloResReplacePasswordStoreGraffiti,
+    HaloResUnlockOnline,
     KeyFlags,
     PublicKeyList
 } from "../types.js";
