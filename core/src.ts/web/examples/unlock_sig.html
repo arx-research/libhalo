@@ -29,6 +29,7 @@
 
     <strong>Status text:</strong>
     <pre id="statusText" style="white-space: pre-wrap; word-break: break-all;">Please click the "check if locked" button below.</pre>
+    <pre id="statusWaitText" style="white-space: pre-wrap; word-break: break-all; margin-top: 10px;"></pre>
 
     <div class="mt-2">
         <button class="btn btn-secondary" id="btnCheck" onclick="btnCheckLocked();">
@@ -58,9 +59,7 @@
 
         async function waitForToken(jwt, timeToWaitSec) {
             if (timeToWaitSec > 0) {
-                document.getElementById('statusText').innerText = 'Obtained unlock JWT: ' + jwt + '\n\n';
-                document.getElementById('statusText').innerText += 'We need to wait for some time before we will be able to redeem it.\n';
-                document.getElementById('statusText').innerText += 'Wait for ' + timeToWaitSec + ' more seconds...';
+                document.getElementById('statusWaitText').innerText = 'Wait for ' + timeToWaitSec + ' more seconds...';
                 setTimeout(waitForToken, 1000, jwt, timeToWaitSec - 1);
                 return;
             }
@@ -83,17 +82,44 @@
             let keyNo = document.getElementById('keyNo').value;
             let command = {
                 "name": "get_data_struct",
-                "spec": "keySlotAuthFailState:" + keyNo + ",keySlotAuthUnlockChallenge:" + keyNo
+                "spec": "keySlotFailedAuthCtr:" + keyNo + ",keySlotAuthFailState:" + keyNo + ",keySlotAuthUnlockChallenge:" + keyNo
             }
 
             try {
                 document.getElementById('statusText').innerText = '';
                 log('Scanning the tag...');
                 const res = await execHaloCmdWeb(command);
-                log('Key slot state: ' + JSON.stringify(res, null, 4));
+                document.getElementById('statusText').innerText = '';
+                const authCtr = parseInt(res.data["keySlotFailedAuthCtr:" + keyNo]);
+                const failState = parseInt(res.data["keySlotAuthFailState:" + keyNo], 16);
+                const failLevel = failState & 0x0F;
                 const challenge = res.data["keySlotAuthUnlockChallenge:" + keyNo];
 
-                if (typeof challenge === "string") {
+                log('Failed auth counter: ' + authCtr);
+
+                switch (failLevel) {
+                    case 1:
+                        log('Key slot is not restricted.');
+                        break;
+                    case 2:
+                        log('SIG/HW Soft lock. You will be required to unlock the key slot using online/hardware unlocking procedure on subsequent authentication failures.');
+                        break;
+                    case 3:
+                        log('HW Soft lock. You will be required to unlock the key slot using hardware unlocking procedure on subsequent authentication failures.');
+                        break;
+                    case 4:
+                        log('Key slot is permanently locked.');
+                        break;
+                    default:
+                        log('Unknown fail level: ' + failLevel);
+                        break;
+                }
+
+                if ((failState & 0x10) === 0x10) {
+                    log('Key slot is not locked. You may proceed with another authentication attempt.');
+                } else if (typeof challenge === "string") {
+                    log('');
+                    log('Connecting with the server to obtain the unlocking JWT...');
                     // send our challenge to the server
                     // the server will return a JWT that will be valid in the future
                     const res = await fetch('https://tx.burner.pro/unlock/challenge', {
@@ -105,8 +131,10 @@
                     // parse the JWT to figure out how many seconds do we need to wait
                     // before the JWT becomes valid
                     const jwt = parseJwt(resParsed.jwt);
-                    log(JSON.stringify(jwt, null, 4));
                     const timeToWaitSec = jwt.nbf - jwt.iat;
+                    log('Obtained unlock JWT: ' + resParsed.jwt);
+                    log('Time before JWT becomes valid: ' + timeToWaitSec + ' seconds.');
+                    log('We need to wait for some time before we will be able to redeem it.');
                     // wait the indicated amount of time and make another request to the server
                     // to redeem the JWT token for the key slot unlocking signature
                     waitForToken(resParsed.jwt, timeToWaitSec);
@@ -114,7 +142,7 @@
             } catch (e) {
                 // the operation has failed, display the reason to the user
                 console.error('execHaloCmdWeb error', e);
-                document.getElementById('statusText').innerText = e;
+                log(e);
             }
         }
 
@@ -127,7 +155,6 @@
             }
 
             try {
-                document.getElementById('statusText').innerText = '';
                 log('Scanning the tag to unlock...');
                 const res = await execHaloCmdWeb(command);
                 log('Status: ' + JSON.stringify(res, null, 4));
@@ -137,7 +164,7 @@
             } catch (e) {
                 // the operation has failed, display the reason to the user
                 console.error('execHaloCmdWeb error', e);
-                document.getElementById('statusText').innerText = e;
+                log(e);
             }
         }
     </script>
