@@ -9,13 +9,11 @@ import {
 } from "../types.js";
 import {SignalDispatcher} from "strongly-typed-events";
 import queryString from 'query-string';
-import {execHaloCmd, unwrapResultFromU2F, wrapCommandForU2F} from "../drivers/common.js";
+import {checkHaloTagError, execHaloCmd, unwrapResultFromU2F, wrapCommandForU2F} from "../drivers/common.js";
 import {Buffer} from "buffer/index.js";
 import {BaseHaloAPI} from "./cmd_exec.js";
 import {decodeJwt, SignJWT} from "jose";
-import {HaloLogicError, HaloTagError, NFCBadTransportError, NFCOperationError} from "./exceptions.js";
-import {arr2hex} from "./util.js";
-import {ERROR_CODES} from "./errors.js";
+import {HaloLogicError, NFCBadTransportError, NFCOperationError} from "./exceptions.js";
 import {readNDEF} from "../drivers/read_ndef.js";
 
 class HaloSimulator {
@@ -225,16 +223,7 @@ class HaloSimulator {
                 }
 
                 const unwrappedRes = unwrapResultFromU2F(execRes.slice(0, -2));
-
-                if (unwrappedRes.length === 2 && unwrappedRes[0] === 0xE1) {
-                    if (Object.prototype.hasOwnProperty.call(ERROR_CODES, unwrappedRes[1])) {
-                        const err = ERROR_CODES[unwrappedRes[1]];
-                        throw new HaloTagError(err[0], err[1]);
-                    } else {
-                        const errCode = arr2hex([unwrappedRes[1]]);
-                        throw new HaloTagError("ERROR_CODE_" + errCode, "Command returned an unknown error: " + arr2hex(unwrappedRes));
-                    }
-                }
+                checkHaloTagError(unwrappedRes);
 
                 return {
                     result: unwrappedRes.toString('hex'),

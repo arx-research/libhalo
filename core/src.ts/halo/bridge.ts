@@ -206,7 +206,11 @@ class HaloBridge {
                         e = new HaloLogicError(res.data.exception.message, res.data.exception.stack);
                         break;
                     case 'HaloTagError':
-                        e = new HaloTagError(res.data.exception.name, res.data.exception.message, res.data.exception.stack);
+                        e = new HaloTagError({
+                            name: res.data.exception.name,
+                            message: res.data.exception.message,
+                            stackOnExecutor: res.data.exception.stack,
+                        });
                         break;
                     case 'NFCOperationError':
                         // allow some time for the PC/SC reader to re-poll for the card

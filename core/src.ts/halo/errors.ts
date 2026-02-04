@@ -33,7 +33,10 @@ const ERROR_CODES: ErrorCodeLookup = {
     0x16: ["ERROR_CODE_INTERNAL_ERROR_3", "Internal error #3, no details available."],
     0x17: ["ERROR_CODE_PWD_MANDATORY", "The specified key slot must be password protected."],
     0x18: ["ERROR_CODE_TOO_MANY_AUTH_FAILS", "The key slot is permanently locked, too many authentication failures."],
-    0x19: ["ERROR_CODE_OP_LIMIT_EXCEEDED", "Command locked for security reasons. Too many repetitions of the command."]
+    0x19: ["ERROR_CODE_OP_LIMIT_EXCEEDED", "Command locked for security reasons. Too many repetitions of the command."],
+    0x20: ["ERROR_CODE_UNSUPPORTED_FEATURE", "Unsupported feature."],
+    0x21: ["ERROR_CODE_AUTH_SOFT_LOCKED", "Authentication soft-locked after too many wrong passwords. You need to perform the unlocking procedure."],
+    0x22: ["ERROR_CODE_AUTH_HW_LOCKED", "Authentication hw-locked after too many wrong passwords. You need to perform the unlocking procedure."]
 };
 
 export {ERROR_CODES};

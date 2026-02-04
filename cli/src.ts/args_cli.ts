@@ -434,6 +434,27 @@ cfgNDEFStoreGraffitiParser.add_argument("--data", {
     default: ''
 });
 
+const unlockOnlineParser = subparsers.add_parser("unlock_online", {help: "Unlock using Arx signature."});
+unlockOnlineParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    help: "Number of the key slot to use.",
+    type: 'int',
+    required: true
+});
+unlockOnlineParser.add_argument("-s", "--sig", {
+    dest: 'unlockSig',
+    help: "Unlock signature.",
+    required: true
+});
+
+const unlockHwParser = subparsers.add_parser("unlock_hw", {help: "Unlock using HW loop."});
+unlockHwParser.add_argument("-k", "--key-no", {
+    dest: 'keyNo',
+    help: "Number of the key slot to use.",
+    type: 'int',
+    required: true
+});
+
 subparsers.add_parser("pcsc_detect", {help: "Detect PC/SC readers and HaLo tags (for debugging)."});
 
 const cfgSimParser = subparsers.add_parser("sim_cfg", {help: "Configure simulation."});

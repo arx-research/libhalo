@@ -33,13 +33,13 @@ import {
     HaloCmdGenKey,
     HaloCmdGenKeyConfirm,
     HaloCmdGenKeyFinalize,
-    HaloCmdReplacePasswordStoreGraffiti,
+    HaloCmdReplacePasswordStoreGraffiti, HaloCmdUnlockOnline,
     HaloResCFGNDEF,
     HaloResCFGNDEFStoreGraffiti,
     HaloResGenKey,
     HaloResGenKeyConfirm,
     HaloResGenKeyFinalize,
-    HaloResReplacePasswordStoreGraffiti,
+    HaloResReplacePasswordStoreGraffiti, HaloResUnlockOnline,
     KeyFlags,
     PublicKeyList
 } from "../types.js";
@@ -946,6 +946,16 @@ async function cmdCfgNDEFStoreGraffiti(options: ExecHaloCmdOptions, args: HaloCm
     return {"status": "ok"};
 }
 
+async function cmdUnlockOnline(options: ExecHaloCmdOptions, args: HaloCmdUnlockOnline): Promise<HaloResUnlockOnline> {
+    await options.exec(Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_AUTH_UNLOCK_SIG]),
+        Buffer.from([args.keyNo]),
+        Buffer.from(args.unlockSig, "hex"),
+    ]));
+
+    return {"status": "ok"};
+}
+
 export {
     cmdSign,
     cmdSignRandom,
@@ -971,6 +981,7 @@ export {
     cmdStoreGraffiti,
     cmdReplacePasswordStoreGraffiti,
     cmdCfgNDEFStoreGraffiti,
+    cmdUnlockOnline,
 };
 
 export type * from "./command_types.js";

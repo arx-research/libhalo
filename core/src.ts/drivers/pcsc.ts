@@ -6,7 +6,7 @@
 
 import {readNDEF} from "./read_ndef.js";
 import {HaloLogicError, NFCOperationError} from "../halo/exceptions.js";
-import {execHaloCmd, checkErrors, wrapCommandForU2F, unwrapResultFromU2F} from "./common.js";
+import {execHaloCmd, wrapCommandForU2F, unwrapResultFromU2F, checkHaloTagError} from "./common.js";
 import {
     ExecHaloCmdOptions, ExecOptions,
     HaloCommandObject,
@@ -14,6 +14,7 @@ import {
 } from "../types.js";
 import {Buffer} from 'buffer/index.js';
 import {ISO7816_SELECT_CMDS} from "../aid.js";
+import {unlockHW} from "./unlock_hw.js";
 
 async function selectCore(reader: Reader) {
     let res;
@@ -135,7 +136,7 @@ async function execCoreCommand(reader: Reader, command: Buffer, options?: ExecOp
         res = unwrapResultFromU2F(res);
     }
 
-    checkErrors(res);
+    checkHaloTagError(res);
 
     if (options.pcscExecLayer === "u2f") {
         await selectCore(reader);
@@ -155,6 +156,8 @@ function makeOptions(reader: Reader): ExecHaloCmdOptions {
 }
 
 async function execHaloCmdPCSC(command: HaloCommandObject, reader: Reader) {
+    const wrappedTransceive = async (payload: Buffer) => await transceive(reader, payload, {noCheck: true});
+
     await selectCore(reader);
 
     const options = makeOptions(reader);
@@ -174,8 +177,10 @@ async function execHaloCmdPCSC(command: HaloCommandObject, reader: Reader) {
         };
     } else if (command.name === "read_ndef") {
         // PCSC-specific NDEF reader command
-        const wrappedTransceive = async (payload: Buffer) => await transceive(reader, payload, {noCheck: true});
         return await readNDEF(wrappedTransceive);
+    } else if (command.name === "unlock_hw") {
+        await selectCore(reader);
+        return await unlockHW(wrappedTransceive, command.keyNo);
     } else if (command.name === "full_gen_key") {
         await selectCore(reader);
 

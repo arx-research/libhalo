@@ -8,7 +8,7 @@ import {NFCOperationError, NFCMethodNotSupported} from "../halo/exceptions.js";
 import {arr2hex, isWebDebugEnabled} from "../halo/util.js";
 import {ExecOptions, ExecReturnStruct} from "../types.js";
 import {Buffer} from 'buffer/index.js';
-import {checkErrors} from "./common.js";
+import {checkHaloTagError} from "./common.js";
 
 async function execCredential(request: Buffer, options: ExecOptions): Promise<ExecReturnStruct> {
     const webDebug = isWebDebugEnabled();
@@ -87,7 +87,7 @@ async function execCredential(request: Buffer, options: ExecOptions): Promise<Ex
     const res = (u2fRes.response as AuthenticatorAssertionResponse).signature;
     const resBuf = new Uint8Array(res);
 
-    checkErrors(Buffer.from(resBuf));
+    checkHaloTagError(Buffer.from(resBuf));
 
     if (webDebug) {
         console.log('[libhalo] execCredential() command result:', arr2hex(resBuf));
