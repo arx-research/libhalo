@@ -33,7 +33,7 @@ import {
     cmdStoreGraffiti,
     cmdCfgNDEFStoreGraffiti,
     cmdReplacePasswordStoreGraffiti,
-    cmdUnlockOnline
+    cmdUnlockOnline, cmdGetDataStructV2
 } from "../halo/commands.js";
 import {ERROR_CODES} from "../halo/errors.js";
 import {
@@ -91,6 +91,8 @@ async function execHaloCmd(command: HaloCommandObject, options: ExecHaloCmdOptio
             return await cmdImportKey(options, command);
         case 'get_data_struct':
             return await cmdGetDataStruct(options, command);
+        case 'get_data_struct_v2':
+            return await cmdGetDataStructV2(options, command);
         case 'get_graffiti':
             return await cmdGetGraffiti(options, command);
         case 'store_graffiti':

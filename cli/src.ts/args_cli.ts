@@ -367,6 +367,14 @@ getDataStructParser.add_argument("-s", "--spec", {
     required: true
 });
 
+const getDataStructParserV2 = subparsers.add_parser("get_data_struct_v2", {help: "Get certain data from the tag."});
+getDataStructParserV2.add_argument("-s", "--spec", {
+    dest: 'spec',
+    type: 'str',
+    help: "Data specification.",
+    required: true
+});
+
 const getGraffitiParser = subparsers.add_parser("get_graffiti", {help: "Get graffiti data from the tag."});
 getGraffitiParser.add_argument("-n", "--slot-no", {
     dest: 'slotNo',
