@@ -17,7 +17,10 @@ async function unlockHW(transceive: TransceiveFunc, keyNo: number) {
             Buffer.from([keyNo]),
             Buffer.from([0x00]),
         ]));
-    } while (resUnlockHw.compare(Buffer.from([0x91, 0xAF])) !== 0);
+        process.stdout.write(".");
+    } while (resUnlockHw.compare(Buffer.from([0x91, 0xAF])) === 0);
+
+    process.stdout.write("\n");
 
     if (resUnlockHw.compare(Buffer.from([0x90, 0x00])) !== 0) {
         throw new HaloLogicError("Failed to perform HW unlocking of the key slot.");
