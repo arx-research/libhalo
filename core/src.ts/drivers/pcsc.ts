@@ -181,7 +181,7 @@ async function execHaloCmdPCSC(command: HaloCommandObject, reader: Reader) {
     } else if (command.name === "unlock_hw") {
         await selectCore(reader);
         const cb = (cur: number, max: number) => {
-            console.log('Progress: ' + cur + ' / ' + max);
+            console.log(JSON.stringify({"status": "in_progress", "cur": cur, "max": max}));
         };
         return await unlockHW(wrappedTransceive, command.keyNo, cb);
     } else if (command.name === "full_gen_key") {
