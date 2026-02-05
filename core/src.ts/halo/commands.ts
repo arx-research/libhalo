@@ -970,17 +970,17 @@ async function cmdGetDataStructV2(options: ExecHaloCmdOptions, args: HaloCmdGetD
 
     const revSpec = [...args.spec].reverse();
     const out: HaloResGetDataStructV2 = {
-        publicKey: {},
-        publicKeyAttest: {},
-        keySlotFlags: {},
-        keySlotFailedAuthCtr: {},
-        compressedPublicKey: {},
-        keySlotAuthFailState: {},
-        keySlotAuthUnlockChallenge: {},
-        latchValue: {},
-        latchAttest: {},
-        graffiti: {},
-        firmwareVersion: {}
+        publicKey: Object.create(null),
+        publicKeyAttest: Object.create(null),
+        keySlotFlags: Object.create(null),
+        keySlotFailedAuthCtr: Object.create(null),
+        compressedPublicKey: Object.create(null),
+        keySlotAuthFailState: Object.create(null),
+        keySlotAuthUnlockChallenge: Object.create(null),
+        latchValue: Object.create(null),
+        latchAttest: Object.create(null),
+        graffiti: Object.create(null),
+        firmwareVersion: Object.create(null)
     };
 
     while (res.length > 0) {
