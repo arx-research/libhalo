@@ -50,7 +50,7 @@ async function execHaloCmdRN(nfcManager: RNNFCManager, command: HaloCommandObjec
 
     if (command.name === "unlock_hw") {
         await selectCore(nfcManager);
-        return await unlockHW(wrappedTransceive, command.keyNo);
+        return await unlockHW(wrappedTransceive, command.keyNo, command.statusCallback);
     } else if (command.name === "read_ndef") {
         return await readNDEF(wrappedTransceive);
     } else {
