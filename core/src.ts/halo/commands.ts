@@ -992,6 +992,12 @@ async function cmdGetDataStructV2(options: ExecHaloCmdOptions, args: HaloCmdGetD
 
         let len = res[0];
 
+        if (out[item.type][item.index]) {
+            // item already set, continue
+            res = res.slice(len + 1);
+            continue;
+        }
+
         if (len === 0xFF) { // no value returned, special message
             len = 1;
 
