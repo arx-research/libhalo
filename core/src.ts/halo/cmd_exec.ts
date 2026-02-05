@@ -7,6 +7,7 @@ import {
     HaloCmdCFGNDEFStoreGraffiti,
     HaloCmdExportKey,
     HaloCmdGetDataStruct,
+    HaloCmdGetDataStructV2,
     HaloCmdGetGraffiti,
     HaloCmdGetKeyInfo,
     HaloCmdGetPkeys,
@@ -28,6 +29,7 @@ import {
     HaloResCFGNDEFStoreGraffiti,
     HaloResExportKey,
     HaloResGetDataStruct,
+    HaloResGetDataStructV2,
     HaloResGetGraffiti,
     HaloResGetKeyInfo,
     HaloResGetPkeys,
@@ -142,6 +144,10 @@ export abstract class BaseHaloAPI {
 
     getDataStruct(args: HaloCmdGetDataStruct, options?: HaloAPICallOptions): Promise<HaloResGetDataStruct> {
         return this.executeCommand({...args, name: "get_data_struct"}, options);
+    }
+
+    getDataStructV2(args: HaloCmdGetDataStructV2, options?: HaloAPICallOptions): Promise<HaloResGetDataStructV2> {
+        return this.executeCommand({...args, name: "get_data_struct_v2"}, options);
     }
 
     getGraffiti(args: HaloCmdGetGraffiti, options?: HaloAPICallOptions): Promise<HaloResGetGraffiti> {
