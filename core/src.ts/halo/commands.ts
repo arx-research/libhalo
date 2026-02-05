@@ -26,6 +26,8 @@ import {CMD_CODES as CMD} from './cmdcodes.js';
 import pbkdf2 from 'pbkdf2';
 import {KEY_FLAGS, parseKeyFlags} from "./keyflags.js";
 import {
+    DataStructErrorType,
+    DataStructObjectType,
     ExecHaloCmdOptions,
     ExecReturnStruct,
     HaloCmdCFGNDEF,
@@ -33,6 +35,7 @@ import {
     HaloCmdGenKey,
     HaloCmdGenKeyConfirm,
     HaloCmdGenKeyFinalize,
+    HaloCmdGetDataStructV2,
     HaloCmdReplacePasswordStoreGraffiti,
     HaloCmdUnlockOnline,
     HaloResCFGNDEF,
@@ -40,9 +43,10 @@ import {
     HaloResGenKey,
     HaloResGenKeyConfirm,
     HaloResGenKeyFinalize,
+    HaloResGetDataStructV2,
     HaloResReplacePasswordStoreGraffiti,
     HaloResUnlockOnline,
-    KeyFlags,
+    KeyFlags, KeySlotAuthFailLevel,
     PublicKeyList
 } from "../types.js";
 import {
@@ -791,6 +795,10 @@ async function cmdImportKey(options: ExecHaloCmdOptions, args: HaloCmdImportKey)
 }
 
 async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDataStruct): Promise<HaloResGetDataStruct> {
+    console.warn('The get_data_struct command is deprecated as it doesn\'t work well with TypeScript. ' +
+        'This command will not receive any new updates and may be removed in the future release. ' +
+        'Consider switching to get_data_struct_v2 which has a redesigned API.');
+
     const specParts = args.spec.split(',');
     let specItems = specParts.map((item: string) => item.split(':', 2));
 
@@ -885,9 +893,157 @@ async function cmdGetDataStruct(options: ExecHaloCmdOptions, args: HaloCmdGetDat
     }
 
     return {
+        _deprecationMessage: 'The get_data_struct command is deprecated as it doesn\'t work well with TypeScript. ' +
+            'This command will not receive any new updates and may be removed in the future release. ' +
+            'Consider switching to get_data_struct_v2 which has a redesigned API.',
         isPartial: specItems.length !== 0,
         data: out
     };
+}
+
+async function cmdGetDataStructV2(options: ExecHaloCmdOptions, args: HaloCmdGetDataStructV2): Promise<HaloResGetDataStructV2> {
+    const objectFlip = <K extends string | number | symbol, V extends string | number | symbol>(obj: Record<K, V>): Record<V, K> => {
+        return Object.entries(obj).reduce((ret, entry) => {
+            const [key, value] = entry as [K, V];
+            (ret as Record<V, K>)[value as V] = key;
+            return ret;
+        }, {}) as Record<V, K>;
+    };
+
+    const TYPES: Record<DataStructObjectType, number> = {
+        "publicKey": 0x01,
+        "publicKeyAttest": 0x02,
+        "keySlotFlags": 0x03,
+        "keySlotFailedAuthCtr": 0x04,
+        "compressedPublicKey": 0x05,
+        "keySlotAuthFailState": 0x06,
+        "keySlotAuthUnlockChallenge": 0x07,
+        "latchValue": 0x20,
+        "latchAttest": 0x21,
+        "graffiti": 0x22,
+        "firmwareVersion": 0xF0
+    };
+
+    const SPECIAL_MSG: Record<DataStructErrorType, number> = {
+        "resultBufferOverflow": 0x00,
+        "keySlotOutOfBounds": 0x01,
+        "keySlotNotGenerated": 0x02,
+        "latchNotSet": 0x03,
+        "latchAttestNotSet": 0x04,
+        "authFailStateInvalid": 0x05
+    };
+
+    const FAIL_LEVEL: Record<KeySlotAuthFailLevel, number> = {
+        "unrestricted": 0x01,
+        "softlocked": 0x02,
+        "softlocked-hw": 0x03,
+        "lockout": 0x04,
+    };
+
+    const REV_SPECIAL_MSG = objectFlip(SPECIAL_MSG);
+    const REV_FAIL_LEVEL = objectFlip(FAIL_LEVEL);
+
+    let data = Buffer.alloc(0);
+
+    for (const item of args.spec) {
+        if (Object.keys(TYPES).indexOf(item.type) === -1) {
+            throw new HaloLogicError("Unsupported object type: " + item.type);
+        }
+
+        if (item.index < 0 || item.index > 255) {
+            throw new HaloLogicError("Too high index value at: " + item.type + ":" + item.index);
+        }
+
+        data = Buffer.concat([
+            data,
+            Buffer.from([TYPES[item.type], item.index])
+        ]);
+    }
+
+    const payload = Buffer.concat([
+        Buffer.from([CMD.SHARED_CMD_GET_DATA_STRUCT]),
+        data
+    ]);
+
+    const resp = await options.exec(payload);
+    let res = Buffer.from(resp.result, "hex");
+
+    const revSpec = [...args.spec].reverse();
+    const out: HaloResGetDataStructV2 = {
+        publicKey: {},
+        publicKeyAttest: {},
+        keySlotFlags: {},
+        keySlotFailedAuthCtr: {},
+        compressedPublicKey: {},
+        keySlotAuthFailState: {},
+        keySlotAuthUnlockChallenge: {},
+        latchValue: {},
+        latchAttest: {},
+        graffiti: {},
+        firmwareVersion: {}
+    };
+
+    while (res.length > 0) {
+        const item = revSpec.pop();
+
+        if (!item) {
+            throw new HaloLogicError("Received unexpected data from the tag.");
+        }
+
+        let len = res[0];
+
+        if (len === 0xFF) { // no value returned, special message
+            len = 1;
+
+            const msgCode = res.slice(1, 2)[0];
+            const specialMsg = REV_SPECIAL_MSG[msgCode];
+
+            if (specialMsg) {
+                out[item.type][item.index] = {"error": specialMsg};
+            } else {
+                out[item.type][item.index] = {"error": 'unknown_' + msgCode.toString() as DataStructErrorType};
+            }
+        } else if (item.type === "keySlotFlags") {
+            const keyFlags = res.slice(1, len + 1)[0];
+            out["keySlotFlags"][item.index] = {"value": parseKeyFlags(keyFlags)};
+        } else if (item.type === "keySlotFailedAuthCtr") {
+            out["keySlotFailedAuthCtr"][item.index] = {"value": res.slice(1, len + 1)[0]};
+        } else if (item.type === "keySlotAuthFailState") {
+            const flags = res.slice(1, 2)[0];
+            const failLevelVal = flags & 0x0F;
+
+            if (!REV_FAIL_LEVEL[failLevelVal]) {
+                throw new HaloLogicError("Unsupported authFailLevel: " + failLevelVal);
+            }
+
+            out[item.type][item.index] = {
+                "value": {
+                    authPermitted: (flags & 0x40) === 0x40,
+                    failLevel: REV_FAIL_LEVEL[failLevelVal]
+                }
+            };
+        } else if (item.type === "graffiti") {
+            out["graffiti"][item.index] = {
+                "value": res.slice(1, len + 1).toString("utf-8")
+            };
+        } else {
+            out[item.type][item.index] = {
+                "value": res.slice(1, len + 1).toString("hex")
+            };
+        }
+
+        res = res.slice(len + 1);
+    }
+
+    while (revSpec.length !== 0) {
+        const item = revSpec.pop()!;
+
+        if (!out[item.type][item.index]) {
+            out[item.type][item.index] = {"error": "resultBufferOverflow"};
+        }
+    }
+
+    return out;
 }
 
 async function cmdGetGraffiti(options: ExecHaloCmdOptions, args: HaloCmdGetGraffiti): Promise<HaloResGetGraffiti> {
@@ -982,6 +1138,7 @@ export {
     cmdImportKeyInit,
     cmdImportKey,
     cmdGetDataStruct,
+    cmdGetDataStructV2,
     cmdGetGraffiti,
     cmdStoreGraffiti,
     cmdReplacePasswordStoreGraffiti,

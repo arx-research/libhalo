@@ -1,7 +1,7 @@
 import {ASCIIString, HaloCmdCFGNDEF, HexString, KeyFlags, KeySlotNo, KeyState, PublicKeyList} from "../types.js";
 import {TypedDataDomain, TypedDataField} from "ethers";
 
-export interface HaloCmdGetPkeys {}
+export type HaloCmdGetPkeys = Record<string, never>
 
 export interface HaloResGetPkeys {
     publicKeys: PublicKeyList
@@ -76,11 +76,66 @@ export interface HaloCmdGetDataStruct {
     spec: string
 }
 
-// TODO better definition / refactor that API
 export interface HaloResGetDataStruct {
+    _deprecationMessage: string
     isPartial: boolean
     data: Record<string, ASCIIString | HexString | number | StructErrorResponse | KeyFlags | null>
 }
+
+export type DataStructObjectType =
+    "publicKey"
+    | "publicKeyAttest"
+    | "keySlotFlags"
+    | "keySlotFailedAuthCtr"
+    | "compressedPublicKey"
+    | "keySlotAuthFailState"
+    | "keySlotAuthUnlockChallenge"
+    | "latchValue"
+    | "latchAttest"
+    | "graffiti"
+    | "firmwareVersion";
+
+export type DataStructErrorType =
+    "resultBufferOverflow"
+    | "keySlotOutOfBounds"
+    | "keySlotNotGenerated"
+    | "latchNotSet"
+    | "latchAttestNotSet"
+    | "authFailStateInvalid"
+    | `unknown_${string}`;
+
+export interface HaloCmdGetDataStructV2 {
+    spec: {
+        type: DataStructObjectType,
+        index: number
+    }[]
+}
+
+type ObjectIndex = number
+type Satisfies<T, U extends T> = U
+type DataStructObjectValue<T> = {value: T} | {error: DataStructErrorType}
+type DataStructObjectValues<T> = Record<ObjectIndex, DataStructObjectValue<T>>
+
+export type KeySlotAuthFailLevel = 'unrestricted' | 'softlocked' | 'softlocked-hw' | 'lockout';
+
+export interface KeySlotAuthFailState {
+    authPermitted: boolean,
+    failLevel: KeySlotAuthFailLevel
+}
+
+export type HaloResGetDataStructV2 = Satisfies<Record<DataStructObjectType, DataStructObjectValues<unknown>>, {
+    publicKey: DataStructObjectValues<HexString>,
+    publicKeyAttest: DataStructObjectValues<HexString>,
+    keySlotFlags: DataStructObjectValues<KeyFlags>,
+    keySlotFailedAuthCtr: DataStructObjectValues<number>,
+    compressedPublicKey: DataStructObjectValues<HexString>,
+    keySlotAuthFailState: DataStructObjectValues<KeySlotAuthFailState>,
+    keySlotAuthUnlockChallenge: DataStructObjectValues<HexString>,
+    latchValue: DataStructObjectValues<HexString>,
+    latchAttest: DataStructObjectValues<HexString>,
+    graffiti: DataStructObjectValues<string>,
+    firmwareVersion: DataStructObjectValues<string>,
+}>
 
 export interface StructErrorResponse {
     error: string
@@ -161,9 +216,7 @@ export interface HaloResExportKey {
     data: HexString
 }
 
-export interface HaloCmdGetTransportPK {
-
-}
+export type HaloCmdGetTransportPK = Record<string, never>;
 
 export interface HaloResGetTransportPK {
     data: HexString

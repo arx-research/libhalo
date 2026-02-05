@@ -21,7 +21,7 @@ import {
     wsEventReaderDisconnected
 } from "./ws_server.js";
 import {execHaloCmdPCSC} from "@arx-research/libhalo/api/desktop";
-import {ConnectSimulatorOptions, HaloCommandObject, Reader} from "@arx-research/libhalo/types";
+import {ConnectSimulatorOptions, HaloCommandObject, Reader, DataStructObjectType} from "@arx-research/libhalo/types";
 import {ISO7816_SELECT_CMDS} from "@arx-research/libhalo/api/common";
 import {Namespace} from "argparse";
 import {INFC, SimNFC} from "./simulator_nfc.js";
@@ -73,6 +73,27 @@ function ensureSimulator() {
     }
 
     return nfc;
+}
+
+function transformCLIArgs(args: Namespace): Record<string, unknown> {
+    if (args.name === "get_data_struct_v2") {
+        const spec = args.spec as string;
+        const parts = spec.trim().split(',');
+
+        const specObj: {
+            type: DataStructObjectType,
+            index: number
+        }[] = [];
+
+        for (const part of parts) {
+            const [strObjectType, strObjectID] = part.split(':');
+            specObj.push({"type": strObjectType as DataStructObjectType, "index": parseInt(strObjectID)});
+        }
+
+        return {...args, spec: specObj};
+    }
+
+    return args;
 }
 
 function runHalo(entryMode: string, args: Namespace) {
@@ -149,7 +170,7 @@ function runHalo(entryMode: string, args: Namespace) {
                             "pcsc", async (command: HaloCommandObject) => await execHaloCmdPCSC(command, reader));
                     } else {
                         try {
-                            res = await execHaloCmdPCSC(args, reader);
+                            res = await execHaloCmdPCSC(transformCLIArgs(args), reader);
                         } catch (e) {
                             if (args.output === "color") {
                                 console.error(e);
