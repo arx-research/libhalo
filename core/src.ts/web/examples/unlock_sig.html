@@ -64,6 +64,7 @@
                 return;
             }
 
+            document.getElementById('statusWaitText').innerText = '';
             const res = await fetch('https://tx.burner.pro/unlock/sign', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
