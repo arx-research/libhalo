@@ -1024,7 +1024,7 @@ async function cmdGetDataStructV2(options: ExecHaloCmdOptions, args: HaloCmdGetD
 
             out[item.type][item.index] = {
                 "value": {
-                    authPermitted: (flags & 0x40) === 0x40,
+                    authPermitted: (flags & 0x10) === 0x10,
                     failLevel: REV_FAIL_LEVEL[failLevelVal]
                 }
             };
