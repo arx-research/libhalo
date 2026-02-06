@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+    LibHaLo - Programmatically interact with HaLo tags from the web browser, mobile application or the desktop.
+    Copyright by Arx Research, Inc., a Delaware corporation
+    License: MIT
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibHaLo Demo</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+          crossorigin="anonymous">
+
+    <script type="text/javascript">
+        // Ensure the library is always fully reloaded
+        document.write('<script src="../dist/libhalo.js?_v=' + Math.random() + '"></scr' + 'ipt>');
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>LibHaLo Demo</h1>
+    <p class="text-muted">
+        <b>(Mobile only)</b> Batch retrieve certain public objects from the HaLo tag
+        (like public key values, latch values etc.)
+    </p>
+
+    <div class="d-flex flex-column justify-content-center align-items-center">
+        <table id="dataTable" class="table">
+            <thead>
+            <tr>
+                <th>Object Type</th>
+                <th>Value</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <button class="btn btn-primary mb-3" id="addRowBtn">Insert Row</button>
+    </div>
+
+    <button class="btn btn-primary" id="retrieveDataBtn">Retrieve data</button>
+    <p id="noArgsError" class="text-danger mt-3" style="display:none">
+        Please specify at least one parameter
+    </p>
+
+    <pre id="statusText" style="word-break: break-all; white-space: pre-wrap;"></pre>
+</div>
+
+<script type="text/javascript">
+    // Configuration
+    const OBJECT_TYPES = [
+        "publicKey",
+        "publicKeyAttest",
+        "keySlotFlags",
+        "keySlotFailedAuthCtr",
+        "compressedPublicKey",
+        "keySlotAuthFailState",
+        "keySlotAuthUnlockChallenge",
+        "latchValue",
+        "latchAttest",
+        "graffiti",
+        "firmwareVersion"
+    ];
+
+    const INITIAL_ROWS = [
+        {type: 'publicKey', value: 1},
+        {type: 'publicKey', value: 2},
+        {type: 'latchValue', value: 1}
+    ];
+
+    // State
+    let rowIdCounter = 0;
+
+    // DOM Elements
+    const elements = {
+        tableBody: null,
+        addRowBtn: null,
+        retrieveDataBtn: null,
+        noArgsError: null,
+        statusText: null
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeElements();
+        attachEventListeners();
+        insertInitialRows();
+    });
+
+    function initializeElements() {
+        elements.tableBody = document.getElementById('tableBody');
+        elements.addRowBtn = document.getElementById('addRowBtn');
+        elements.retrieveDataBtn = document.getElementById('retrieveDataBtn');
+        elements.noArgsError = document.getElementById('noArgsError');
+        elements.statusText = document.getElementById('statusText');
+    }
+
+    function attachEventListeners() {
+        elements.addRowBtn.addEventListener('click', () => insertRow());
+        elements.retrieveDataBtn.addEventListener('click', handleRetrieveData);
+    }
+
+    // Logging
+    function log(data) {
+        console.log(data);
+        elements.statusText.innerText += '\n' + data;
+    }
+
+    // Row Management
+    function createSelectOptions(selectedValue = null) {
+        return OBJECT_TYPES.map(type => {
+            const selected = type === selectedValue ? 'selected' : '';
+            return `<option value="${type}" ${selected}>${type}</option>`;
+        }).join('');
+    }
+
+    function insertRow(type = 'publicKey', value = '') {
+        const rowId = `row-${rowIdCounter++}`;
+        const newRow = elements.tableBody.insertRow();
+        newRow.id = rowId;
+
+        newRow.innerHTML = `
+                <td>
+                    <select class="form-select" aria-label="Object type selection">
+                        ${createSelectOptions(type)}
+                    </select>
+                </td>
+                <td>
+                    <input
+                        type="number"
+                        class="form-control"
+                        value="${value}"
+                        placeholder="0 - 255"
+                        min="0"
+                        max="255"
+                        aria-label="Value">
+                </td>
+                <td>
+                    <button
+                        class="btn btn-danger"
+                        onclick="removeRow('${rowId}')"
+                        aria-label="Remove row">
+                        -
+                    </button>
+                </td>
+            `;
+    }
+
+    function removeRow(rowId) {
+        const row = document.getElementById(rowId);
+        if (row) {
+            row.remove();
+        }
+    }
+
+    function insertInitialRows() {
+        INITIAL_ROWS.forEach(({type, value}) => {
+            insertRow(type, value);
+        });
+    }
+
+    // Data Extraction
+    function extractSpecFromTable() {
+        const rows = Array.from(elements.tableBody.getElementsByTagName('tr'));
+
+        return rows
+            .map(row => {
+                const select = row.querySelector('select');
+                const input = row.querySelector('input');
+                const value = input?.value?.trim();
+
+                if (!value) return null;
+
+                return {"type": select.value, "index": parseInt(value)};
+            })
+            .filter(spec => spec !== null);
+    }
+
+    // Data Retrieval
+    async function handleRetrieveData() {
+        const spec = extractSpecFromTable();
+
+        // Validate input
+        if (!spec) {
+            showError(true);
+            return;
+        }
+
+        showError(false);
+
+        // Prepare command
+        const cmd = {
+            name: "get_data_struct_v2",
+            spec
+        };
+
+        try {
+            document.getElementById('statusText').innerText = '';
+            log("Executing command: " + JSON.stringify(cmd));
+            const result = await execHaloCmdWeb(cmd);
+            log("Result: " + JSON.stringify(result, null, 4));
+        } catch (error) {
+            log("Error: " + JSON.stringify(error));
+        }
+    }
+
+    function showError(show) {
+        elements.noArgsError.style.display = show ? 'block' : 'none';
+    }
+
+    // Make removeRow available globally for onclick handlers
+    window.removeRow = removeRow;
+</script>
+</body>
+</html>
