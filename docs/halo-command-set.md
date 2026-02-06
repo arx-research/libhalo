@@ -15,17 +15,17 @@
 * [Command: set_password](#command-set_password)
 * [Command: unset_password](#command-unset_password)
 * [Command: get_data_struct](#command-get_data_struct)
+* [Command: get_data_struct_v2](#command-get_data_struct_v2)
 * [Command: get_graffiti](#command-get_graffiti)
 * [Command: store_graffiti](#command-store_graffiti)
 * [Command: version (only for PCSC/React Native)](#command-version)
 * [Command: read_ndef (only for PCSC/React Native)](#command-read_ndef)
 * [Command: pcsc_detect (only with CLI tool)](#command-pcsc_detect)
+* [Command: unlock_hw (only for PCSC/React Native)](#command-unlock_hw)
 
 ## Feature compatibility
 
-Certain HaLo features might not be supported with the earlier versions of tags.
-
-Please check [HaLo Tag Firmware Versions](/docs/firmware-versions.md) for the detailed compatibility table.
+Certain HaLo features may not be supported with the earlier versions of tags.
 
 ## Command: sign
 
@@ -844,6 +844,10 @@ Response:
 
 ## Command: get_data_struct
 
+> [!WARNING]  
+> This command is deprecated and may not fully cover for the new features. Please switch to `get_data_struct_v2`.
+> This command may be removed in the future.
+
 Batch retrieve certain public objects from the HaLo tag (like public key values, latch values etc.)
 
 ### Arguments
@@ -891,6 +895,163 @@ Response:
         "publicKey:2": "049fbc8dbeee3af7ca838ff9276670aac077cb3309347cd1dca0f383c445b2b529548092490293801871de74807ec833a44526cc4c43edbe2a53354fef630f66a5",
         "publicKey:200": null
     }
+}
+```
+
+### Errors
+
+This command doesn't throw expected errors.
+
+## Command: get_data_struct_v2
+
+Batch retrieve certain public objects from the HaLo tag (like public key values, latch values etc).
+This command was reworked into the V2 version to ensure better compatibility with TypeScript.
+
+### Arguments
+
+* `spec` (array) - list of queried objects;
+
+#### Format for `spec` (in `libhalo`)
+
+```typescript
+interface HaloCmdGetDataStructV2 {
+  spec: {
+    type: DataStructObjectType,
+    index: number
+  }[]
+}
+```
+
+Where the acceptable object types (`DataStructObjectType`) are:
+* `publicKey` - the uncompressed public key corresponding to the particular key slot;
+* `compressedPublicKey` - the compressed public key corresponding to the particular key slot;
+* `publicKeyAttest` - the public key's attest signature;
+* `keySlotFlags` - status flags corresponding to the particular key slot (returned as an object);
+* `keySlotFailedAuthCtr` - failed password authentication counter of the particular key slot (returned as a number);
+* `keySlotAuthFailState` - allows to establish whether the key slot is soft-locked and has to be unlocked before a subsequent authentication attempt;
+* `keySlotAuthUnlockChallenge` - a random challenge string for online key slot unlocking procedure;
+* `latchValue` - value of the latch (possible object IDs: 1, 2);
+* `latchAttest` - attest signature of the latch;
+* `graffiti` - value of the rewritable data slot (possible object IDs: 1);
+* `firmwareVersion` - HaLo firmware version (object ID: 1 - core version; object ID: 2 - addons version);
+
+#### Format for `spec` (in `halocli` tool)
+
+When using the CLI tool `halocli`, the `spec` argument should be provided as a string in the format:
+```
+--spec <objectType>:<objectId>,<objectType>:<objectId>,<...>
+```
+
+Example:
+
+```
+--spec publicKey:1,keySlotFlags:1
+```
+
+### Return value
+
+An object in the format:
+
+```typescript
+type TValue = {"value": resultValue};
+type TError = {"error": errorCode};
+
+return {
+  [objectType]: {
+    [objectId]: TValue | TError
+  }
+}
+```
+
+#### Error codes
+
+If the command fails to fetch a certain value, an error code will be returned.
+
+```typescript
+type DataStructErrorType =
+        "resultBufferOverflow"
+        | "keySlotOutOfBounds"
+        | "keySlotNotGenerated"
+        | "latchNotSet"
+        | "latchAttestNotSet"
+        | "authFailStateInvalid"
+        | `unknown_${string}`;
+```
+
+Note that `resultBufferOverflow` error code means that the data didn't physically fit in the tag's response buffer
+(i.e. there was too much data queried at once), and thus the object was omitted.
+
+### Examples
+Command:
+```json
+{
+  "name": "get_data_struct_v2",
+  "spec": [
+    {
+      "type": "publicKey",
+      "index": 1
+    },
+    {
+      "type": "publicKey",
+      "index": 2
+    },
+    {
+      "type": "keySlotAuthFailState",
+      "index": 1
+    },
+    {
+      "type": "publicKey",
+      "index": 3
+    },
+    {
+      "type": "publicKey",
+      "index": 8
+    },
+    {
+      "type": "publicKey",
+      "index": 9
+    }
+  ]
+}
+```
+
+Response:
+```json
+{
+  "publicKey": {
+    "1": {
+      "value": "04a6320b1a4d32f56203eb7ca145ac4dd3118a98e6df5b57fdd29bcf97684f547712626035e0f022cc22a8234383531f4970de905fa970c4645ef09dc671393ffd"
+    },
+    "2": {
+      "value": "0436f53a4d82e1cfa5ac5a8a58628cf1a739532636de6481b40d6a2b7dff422cdb060176c7b56b7a5ae440073550d53e2f7322e61422efdc5eb1e19faf869476c3"
+    },
+    "3": {
+      "error": "keySlotNotGenerated"
+    },
+    "8": {
+      "value": "040898cf225815b91862ac7803863ff45aba921c96eddea8a47bc5b3db200c25771a677b512da113907dc47f81fdc6fe76e70d9c094a11fe223f6691ff1db05a58"
+    },
+    "9": {
+      "error": "resultBufferOverflow"
+    }
+  },
+  "publicKeyAttest": {},
+  "keySlotFlags": {},
+  "keySlotFailedAuthCtr": {},
+  "compressedPublicKey": {},
+  "keySlotAuthFailState": {
+    "1": {
+      "value": {
+        "authPermitted": true,
+        "failLevel": "unrestricted"
+      }
+    }
+  },
+  "keySlotAuthUnlockChallenge": {},
+  "latchValue": {},
+  "latchAttest": {},
+  "graffiti": {},
+  "firmwareVersion": {}
 }
 ```
 
@@ -1012,3 +1173,37 @@ This command doesn't accept any arguments.
 ### Errors
 
 The command will fail with an error if no HaLo tag was found.
+
+## Command: unlock_hw
+
+**(Only for PC/SC and React Native driver)** Unlock the key slot that soft-locked after too many failed authentication attempts.
+It might take a few minutes before this command succeeds. The card must be tapped throughout the entire time.
+
+**Note:** This command is only supported with PC/SC and React Native drivers.
+
+### Arguments
+
+* `keyNo` (number) - number of the key slot to be unlocked;
+
+### Return value
+
+* `status` (str) - `ok`
+* `details` (str) - `UNLOCK_OK` or `ALREADY_UNLOCKED`
+
+### Examples
+Command:
+```
+halocli unlock_hw -k 8
+```
+
+Response:
+```json
+{
+    "status": "ok",
+    "details": "UNLOCK_OK"
+}
+```
+
+### Errors
+
+* `HaloLogicError` - when the slot is permanently locked due to too many authentication attempts or there was an unknown error.
