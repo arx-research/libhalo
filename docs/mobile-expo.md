@@ -46,8 +46,8 @@ Add the following plugin key to your existing `app.json` file:
         {
           "nfcPermission": "Interact with HaLo tags",
           "selectIdentifiers": [
+            "A0000009490148614C6F",
             "481199130E9F01",
-            "D2760000850100",
             "D2760000850101"
           ],
           "systemCodes": [],
