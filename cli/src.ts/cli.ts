@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import {NFC} from 'nfc-pcsc';

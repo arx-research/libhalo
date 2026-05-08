@@ -41,7 +41,7 @@ import {
     HaloCommandObject,
     HaloResponseObject
 } from "../types.js";
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import {arr2hex, webDebug} from "../halo/util.js";
 
 async function execHaloCmd(command: HaloCommandObject, options: ExecHaloCmdOptions): Promise<HaloResponseObject> {

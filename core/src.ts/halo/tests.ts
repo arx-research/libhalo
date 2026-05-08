@@ -5,10 +5,9 @@
  */
 
 import {HaloLogicError, HaloTagError} from "../api/common.js";
-import elliptic from 'elliptic';
+import {secp256k1} from '@noble/curves/secp256k1';
 import {HaloCommandObject, HaloResponseObject} from "../types.js";
 
-const ec = new elliptic.ec('secp256k1');
 
 function assert(condition: unknown) {
     if (!condition) {
@@ -30,7 +29,7 @@ const tests = [
                 "name": "get_pkeys"
             });
 
-            const pk1 = ec.keyFromPublic(resPkeys.publicKeys[1], 'hex');
+            const pk1 = resPkeys.publicKeys[1];
             const digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
 
             const res = await exec({
@@ -40,7 +39,7 @@ const tests = [
                 "legacySignCommand": true
             });
 
-            assert(pk1.verify(digest, res.signature.der));
+            assert(secp256k1.verify(Buffer.from(res.signature.der, 'hex'), Buffer.from(digest, 'hex'), pk1));
         } else {
             const digest = "b64ab259577c3a28fda62c8e64744c8dd42a82155fbca7de02a1d85d8383d4e1";
 
@@ -51,8 +50,7 @@ const tests = [
                 "legacySignCommand": true
             });
 
-            const pk1 = ec.keyFromPublic(res.publicKey, 'hex');
-            assert(pk1.verify(digest, res.signature.der));
+            assert(secp256k1.verify(Buffer.from(res.signature.der, 'hex'), Buffer.from(digest, 'hex'), res.publicKey));
         }
     }],
     ["testSign1", async function(driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
@@ -64,8 +62,7 @@ const tests = [
             "digest": digest
         });
 
-        const pk1 = ec.keyFromPublic(res.publicKey, 'hex');
-        assert(pk1.verify(digest, res.signature.der));
+        assert(secp256k1.verify(Buffer.from(res.signature.der, 'hex'), Buffer.from(digest, 'hex'), res.publicKey));
     }],
     ["testKeyGen3", async function(driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
         let resGenKey;
@@ -111,8 +108,7 @@ const tests = [
             "digest": digest
         });
 
-        const pk3 = ec.keyFromPublic(res.publicKey, 'hex');
-        assert(pk3.verify(digest, res.signature.der));
+        assert(secp256k1.verify(Buffer.from(res.signature.der, 'hex'), Buffer.from(digest, 'hex'), res.publicKey));
     }],
     ["testSign1Typed", async function(driver: string, exec: (cmd: HaloCommandObject) => Promise<HaloResponseObject>) {
         const domain = {
@@ -152,11 +148,10 @@ const tests = [
             "typedData": {domain, types, value}
         });
 
-        const pk1 = ec.keyFromPublic(res.publicKey, 'hex');
         assert(res.input.digest === "be609aee343fb3c4b28e1df9e632fca64fcfaede20f02e86244efddf30957bd2");
         assert(res.input.primaryType === "Mail");
         assert(res.input.domainHash === "f2cee375fa42b42143804025fc449deafd50cc031ca257e0b194a650a912090f");
-        assert(pk1.verify(res.input.digest, res.signature.der));
+        assert(secp256k1.verify(Buffer.from(res.signature.der, 'hex'), Buffer.from(res.input.digest, 'hex'), res.publicKey));
     }]
 ];
 

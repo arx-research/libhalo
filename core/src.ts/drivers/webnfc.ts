@@ -4,17 +4,11 @@
  * License: MIT
  */
 
-import {ERROR_CODES} from "../halo/errors.js";
-import {
-    HaloTagError,
-    NFCMethodNotSupported,
-    NFCPermissionRequestDenied,
-    NFCAbortedError
-} from "../halo/exceptions.js";
+import {NFCAbortedError, NFCMethodNotSupported, NFCPermissionRequestDenied} from "../halo/exceptions.js";
 import {arr2hex, hex2arr, isWebDebugEnabled} from "../halo/util.js";
 import {ExecOptions, ExecReturnStruct} from "../types.js";
 import type {NDEFReader} from "../types_webnfc.js";
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import {getHaloTagError} from "./common.js";
 
 let ndef: NDEFReader | null = null;
@@ -144,7 +138,7 @@ async function execWebNFC(request: Buffer, options: ExecOptions): Promise<ExecRe
             }
 
             await ndef.write({
-                records: [{recordType: "unknown", data: request}]
+                records: [{recordType: "unknown", data: request as unknown as ArrayBuffer}]
             }, {
                 signal: ctrl.signal
             });

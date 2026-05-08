@@ -7,7 +7,7 @@
 import {checkHaloTagError, execHaloCmd} from "./common.js";
 import {HaloLogicError} from "../halo/exceptions.js";
 import {readNDEF} from "./read_ndef.js";
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import {EmptyOptions, HaloCommandObject, RNNFCManager} from "../types.js";
 import {ISO7816_SELECT_CMDS} from "../aid.js";
 import {unlockHW} from "./unlock_hw.js";

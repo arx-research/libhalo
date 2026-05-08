@@ -10,7 +10,7 @@ import {
 import {SignalDispatcher} from "strongly-typed-events";
 import queryString from 'query-string';
 import {checkHaloTagError, execHaloCmd, unwrapResultFromU2F, wrapCommandForU2F} from "../drivers/common.js";
-import {Buffer} from "buffer/index.js";
+import {Buffer} from "buffer";
 import {BaseHaloAPI} from "./cmd_exec.js";
 import {decodeJwt, SignJWT} from "jose";
 import {HaloLogicError, NFCBadTransportError, NFCOperationError} from "./exceptions.js";

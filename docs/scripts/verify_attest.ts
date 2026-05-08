@@ -1,4 +1,4 @@
-import elliptic from 'elliptic'
+import {secp256k1} from '@noble/curves/secp256k1'
 
 function hex2arr(hexString: string) {
     const matchResult = hexString.match(/.{1,2}/g)
@@ -29,11 +29,9 @@ async function verifyAttestPK2(
         const hashArray = Array.from(new Uint8Array(hashBuffer))
         const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 
-        const ec = new elliptic.ec('secp256k1')
-        const key = ec.keyFromPublic(root, 'hex')
-        const signature = Buffer.from(pk2Attest, "hex").subarray(2)
-
-        if (key.verify(hashHex, signature)) {
+        const sigBytes = Buffer.from(pk2Attest, "hex").subarray(2)
+        const sig = secp256k1.Signature.fromDER(sigBytes)
+        if (secp256k1.verify(sig, hashHex, root)) {
             return true;
         }
     }
@@ -62,10 +60,8 @@ async function verifyAttest(
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 
-    const ec = new elliptic.ec('secp256k1')
-    const key = ec.keyFromPublic(pk2, 'hex')
-    const signature = hex2arr(publicKeyAttest)
-    return key.verify(hashHex, signature)
+    const sig = secp256k1.Signature.fromDER(hex2arr(publicKeyAttest))
+    return secp256k1.verify(sig, hashHex, pk2)
 }
 
 async function run() {

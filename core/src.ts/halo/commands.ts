@@ -6,7 +6,7 @@
 
 import crypto from 'crypto';
 
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import {ethers} from 'ethers';
 import {HaloLogicError, HaloTagError} from "./exceptions.js";
 import {
@@ -21,7 +21,7 @@ import {
 } from "./util.js";
 import {FLAGS} from "./flags.js";
 import {sha256} from "js-sha256";
-import elliptic from 'elliptic';
+import {secp256k1} from '@noble/curves/secp256k1';
 import {CMD_CODES as CMD} from './cmdcodes.js';
 import pbkdf2 from 'pbkdf2';
 import {KEY_FLAGS, parseKeyFlags} from "./keyflags.js";
@@ -90,7 +90,6 @@ import {
     StructErrorResponse
 } from "./command_types.js";
 
-const ec = new elliptic.ec('secp256k1');
 
 /**
  * NOTE: Since LibHaLo supports multiple driver backends which differ in their implementation and behavior,
@@ -134,7 +133,7 @@ async function cmdGetPkeys(options: ExecHaloCmdOptions, args: HaloCmdGetPkeys): 
     const etherAddresses: PublicKeyList = {};
 
     for (const pkNo of Object.keys(publicKeys).map(Number)) {
-        compressedPublicKeys[pkNo] = ec.keyFromPublic(publicKeys[pkNo], 'hex').getPublic().encodeCompressed('hex');
+        compressedPublicKeys[pkNo] = Buffer.from(secp256k1.ProjectivePoint.fromHex(publicKeys[pkNo]).toRawBytes(true)).toString('hex');
         etherAddresses[pkNo] = ethers.computeAddress('0x' + publicKeys[pkNo]);
     }
 
@@ -495,8 +494,12 @@ async function cmdGenKey(options: ExecHaloCmdOptions, args: HaloCmdGenKey): Prom
         const candidates: string[] = [];
 
         for (let i = 0; i < 2; i++) {
-            candidates.push(ec.recoverPubKey(msg1, parseSig(sig1, curveOrder), i).encode('hex'));
-            candidates.push(ec.recoverPubKey(msg2, parseSig(sig2, curveOrder), i).encode('hex'));
+            const fs1 = parseSig(sig1, curveOrder);
+            const fs2 = parseSig(sig2, curveOrder);
+            const nobleSig1 = secp256k1.Signature.fromCompact(fs1.r + fs1.s).addRecoveryBit(i);
+            const nobleSig2 = secp256k1.Signature.fromCompact(fs2.r + fs2.s).addRecoveryBit(i);
+            candidates.push(nobleSig1.recoverPublicKey(msg1).toHex(false));
+            candidates.push(nobleSig2.recoverPublicKey(msg2).toHex(false));
         }
 
         const bestPk = Buffer.from(mode(candidates), 'hex');

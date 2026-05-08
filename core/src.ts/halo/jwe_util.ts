@@ -1,4 +1,4 @@
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import crypto from 'crypto';
 const subtle = crypto.webcrypto && crypto.webcrypto.subtle ? crypto.webcrypto.subtle : globalThis.crypto.subtle;
 import {CompactEncrypt, decodeProtectedHeader, compactDecrypt} from 'jose';

@@ -12,7 +12,7 @@ import {
     HaloCommandObject,
     Reader
 } from "../types.js";
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import {ISO7816_SELECT_CMDS} from "../aid.js";
 import {unlockHW} from "./unlock_hw.js";
 

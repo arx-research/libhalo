@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import queryString from 'query-string';
 import {HaloLogicError} from "../halo/exceptions.js";
 import {TransceiveFunc} from "../types.js";
