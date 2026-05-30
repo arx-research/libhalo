@@ -7,7 +7,7 @@
 import {NFCOperationError, NFCMethodNotSupported} from "../halo/exceptions.js";
 import {arr2hex, isWebDebugEnabled} from "../halo/util.js";
 import {ExecOptions, ExecReturnStruct} from "../types.js";
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import {checkHaloTagError} from "./common.js";
 
 async function execCredential(request: Buffer, options: ExecOptions): Promise<ExecReturnStruct> {

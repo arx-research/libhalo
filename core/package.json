@@ -68,8 +68,7 @@
     "install-peers": "install-peers"
   },
   "dependencies": {
-    "buffer": "^6.0.3",
-    "elliptic": "^6.6.1",
+    "@noble/curves": "^1.4.0",
     "ethers": "^6.13.5",
     "jose": "^6.0.13",
     "js-sha256": "^0.11.0",

@@ -11,10 +11,9 @@ import {
     HaloResponseObject,
     HaloWebAPICallOptions,
     HaloWebMethod,
-    NDEFReader,
     StatusCallbackDetails
 } from "../types.js";
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 import {BaseHaloAPI} from "../halo/cmd_exec.js";
 
 let isCallRunning = false;

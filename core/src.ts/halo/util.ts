@@ -4,15 +4,13 @@
  * License: MIT
  */
 
-import {Buffer} from 'buffer/index.js';
-import elliptic from 'elliptic';
+import {Buffer} from 'buffer';
+import {secp256k1} from '@noble/curves/secp256k1';
 import {ethers, Signature} from 'ethers';
 import {HaloLogicError} from "./exceptions.js";
 import crypto from "crypto";
-import {BN} from 'bn.js';
 import {PublicKeyList} from "../types.js";
 
-const ec = new elliptic.ec('secp256k1');
 
 const SECP256k1_ORDER = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
 const BJJ_ORDER = 0x060c89ce5c263405370a08b6d0302b0bab3eedb83920ee0a677297dc392126f1n;
@@ -138,7 +136,8 @@ function convertSignature(digest: string, signature: string, publicKey: string, 
     let recoveryParam = null;
 
     for (let i = 0; i < 2; i++) {
-        if (publicKey === ec.recoverPubKey(new BN(digest, 16), fixedSig, i).encode('hex')) {
+        const nobleSig = secp256k1.Signature.fromCompact(fixedSig.r + fixedSig.s).addRecoveryBit(i);
+        if (publicKey === nobleSig.recoverPublicKey(digest).toHex(false)) {
             recoveryParam = i;
             break;
         }
@@ -176,7 +175,8 @@ function recoverPublicKey(digest: string, signature: string, curveOrder: bigint)
     const fixedSig = parseSig(sigBuf, curveOrder);
 
     for (let i = 0; i < 2; i++) {
-        out.push(ec.recoverPubKey(new BN(digest, 16), fixedSig, i).encode('hex'));
+        const nobleSig = secp256k1.Signature.fromCompact(fixedSig.r + fixedSig.s).addRecoveryBit(i);
+        out.push(nobleSig.recoverPublicKey(digest).toHex(false));
     }
 
     return out;

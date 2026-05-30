@@ -1,4 +1,4 @@
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 
 
 // These types should only be used internally for the command dispatchers.

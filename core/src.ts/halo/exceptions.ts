@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-import {Buffer} from 'buffer/index.js';
+import {Buffer} from 'buffer';
 
 interface HaloTagErrorArgs {
     name: string
