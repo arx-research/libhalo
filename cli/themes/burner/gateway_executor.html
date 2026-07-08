@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/themes/burner/style.css" />
+
+    <title>Burner Gateway</title>
+  </head>
+  <body>
+    <div class="layout">
+      <div class="layout-inner">
+        <div class="top">
+          <svg width="112" fill="none" viewBox="0 0 112 32" aria-label="Burner">
+            <path
+              fill="currentColor"
+              d="M0 31.378v-.942c3.637 0 4.152-.712 4.152-3.094V4.036c0-2.4-.515-3.094-4.152-3.094V0h12.242c5.713 0 9.51 2.507 9.51 7.769 0 4.355-2.857 6.898-6.654 7.378v.195c4.897.32 8.108 3.378 8.108 7.61 0 6.204-5.092 8.426-11.355 8.426zm8.498-17.014c.976.16 1.987.16 2.928.16 3.21 0 6.032-2.044 6.032-6.595S14.6 1.618 11.514 1.618c-.745 0-1.56.035-2.235.195-.55.125-.78.463-.78 1.014zm0 14.187c0 .942 1.012 1.209 2.857 1.209 3.672 0 7.469-1.369 7.469-6.791s-4.347-6.862-7.363-6.862c-1.011 0-1.987 0-2.98.16v12.266zM37.204 31.324 37.134 28l-.125-.036C35.68 30.08 33.798 32 31.012 32s-4.258-2.204-4.258-5.653V15.289c0-2.542-.124-3.022-2.501-2.276l-.266-.87 6.032-1.956.55.515v15.254c0 2.31.71 3.413 2.2 3.413 1.561 0 3.122-1.333 4.382-3.022V15.289c0-2.542-.07-3.022-2.501-2.276l-.267-.87 6.068-1.956.514.515v16c0 2.631.071 3.13 2.502 2.24l.355.907L38.038 32l-.78-.676zM59.044 11.964c0 1.53-.905 2.507-1.916 2.507-.71 0-1.011-.267-1.526-.818-.514-.515-.71-.657-1.17-.657-.905 0-1.952 1.297-2.786 3.68V27.11c0 2.667.585 3.289 4.151 3.289v.978H45.225v-.942c2.27 0 2.66-.587 2.66-3.094v-12.07c0-2.632 0-3.183-2.341-2.205l-.39-.907 3.122-1.262 2.661-1.102.71.586v3.77h.124c1.1-2.08 3.016-4.268 5.163-4.268 1.366 0 2.111.783 2.111 2.08M60.375 30.436c2.27 0 2.661-.587 2.661-3.094v-12.07c0-2.632 0-3.183-2.342-2.205l-.39-.907 3.122-1.262 2.662-1.102.745.586v3.61h.124c1.757-2.436 3.53-4.125 6.192-4.125 2.661 0 4.311 1.99 4.311 5.689v11.768c0 2.507.355 3.094 2.59 3.094v.942h-8.764v-.942c2.076 0 2.395-.587 2.395-3.094V15.787c0-2.151-.816-3.183-2.306-3.183-1.597 0-3.016 1.103-4.507 3.023v11.68c0 2.506.32 3.093 2.395 3.093v.942h-8.835V30.4zM95.787 22.987C94.971 29.297 92.31 32 88.62 32c-4.418 0-7.204-4.196-7.204-10.667 0-6.47 2.733-11.449 7.399-11.449s6.724 4.32 6.724 10.045H85.213V20c0 5.333 1.65 9.102 4.897 9.102 1.756 0 3.797-1.369 4.737-6.115zm-3.992-4.676c0-3.769-.674-6.791-2.98-6.791s-3.318 2.862-3.566 6.791zM111.435 11.964c0 1.53-.905 2.507-1.916 2.507-.709 0-1.011-.267-1.526-.818-.514-.515-.709-.657-1.171-.657-.904 0-1.951 1.297-2.785 3.68V27.11c0 2.667.586 3.289 4.152 3.289v.978H97.615v-.942c2.27 0 2.661-.587 2.661-3.094v-12.07c0-2.632 0-3.183-2.342-2.205l-.39-.907 3.122-1.262 2.661-1.102.71.586v3.77h.124c1.1-2.08 3.016-4.268 5.163-4.268 1.366 0 2.111.783 2.111 2.08"
+            />
+          </svg>
+        </div>
+
+        <div class="middle">
+          <div class="middle-text">
+            <h2>Ready To Tap?</h2>
+
+            <p>
+              Tap the button below, and then scan your Burner card to the back
+              of your phone.
+            </p>
+          </div>
+        </div>
+
+        <div class="bottom">
+          <div class="log-box">
+            <pre><code id="log">Please wait, connecting...</code></pre>
+          </div>
+          <button id="click-btn" disabled class="button">
+            Waiting for command...
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="/assets/static/libhalo.js"></script>
+    <script>
+      function log(data) {
+        console.log(data);
+        document.getElementById("log").innerText = data;
+      }
+
+      function toggleConfirmBtn(isEnabled) {
+        document.getElementById("click-btn").disabled = !isEnabled;
+        document.getElementById("click-btn").innerText = isEnabled
+          ? "Confirm and scan HaLo"
+          : "Waiting for command...";
+      }
+
+      function redactCommandObj(originalObject) {
+        // ensure deep copy
+        let obj = JSON.parse(JSON.stringify(originalObject));
+
+        for (const key of Object.keys(obj)) {
+          if (key.toLowerCase().includes("password")) {
+            obj[key] = "<< REDACTED >>";
+          }
+        }
+
+        return obj;
+      }
+
+      toggleConfirmBtn(false);
+
+      async function confirmButtonClicked(ev) {
+        toggleConfirmBtn(false);
+
+        try {
+          await haloGateExecutorUserConfirm(log);
+        } catch (e) {
+          log("Something went wrong when running the command.\n" + e.stack);
+          toggleConfirmBtn(true);
+          return;
+        }
+
+        log("Executed command, result sent.");
+      }
+
+      async function run() {
+        try {
+          await haloGateExecutorCreateWs(log, (command) => {
+            // callback when a new command arrives
+            log(
+              "Requested to execute the following command:\n" +
+                JSON.stringify(redactCommandObj(command), null, 4),
+            );
+            toggleConfirmBtn(true);
+          });
+        } catch (e) {
+          log(
+            "Something went wrong any we've failed to initialize.\n" + e.stack,
+          );
+          return;
+        }
+
+        document.getElementById("click-btn").onclick = confirmButtonClicked;
+      }
+
+      run();
+    </script>
+  </body>
+</html>
