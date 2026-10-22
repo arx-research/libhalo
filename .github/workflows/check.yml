@@ -16,7 +16,7 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Install native dependencies (Linux)
         run: |
@@ -26,7 +26,7 @@ jobs:
       - name: Install Node.JS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
       - name: Enable corepack
         run: |
           corepack enable
@@ -62,7 +62,7 @@ jobs:
           cd cli
           node ./build_scripts/ci_scripts.js --platform linux --product cli
           npx json-merger orig-package.json bin-cli.json -p -o package.json
-          yarn pkg --compress GZip -t node20-linux-x64 -o dist/halocli .
+          yarn pkg --compress GZip -t node24-linux-x64 -o dist/halocli .
       - name: Test produced binary
         shell: bash
         run: |

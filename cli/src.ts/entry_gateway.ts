@@ -339,7 +339,11 @@ function createServer(args: Namespace) {
         maxPayload: 6 * 1024 // max packet size - 6 kB
     });
 
-    app.use(express.urlencoded({extended: false}));
+    // inflate: false rejects compressed request bodies (HTTP 415) so untrusted input never reaches
+    // the Node.js Brotli decoder (CVE-2026-111497). halo-gateway is set up from sources, so it runs on
+    // whatever Node.js version the operator has installed, which may predate the fix (v24.22.1).
+    // Compressed request bodies are not needed here, so this can stay regardless.
+    app.use(express.urlencoded({extended: false, inflate: false}));
     app.use('/assets/static', express.static(dirname + '/assets/static'));
     app.use('/themes', express.static('themes'))
 

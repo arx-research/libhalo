@@ -8,7 +8,7 @@ on:
 jobs:
   create_release:
     name: Create libhalo release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Prepare version number
         id: parse_version
@@ -42,7 +42,7 @@ jobs:
 
   build_js_lib:
     name: Build libhalo and release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
       id-token: write
@@ -56,7 +56,7 @@ jobs:
       - name: Install Node.JS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
       - name: Enable corepack
         run: |
           corepack enable
@@ -128,7 +128,7 @@ jobs:
   publish_npm:
     name: Publish libhalo package
     environment: prod-npm
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
       packages: write
@@ -151,7 +151,7 @@ jobs:
       - name: Setup Node.JS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           registry-url: 'https://registry.npmjs.org'
       - name: Enable corepack
         run: |
