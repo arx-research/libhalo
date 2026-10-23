@@ -183,7 +183,11 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
 
     wss = new WebSocketServer({noServer: true});
 
-    app.use(express.urlencoded({extended: false}));
+    // inflate: false rejects compressed request bodies (HTTP 415) so untrusted input never reaches
+    // the embedded Node.js Brotli decoder (CVE-2026-111497). The halo-tools binaries currently embed
+    // Node.js v24.20.0 via @yao-pkg/pkg-fetch; waiting for yao-pkg to publish a release with patched
+    // Node.js v24.22.1. Compressed request bodies are not needed here, so this can stay afterwards.
+    app.use(express.urlencoded({extended: false, inflate: false}));
     app.use('/assets/static', express.static(dirname + '/assets/static'));
 
     nunjucks.configure(dirname + '/assets/views', {

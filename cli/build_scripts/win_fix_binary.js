@@ -5,7 +5,7 @@ import * as ResEdit from "resedit";
 // purposely not declared in package.json, the "pkg-fetch" will be
 // implicitly installed by "pkg" dev dependency in correct version
 import { need, system } from '@yao-pkg/pkg-fetch';
-import package_json from '../package.json' assert { type: "json" };
+import package_json from '../package.json' with { type: "json" };
 import {parseGitHubRef, getProductInfo} from "./version_helper.js";
 
 const {

@@ -5,3 +5,9 @@
 /cli/dist/
 /cli/dist_webpack/
 
+**/.yarn/install-state.gz
+/core/src.ts/web/dist/
+# logs written by halo-bridge/halo-gateway when running locally
+logs/
+# local clone of halo-gateway-themes, see docs/gateway-custom-themes.md
+/themes/

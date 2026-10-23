@@ -2,8 +2,8 @@
 
 ## Creating a new theme
 
-1. Obtain recent [halo-tools](https://github.com/arx-research/libhalo/releases) release.
-2. In the working directory with the `halo-gateway` binary, run the following command:
+1. Build the HaLo Gateway Docker image, as described in [Hosting your own HaLo Gateway server](/docs/halo-gateway.md#hosting-your-own-halo-gateway-server).
+2. In your working directory, run the following command:
    ```
    git clone https://github.com/arx-research/halo-gateway-themes themes
    ```
@@ -11,7 +11,6 @@
    ```
     $ find .
     .
-    ./halo-gateway
     ./themes
     ./themes/example
     ./themes/example/gateway_executor.html
@@ -22,7 +21,10 @@
 
 ## Testing your theme
 
-1. Launch `./halo-gateway --disable-cache` locally to so spin up a local server.
+1. Spin up a local server with your `themes` directory mounted and template caching disabled:
+   ```
+   docker run --rm -p 32842:32842 -v "$(pwd)/themes:/data/themes:ro" halo-gateway --disable-cache
+   ```
 2. Connect with your server using [LibHaLo Demo on using Gateway](https://halo-demos.arx.org/examples/gateway_requestor.html), fill out the form as follows:
 
    | Setting name                                       | Setting value              |
