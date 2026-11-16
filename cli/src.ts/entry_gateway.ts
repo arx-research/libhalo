@@ -6,7 +6,7 @@
 
 import {webcrypto as crypto} from 'crypto';
 import express from "express";
-import {RawData, WebSocket, WebSocketServer} from 'ws';
+import {WebSocket, WebSocketServer} from 'ws';
 import {IncomingMessage} from "http";
 import queryString from 'query-string';
 import nunjucks from "nunjucks";
@@ -16,7 +16,7 @@ import fs from "fs";
 
 import {parseArgs} from './args_gateway.js';
 import {printVersionInfo, getBuildInfo} from "./version.js";
-import {dirname, saveLog} from "./util.js";
+import {dirname, safeWsMessageHandler, saveLog} from "./util.js";
 import {Namespace} from "argparse";
 
 const buildInfo = getBuildInfo();
@@ -101,9 +101,7 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
         delete sessionIds[sessionId];
     });
 
-    ws.on('message', function message(data) {
-        const obj = JSON.parse(data.toString('utf-8'));
-
+    ws.on('message', safeWsMessageHandler(ws, '[' + sessionId + '] [requestor]', (obj) => {
         if (obj.type === "keepalive") {
             // ignore
             return;
@@ -146,7 +144,7 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
                 }));
             }
         }
-    });
+    }));
 
     ws.send(JSON.stringify({
         "type": "welcome",
@@ -192,9 +190,7 @@ function processExecutor(ws: WebSocket, req: IncomingMessage, sessionId: string)
         sobj.requestor.send(JSON.stringify({"type": "executor_disconnected"}));
     });
 
-    ws.on('message', (data: RawData) => {
-        const obj = JSON.parse(data.toString('utf-8'));
-
+    ws.on('message', safeWsMessageHandler(ws, '[' + sessionId + '] [executor]', (obj) => {
         if (obj.type === "keepalive") {
             // ignore
             return;
@@ -214,7 +210,7 @@ function processExecutor(ws: WebSocket, req: IncomingMessage, sessionId: string)
             sobj.requestor.close(4057, "Protocol error on executor side: Invalid message.");
             ws.close(4067, "Invalid message.");
         }
-    });
+    }));
 
     ws.send(JSON.stringify({"type": "ping"}));
 }
