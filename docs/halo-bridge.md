@@ -120,19 +120,29 @@ for the detailed description of commands that may be requested.
 
 In case of Mac OS platform, the HaLo Tools installer needs to generate a self-signed TLS certificate and mark it as trusted in the system. This is due to the fact that Safari would raise a mixed-content error if a secure external website would attempt to connect to an unsecured WebSocket on localhost, which is not the case for other browsers.
 
-Due to that limitation, the installer will ask if you agree to generate a TLS certificate. The certificate will be stored at `/usr/local/etc/halo-bridge/` location. The generated certificate would only cover the `halo-bridge.local` domain. It will be also clearly marked that it's not a Certificate Authority (to prevent issuing any additional trusted certificates on top of this one) and that it's purposed only for TLS Web Server authentication.
+Due to that limitation, the installer will ask if you agree to generate a TLS certificate. The certificate will be stored at `/Library/Application Support/HaLo Bridge/` location (a root-owned directory; the private key is readable only by the user who ran the installer). For compatibility, HaLo Bridge also loads a certificate from the legacy `/usr/local/etc/halo-bridge/` location if there is none in the new one. The generated certificate would only cover the `halo-bridge.local` domain. It will be also clearly marked that it's not a Certificate Authority (to prevent issuing any additional trusted certificates on top of this one) and that it's purposed only for TLS Web Server authentication.
 
 ### Manually generating a certificate
 If you wish, it is possible to manually generate a certificate and mark it as trusted in the system.
 
+Run the following commands in a root shell started with `sudo -s` from your regular user account:
+
 ```bash
+# create a root-owned directory for the certificate
+mkdir -p "/Library/Application Support/HaLo Bridge"
+cd "/Library/Application Support/HaLo Bridge"
+
 # generate new local certificate
-openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
-openssl req -new -sha256 -key /usr/local/etc/halo-bridge/private_key.pem -out /usr/local/etc/halo-bridge/server.csr -subj '/CN=halo-tools (Local Certificate)/'
-openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.crt
+openssl genrsa -out private_key.pem 2048
+openssl req -new -sha256 -key private_key.pem -out server.csr -subj '/CN=halo-tools (Local Certificate)/'
+openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key private_key.pem -in server.csr -out server.crt
+
+# make the private key readable only by your user (halo-bridge runs as your user)
+chown "$SUDO_USER:$(id -gn "$SUDO_USER")" private_key.pem
+chmod 600 private_key.pem
 
 # add certificate to the trust list
-security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /usr/local/etc/halo-bridge/server.crt
+security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain server.crt
 
 # add halo-bridge.local domain to /etc/hosts if it doesn't exist yet
 grep -v -q "halo-bridge.local" /etc/hosts && echo "" >> /etc/hosts && echo "127.0.0.1  halo-bridge.local" >> /etc/hosts

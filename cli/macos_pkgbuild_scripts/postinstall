@@ -1,31 +1,70 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
+
+# The certificate is stored in a root-owned location. Previously it was stored under
+# /usr/local/etc/halo-bridge, which may be owned by the user (e.g. on Intel Macs with Homebrew).
+# Since this script runs as root, writing there would allow any process running as the user
+# to plant symlinks or swap the certificate before it gets marked as trusted.
+CERT_DIR="/Library/Application Support/HaLo Bridge"
+LEGACY_CERT_DIR="/usr/local/etc/halo-bridge"
 
 # check if user requested us not to override the certificate
-if [ -f /usr/local/etc/halo-bridge/DONT_OVERRIDE ]
+if [ -f "$CERT_DIR/DONT_OVERRIDE" ] || [ -f "$LEGACY_CERT_DIR/DONT_OVERRIDE" ]
 then
     exit 0
 fi
 
-# create a directory for our certificate
-mkdir -p /usr/local/etc/halo-bridge
+# create a root-owned directory for our certificate, refuse to work with symlinks
+if [ -L "$CERT_DIR" ]
+then
+    echo "Refusing to use $CERT_DIR since it is a symbolic link." >&2
+    exit 1
+fi
+
+mkdir -p "$CERT_DIR"
+chown root:wheel "$CERT_DIR"
+chmod 755 "$CERT_DIR"
 
 # remove stale files
-rm -f /usr/local/etc/halo-bridge/private_key.pem
-rm -f /usr/local/etc/halo-bridge/server.csr
-rm -f /usr/local/etc/halo-bridge/server.crt
+rm -f "$CERT_DIR/private_key.pem"
+rm -f "$CERT_DIR/server.csr"
+rm -f "$CERT_DIR/server.crt"
 
 # ask user whether he wants to generate a certificate for halo-bridge.local
 if osascript -e 'display dialog "In order for halo-bridge to work correctly, we will need to generate a self-signed certificate for the '\''halo-bridge.local'\'' domain and mark it as trusted in the system.\n\nYou can skip that step if you don'\''t need to use halo-bridge tool." buttons {"Skip", "Generate certificate"} default button "Generate certificate" cancel button "Skip" with icon caution with title "HaLo Tools Installer"'
 then
+  # generate everything inside a private temporary directory (mode 0700, owned by root),
+  # so that nobody else is able to tamper with the files before the certificate is trusted
+  umask 077
+  WORK_DIR="$(mktemp -d /tmp/halo-bridge-cert.XXXXXXXX)"
+  trap 'rm -rf "$WORK_DIR"' EXIT
+
   # generate new local certificate
-  openssl genrsa -out /usr/local/etc/halo-bridge/private_key.pem 2048
-  openssl req -new -sha256 -key /usr/local/etc/halo-bridge/private_key.pem -out /usr/local/etc/halo-bridge/server.csr -subj '/CN=halo-tools (Local Certificate)/'
-  openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key /usr/local/etc/halo-bridge/private_key.pem -in /usr/local/etc/halo-bridge/server.csr -out /usr/local/etc/halo-bridge/server.crt
+  openssl genrsa -out "$WORK_DIR/private_key.pem" 2048
+  openssl req -new -sha256 -key "$WORK_DIR/private_key.pem" -out "$WORK_DIR/server.csr" -subj '/CN=halo-tools (Local Certificate)/'
+  openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key "$WORK_DIR/private_key.pem" -in "$WORK_DIR/server.csr" -out "$WORK_DIR/server.crt"
 
   # add certificate to the trust list
-  security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /usr/local/etc/halo-bridge/server.crt
+  security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$WORK_DIR/server.crt"
+
+  # halo-bridge runs as the logged-in user, so the private key must be readable by that user,
+  # but not by everyone else
+  CONSOLE_USER="$(stat -f %Su /dev/console 2>/dev/null || true)"
+
+  if [ -n "$CONSOLE_USER" ] && [ "$CONSOLE_USER" != "root" ] && id "$CONSOLE_USER" >/dev/null 2>&1
+  then
+    KEY_OWNER="$CONSOLE_USER"
+    KEY_GROUP="$(id -gn "$CONSOLE_USER")"
+    KEY_MODE=600
+  else
+    KEY_OWNER=root
+    KEY_GROUP=staff
+    KEY_MODE=640
+  fi
+
+  install -m 644 -o root -g wheel "$WORK_DIR/server.crt" "$CERT_DIR/server.crt"
+  install -m "$KEY_MODE" -o "$KEY_OWNER" -g "$KEY_GROUP" "$WORK_DIR/private_key.pem" "$CERT_DIR/private_key.pem"
 fi
 
 # add halo-bridge.local domain to /etc/hosts if it doesn't exist yet
