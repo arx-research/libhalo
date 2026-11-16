@@ -332,11 +332,18 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
             return;
         }
 
+        if (url.protocol !== "https:" && url.protocol !== "http:") {
+            res.status(400).send('Bad request.');
+            return;
+        }
+
         const csrfToken = await makeCSRFToken(url.protocol + '//' + url.host);
 
+        // only display the origin, which is exactly what is going to be authorized;
+        // the full URL could be misleading (e.g. https://trusted.example@evil.example/)
         res.render('consent.html', {
             csrfToken,
-            website: url.href
+            website: url.origin
         });
     });
 

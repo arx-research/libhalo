@@ -20,10 +20,12 @@
         </p>
         <div class="flex-buttons">
           <button
+            id="allow-btn"
             type="submit"
             name="submit"
             value="allow"
             class="button button--success"
+            disabled
           >
             Allow access
           </button>
@@ -50,5 +52,28 @@
         ></path>
       </svg>
     </div>
+    <script>
+      // enable the "Allow access" button only after the page has been visible for a moment,
+      // so the user can't be tricked into clicking it (e.g. by a double-click on a popup)
+      (function () {
+        var allowBtn = document.getElementById("allow-btn");
+        var timer = null;
+
+        function scheduleEnable() {
+          clearTimeout(timer);
+          allowBtn.disabled = true;
+
+          if (document.visibilityState === "visible") {
+            timer = setTimeout(function () {
+              allowBtn.disabled = false;
+            }, 1000);
+          }
+        }
+
+        document.addEventListener("visibilitychange", scheduleEnable);
+        window.addEventListener("focus", scheduleEnable);
+        scheduleEnable();
+      })();
+    </script>
   </body>
 </html>
