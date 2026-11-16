@@ -188,6 +188,13 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
     // Node.js v24.20.0 via @yao-pkg/pkg-fetch; waiting for yao-pkg to publish a release with patched
     // Node.js v24.22.1. Compressed request bodies are not needed here, so this can stay afterwards.
     app.use(express.urlencoded({extended: false, inflate: false}));
+
+    app.use((req, res, next) => {
+        res.set('Content-Security-Policy', "frame-ancestors 'none'");
+        res.set('X-Frame-Options', 'DENY');
+        next();
+    });
+
     app.use('/assets/static', express.static(dirname + '/assets/static'));
 
     nunjucks.configure(dirname + '/assets/views', {
