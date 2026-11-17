@@ -46,6 +46,13 @@ function runHealthCheck(url: string, openTimeout: number, createWebSocket: (url:
     });
 }
 
+// Hostname of the HaLo Bridge's TLS endpoint (macOS installer generates a trusted certificate for it).
+// The ".localhost" TLD is reserved for loopback (RFC 6761), so lookups never leave the machine.
+const BRIDGE_TLS_HOSTNAME = 'halo-bridge.localhost';
+// Legacy hostname used by older installations. The ".local" TLD is reserved for mDNS (RFC 6762),
+// so on systems without the /etc/hosts entry the lookup is multicast to the local network.
+const BRIDGE_TLS_HOSTNAME_LEGACY = 'halo-bridge.local';
+
 function createChecks(wsPort: number, wssPort: number, createWebSocket: (url: string) => WebSocket) {
     // detect Firefox
     const isFirefox = typeof window !== "undefined" && Object.prototype.hasOwnProperty.call(window, "InternalError");
@@ -60,7 +67,10 @@ function createChecks(wsPort: number, wssPort: number, createWebSocket: (url: st
         // A call to wss:// endpoint with incorrect certificate could hang the request
         // for many seconds until it actually fails, and this would hang all remaining WS requests too.
         // We need to skip this check on Firefox to avoid race conditions and have reasonable performance.
-        checks.push(runHealthCheck('wss://halo-bridge.local:' + wssPort + '/ws', openTimeout, createWebSocket));
+        checks.push(runHealthCheck('wss://' + BRIDGE_TLS_HOSTNAME + ':' + wssPort + '/ws', openTimeout, createWebSocket));
+
+        // TODO remove once installations with the legacy certificate are no longer supported
+        checks.push(runHealthCheck('wss://' + BRIDGE_TLS_HOSTNAME_LEGACY + ':' + wssPort + '/ws', openTimeout, createWebSocket));
     }
 
     return checks;
