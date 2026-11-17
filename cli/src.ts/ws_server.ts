@@ -271,6 +271,20 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
         next();
     });
 
+    // origins that are allowed to connect without asking the user for consent:
+    // * the bridge's own pages (served over HTTP/WS and HTTPS/WSS ports)
+    // * the trusted remote websites, over HTTPS only
+    const builtInAllowedOrigins = new Set<string>([
+        "https://burner.pro",
+        "https://boot.burner.pro",
+        "https://os.burner.pro"
+    ]);
+
+    for (const hostname of ["127.0.0.1", "localhost", "[::1]", "halo-bridge.local"]) {
+        builtInAllowedOrigins.add(new URL("http://" + hostname + ":" + args.listenPort).origin);
+        builtInAllowedOrigins.add(new URL("https://" + hostname + ":" + args.listenPortTLS).origin);
+    }
+
     // inflate: false rejects compressed request bodies (HTTP 415) so untrusted input never reaches
     // the embedded Node.js Brotli decoder (CVE-2026-111497). The halo-tools binaries currently embed
     // Node.js v24.20.0 via @yao-pkg/pkg-fetch; waiting for yao-pkg to publish a release with patched
@@ -391,11 +405,11 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
         }
 
         let permitted = false;
-        let originHostname = "(none)";
+        let normalizedOrigin = "(none)";
 
         if (typeof req.headers.origin !== "undefined" || args.requireOrigin) {
             try {
-                originHostname = new URL(req.headers.origin!).hostname;
+                normalizedOrigin = new URL(req.headers.origin!).origin;
             } catch (e) {
                 ws.close(4003, "Failed to parse origin URL.");
                 return;
@@ -414,13 +428,9 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
             permitted = true;
         }
 
-        if (originHostname === "(none)"
-            || originHostname === "127.0.0.1"
-            || originHostname === "localhost"
-            || originHostname === "halo-bridge.local"
-            || originHostname === "burner.pro"
-            || originHostname === "boot.burner.pro"
-            || originHostname === "os.burner.pro") {
+        // compare full origins (scheme + host + port), not just hostnames,
+        // otherwise plain-HTTP or other-port variants of these names would be trusted too
+        if (normalizedOrigin === "(none)" || builtInAllowedOrigins.has(normalizedOrigin)) {
             permitted = true;
         }
 
