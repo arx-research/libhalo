@@ -4,10 +4,19 @@ import WebSocketAsPromised from "websocket-as-promised";
 import {execHaloCmdWeb} from "../../drivers/web.js";
 import {HaloCommandObject} from "../../types.js";
 
+interface ExecutorPendingCommand {
+    nonce: string
+    command: HaloCommandObject
+}
+
 let gatewayServerHost: string | null = null;
-let currentCmd: HaloCommandObject | null = null;
+let currentCmd: ExecutorPendingCommand | null = null;
+let isExecuting = false;
 let wsp: WebSocketAsPromised | null = null;
 const jweUtil = new JWEUtil();
+
+// nonces of all commands received in this session, used to reject replayed command packets
+const seenNonces = new Set<string>();
 
 function createWs(url: string) {
     return new WebSocketAsPromised(url, {
@@ -73,7 +82,30 @@ async function haloGateExecutorCreateWs(logCallback: ExecutorLogCallback, newCom
                 return;
             }
 
-            currentCmd = payload;
+            if (!payload || typeof payload !== "object"
+                    || typeof payload.nonce !== "string"
+                    || !payload.command || typeof payload.command !== "object"
+                    || (payload.direction !== undefined && payload.direction !== "request")) {
+                logCallback("Received malformed command packet, ignoring.");
+                return;
+            }
+
+            if (seenNonces.has(payload.nonce)) {
+                // the gateway server is able to re-send any encrypted packet it has seen before
+                logCallback("Received a replayed command packet, ignoring.");
+                return;
+            }
+
+            seenNonces.add(payload.nonce);
+
+            if (currentCmd !== null || isExecuting) {
+                // the requestor is not allowed to issue another command until the current one is executed,
+                // so the command that the user is reviewing could never be silently swapped
+                logCallback("Received another command while the previous one is still pending, ignoring.");
+                return;
+            }
+
+            currentCmd = {nonce: payload.nonce, command: payload.command};
             newCommandCallback(payload.command);
         } else {
             logCallback("Unknown packet:\n" + JSON.stringify(ev));
@@ -99,10 +131,16 @@ async function haloGateExecutorUserConfirm(logCallback: ExecutorLogCallback) {
         "import_key"
     ];
 
-    const nonce = currentCmd.nonce;
+    if (currentCmd === null || isExecuting) {
+        logCallback('There is no command waiting for confirmation.');
+        return;
+    }
 
-    if (currentCmd && currentCmd.command && currentCmd.command.name
-            && credentialExecCmds.indexOf(currentCmd.command.name) !== -1) {
+    // capture the command that the user has confirmed
+    const cmd = currentCmd;
+    isExecuting = true;
+
+    if (cmd.command.name && credentialExecCmds.indexOf(cmd.command.name) !== -1) {
         options = {"method": "credential"};
     }
 
@@ -111,7 +149,7 @@ async function haloGateExecutorUserConfirm(logCallback: ExecutorLogCallback) {
     try {
         res = {
             status: "success",
-            output: await execHaloCmdWeb(currentCmd.command, options)
+            output: await execHaloCmdWeb(cmd.command, options)
         };
     } catch (e) {
         const err = e as Error;
@@ -132,11 +170,13 @@ async function haloGateExecutorUserConfirm(logCallback: ExecutorLogCallback) {
     logCallback('Command executed, sending result over the network...');
 
     currentCmd = null;
+    isExecuting = false;
     wsp!.sendPacked({
         "type": "executed_cmd",
         "payload": await jweUtil.encrypt({
+            direction: "response",
             response: res,
-            nonce: nonce
+            nonce: cmd.nonce
         })
     });
 }

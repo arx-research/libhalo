@@ -238,6 +238,7 @@ class HaloGateway {
                 res = await this.ws.sendRequest({
                     "type": "request_cmd",
                     "payload": await this.jweUtil.encrypt({
+                        direction: "request",
                         nonce,
                         command
                     })
@@ -262,9 +263,17 @@ class HaloGateway {
                 throw new NFCBadTransportError("Failed to validate or decrypt response packet.");
             }
 
-            if (out.nonce !== nonce) {
+            if (!out || typeof out !== "object" || out.nonce !== nonce) {
                 webDebug('[halo-requestor] mismatched nonce in reply JWE');
                 throw new NFCBadTransportError("Mismatched nonce in reply.");
+            }
+
+            // older executors don't set the direction field, so it's only checked if present;
+            // a reflected request packet would also have no "response" object
+            if ((out.direction !== undefined && out.direction !== "response")
+                    || !out.response || typeof out.response !== "object") {
+                webDebug('[halo-requestor] reply JWE is not a response packet');
+                throw new NFCBadTransportError("Unexpected reply packet.");
             }
 
             const resolution = out.response;
