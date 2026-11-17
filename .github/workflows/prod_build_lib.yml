@@ -5,10 +5,15 @@ on:
     tags:
       - 'libhalo-v*'
 
+permissions:
+  contents: read
+
 jobs:
   create_release:
     name: Create libhalo release
     runs-on: ubuntu-26.04
+    permissions:
+      contents: write
     steps:
       - name: Prepare version number
         id: parse_version
