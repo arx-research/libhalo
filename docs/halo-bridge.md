@@ -120,7 +120,7 @@ for the detailed description of commands that may be requested.
 
 In case of Mac OS platform, the HaLo Tools installer needs to generate a self-signed TLS certificate and mark it as trusted in the system. This is due to the fact that Safari would raise a mixed-content error if a secure external website would attempt to connect to an unsecured WebSocket on localhost, which is not the case for other browsers.
 
-Due to that limitation, the installer will ask if you agree to generate a TLS certificate. The certificate will be stored at `/Library/Application Support/HaLo Bridge/` location (a root-owned directory; the private key is readable only by the user who ran the installer). The generated certificate would only cover the `halo-bridge.localhost` domain (and the legacy `halo-bridge.local` domain, which is still probed by older versions of LibHaLo). It will be also clearly marked that it's not a Certificate Authority (to prevent issuing any additional trusted certificates on top of this one) and that it's purposed only for TLS Web Server authentication.
+Due to that limitation, the installer will ask if you agree to generate a TLS certificate. The certificate will be stored at `/Library/Application Support/HaLo Bridge/` location (a root-owned directory; the private key is readable only by the user who ran the installer). The generated certificate would only cover the `halo-bridge.local` domain. It will be also clearly marked that it's not a Certificate Authority (to prevent issuing any additional trusted certificates on top of this one) and that it's purposed only for TLS Web Server authentication.
 
 ### Manually generating a certificate
 If you wish, it is possible to manually generate a certificate and mark it as trusted in the system.
@@ -135,7 +135,7 @@ cd "/Library/Application Support/HaLo Bridge"
 # generate new local certificate
 openssl genrsa -out private_key.pem 2048
 openssl req -new -sha256 -key private_key.pem -out server.csr -subj '/CN=halo-tools (Local Certificate)/'
-openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.localhost,DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key private_key.pem -in server.csr -out server.crt
+openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key private_key.pem -in server.csr -out server.crt
 
 # make the private key readable only by your user (halo-bridge runs as your user)
 chown "$SUDO_USER:$(id -gn "$SUDO_USER")" private_key.pem
@@ -144,19 +144,11 @@ chmod 600 private_key.pem
 # add certificate to the trust list
 security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain server.crt
 
-# add halo-bridge.localhost and halo-bridge.local domains to /etc/hosts if they don't exist yet
-for BRIDGE_HOSTNAME in halo-bridge.localhost halo-bridge.local; do
-  grep -qE "^[^#]*[[:space:]]${BRIDGE_HOSTNAME//./[.]}([[:space:]]|$)" /etc/hosts || echo "127.0.0.1  $BRIDGE_HOSTNAME" >> /etc/hosts
-done
+# add halo-bridge.local domain to /etc/hosts if it doesn't exist yet
+grep -qE "^[^#]*[[:space:]]halo-bridge[.]local([[:space:]]|$)" /etc/hosts || echo "127.0.0.1  halo-bridge.local" >> /etc/hosts
 ```
 
-The HaLo Bridge would automatically detect the certificate upon the next startup and start the Secure WebSocket server at `wss://halo-bridge.localhost:32869`, in addition to the normal (unsecured) WebSocket endpoint at `ws://127.0.0.1:32868`.
-
-### Why `halo-bridge.localhost`
-
-Older versions used the `halo-bridge.local` domain. The `.local` top-level domain is reserved for multicast DNS (RFC 6762), so on systems without the `/etc/hosts` entry every lookup was multicast to the local network, and on macOS `.local` lookups may be delayed or conflict with VPN/corporate networks that use `.local` internally. The `.localhost` top-level domain is reserved for loopback (RFC 6761); Chrome, Edge and Firefox resolve it to the local machine without any DNS lookup.
-
-During the transition period, LibHaLo probes both `wss://halo-bridge.localhost:32869` and `wss://halo-bridge.local:32869`, and the installer issues a certificate covering both names.
+The HaLo Bridge would automatically detect the certificate upon the next startup and start the Secure WebSocket server at `wss://halo-bridge.local:32869`, in addition to the normal (unsecured) WebSocket endpoint at `ws://127.0.0.1:32868`.
 
 ## Example project
 

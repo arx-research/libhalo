@@ -113,7 +113,7 @@ function buildAllowedHosts(args: Namespace) {
     // Only accept requests that are addressed to the bridge itself. This prevents DNS rebinding attacks,
     // where an attacker-controlled domain is re-pointed to 127.0.0.1 in order to reach the bridge
     // as a same-origin website.
-    const hostnames = new Set(['127.0.0.1', 'localhost', '[::1]', 'halo-bridge.localhost', 'halo-bridge.local']);
+    const hostnames = new Set(['127.0.0.1', 'localhost', '[::1]', 'halo-bridge.local']);
     const listenHost = String(args.listenHost ?? '').toLowerCase();
 
     if (listenHost && listenHost !== '0.0.0.0' && listenHost !== '::' && listenHost !== '[::]') {
@@ -284,7 +284,7 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
         "https://os.burner.pro"
     ]);
 
-    for (const hostname of ["127.0.0.1", "localhost", "[::1]", "halo-bridge.localhost", "halo-bridge.local"]) {
+    for (const hostname of ["127.0.0.1", "localhost", "[::1]", "halo-bridge.local"]) {
         builtInAllowedOrigins.add(new URL("http://" + hostname + ":" + args.listenPort).origin);
         builtInAllowedOrigins.add(new URL("https://" + hostname + ":" + args.listenPortTLS).origin);
     }
