@@ -26,8 +26,9 @@ rm -f "$CERT_DIR/private_key.pem"
 rm -f "$CERT_DIR/server.csr"
 rm -f "$CERT_DIR/server.crt"
 
-# ask user whether he wants to generate a certificate for halo-bridge.local
-if osascript -e 'display dialog "In order for halo-bridge to work correctly, we will need to generate a self-signed certificate for the '\''halo-bridge.local'\'' domain and mark it as trusted in the system.\n\nYou can skip that step if you don'\''t need to use halo-bridge tool." buttons {"Skip", "Generate certificate"} default button "Generate certificate" cancel button "Skip" with icon caution with title "HaLo Tools Installer"'
+# ask user whether he wants to generate a certificate for halo-bridge.localhost
+# (the legacy halo-bridge.local name is also included, for websites using older versions of libhalo)
+if osascript -e 'display dialog "In order for halo-bridge to work correctly, we will need to generate a self-signed certificate for the '\''halo-bridge.localhost'\'' domain and mark it as trusted in the system.\n\nYou can skip that step if you don'\''t need to use halo-bridge tool." buttons {"Skip", "Generate certificate"} default button "Generate certificate" cancel button "Skip" with icon caution with title "HaLo Tools Installer"'
 then
   # generate everything inside a private temporary directory (mode 0700, owned by root),
   # so that nobody else is able to tamper with the files before the certificate is trusted
@@ -38,7 +39,7 @@ then
   # generate new local certificate
   openssl genrsa -out "$WORK_DIR/private_key.pem" 2048
   openssl req -new -sha256 -key "$WORK_DIR/private_key.pem" -out "$WORK_DIR/server.csr" -subj '/CN=halo-tools (Local Certificate)/'
-  openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key "$WORK_DIR/private_key.pem" -in "$WORK_DIR/server.csr" -out "$WORK_DIR/server.crt"
+  openssl req -x509 -sha256 -days 3650 -extensions HALO -config <(printf "[HALO]\nsubjectAltName='DNS:halo-bridge.localhost,DNS:halo-bridge.local'\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=critical,serverAuth") -key "$WORK_DIR/private_key.pem" -in "$WORK_DIR/server.csr" -out "$WORK_DIR/server.crt"
 
   # add certificate to the trust list
   security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$WORK_DIR/server.crt"
@@ -62,11 +63,15 @@ then
   install -m "$KEY_MODE" -o "$KEY_OWNER" -g "$KEY_GROUP" "$WORK_DIR/private_key.pem" "$CERT_DIR/private_key.pem"
 fi
 
-# add halo-bridge.local domain to /etc/hosts if it doesn't exist yet
-if ! grep -q "halo-bridge.local" /etc/hosts
-then
-  echo "" >> /etc/hosts
-  echo "127.0.0.1  halo-bridge.local" >> /etc/hosts
-fi
+# add halo-bridge.localhost and the legacy halo-bridge.local domain to /etc/hosts if they don't exist yet
+# (match the exact hostname, so that e.g. "halo-bridge.localhost" is not mistaken for "halo-bridge.local")
+for BRIDGE_HOSTNAME in halo-bridge.localhost halo-bridge.local
+do
+  if ! grep -qE "^[^#]*[[:space:]]${BRIDGE_HOSTNAME//./[.]}([[:space:]]|$)" /etc/hosts
+  then
+    echo "" >> /etc/hosts
+    echo "127.0.0.1  $BRIDGE_HOSTNAME" >> /etc/hosts
+  fi
+done
 
 exit 0
