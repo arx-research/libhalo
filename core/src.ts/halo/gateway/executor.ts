@@ -1,4 +1,4 @@
-import {JWEUtil} from "../jwe_util.js";
+import {JWEUtil, isGatewayDirectionRequired} from "../jwe_util.js";
 import queryString from "query-string";
 import WebSocketAsPromised from "websocket-as-promised";
 import {execHaloCmdWeb} from "../../drivers/web.js";
@@ -82,10 +82,14 @@ async function haloGateExecutorCreateWs(logCallback: ExecutorLogCallback, newCom
                 return;
             }
 
+            // older requestors don't set the direction field, so until the cut-off date it's only checked
+            // if present; afterwards it's mandatory
+            const directionRequired = isGatewayDirectionRequired();
+
             if (!payload || typeof payload !== "object"
                     || typeof payload.nonce !== "string"
                     || !payload.command || typeof payload.command !== "object"
-                    || (payload.direction !== undefined && payload.direction !== "request")) {
+                    || (payload.direction !== "request" && (directionRequired || payload.direction !== undefined))) {
                 logCallback("Received malformed command packet, ignoring.");
                 return;
             }

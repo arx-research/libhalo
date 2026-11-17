@@ -75,4 +75,13 @@ class JWEUtil {
     }
 }
 
-export {JWEUtil};
+// Starting from this date, gateway JWE payloads must carry the `direction` field
+// ("request" from the requestor, "response" from the executor). Until then, payloads from
+// older requestors/executors that don't set the field at all are still accepted.
+const GATEWAY_STRICT_DIRECTION_FROM = Date.parse("2027-02-17T00:00:00Z");
+
+function isGatewayDirectionRequired() {
+    return Date.now() >= GATEWAY_STRICT_DIRECTION_FROM;
+}
+
+export {JWEUtil, GATEWAY_STRICT_DIRECTION_FROM, isGatewayDirectionRequired};
