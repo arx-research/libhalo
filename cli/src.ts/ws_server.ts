@@ -18,8 +18,6 @@ import {NFCOperationError} from "@arx-research/libhalo/api/common";
 import {Reader} from "@arx-research/libhalo/types";
 import {Namespace} from "argparse";
 
-let wss: WebSocketServer | null = null;
-
 let currentWsClient: WebSocket | null = null;
 let currentState: {
     handle: string
@@ -273,7 +271,7 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
         displayTLSWarn = false;
     }
 
-    wss = new WebSocketServer({noServer: true});
+    const wss = new WebSocketServer({noServer: true});
     const allowedHostsPlain = buildAllowedHosts(args, false);
     const allowedHostsTLS = buildAllowedHosts(args, true);
 
@@ -411,8 +409,8 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
             return;
         }
 
-        wss && wss.handleUpgrade(request, socket, head, socket => {
-            wss && wss.emit('connection', socket, request);
+        wss.handleUpgrade(request, socket, head, socket => {
+            wss.emit('connection', socket, request);
         });
     });
 
@@ -423,8 +421,8 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
                 return;
             }
 
-            wss && wss.handleUpgrade(request, socket, head, socket => {
-                wss && wss.emit('connection', socket, request);
+            wss.handleUpgrade(request, socket, head, socket => {
+                wss.emit('connection', socket, request);
             });
         });
     }
