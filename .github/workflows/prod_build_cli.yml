@@ -36,7 +36,7 @@ jobs:
             * `halo-tools-macos-arm64.pkg` - Mac OS Apple Silicon build (installer; signed)
             * `halo-tools-macos-x64.pkg` - Mac OS Intel x64 build (installer; signed)
             
-            **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
+            **Note:** Each file has a build provenance attestation, see [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md). Verify with: `gh attestation verify <file> --repo arx-research/libhalo`
 
   build_cli_tool:
     permissions:
@@ -188,6 +188,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      attestations: write
     strategy:
       matrix:
         include:
@@ -299,16 +300,15 @@ jobs:
         run: |
           xcrun stapler staple "./${{ matrix.out_name }}"
           rm -rf ./root/
-      - name: Sign output binaries with cosign
-        run: |
-          echo y | cosign sign-blob ./${{ matrix.out_name }} --output-certificate ./${{ matrix.out_name }}-keyless.pem --output-signature ./${{ matrix.out_name }}-keyless.sig
+      - name: Generate build provenance attestation
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ./${{ matrix.out_name }}
       - name: Upload release assets
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
           files: |
             ./${{ matrix.out_name }}
-            ./${{ matrix.out_name }}-keyless.pem
-            ./${{ matrix.out_name }}-keyless.sig
       - name: Delete binary artifact
         if: always()
         uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
