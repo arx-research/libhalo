@@ -43,18 +43,22 @@ const sessionIds: Record<string, SocketState> = {};
 let cachedStatsObj: unknown | null = null;
 let cachedStatsTimestamp: number = +new Date();
 
-// the Origin header is fully client-controlled, so only a limited part of it is logged
-const MAX_LOGGED_ORIGIN_LENGTH = 256;
+// The Origin header is client-controlled and gets logged, so its length is limited.
+// A browser can't produce an origin longer than ~268 characters: "https://" + DNS name
+// (max. 253 characters, 254 with the trailing dot) + ":65535". Non-DNS origins (IP literals,
+// "null", browser extension origins) are much shorter. A small margin is added on top of that.
+const MAX_ORIGIN_LENGTH = 300;
+
+function isOriginTooLong(req: IncomingMessage): boolean {
+    const origin = req.headers['origin'];
+    return typeof origin === "string" && origin.length > MAX_ORIGIN_LENGTH;
+}
 
 function getLoggedOrigin(req: IncomingMessage): string {
     const origin = req.headers['origin'];
 
     if (typeof origin !== "string" || origin.length === 0) {
         return "Unknown";
-    }
-
-    if (origin.length > MAX_LOGGED_ORIGIN_LENGTH) {
-        return origin.slice(0, MAX_LOGGED_ORIGIN_LENGTH) + "...";
     }
 
     return origin;
@@ -71,6 +75,12 @@ function loadCachedFile(path: string) {
 }
 
 function processRequestor(ws: WebSocket, req: IncomingMessage) {
+    if (isOriginTooLong(req)) {
+        // not a browser, reject the connection without logging the header
+        ws.close(4059, "Origin header is too long.");
+        return;
+    }
+
     if (Object.keys(sessionIds).length >= MAX_SESSION_LIMIT) {
         ws.close(4053, "Too many connections.");
         return;
