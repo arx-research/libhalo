@@ -147,9 +147,7 @@ function readTLSData() {
     if (process.platform === "win32") {
         certDirs = [path.join(os.homedir(), ".halo-bridge")];
     } else if (process.platform === "darwin") {
-        // the macOS installer stores the certificate in a root-owned directory,
-        // the legacy location is still supported for older installs and manually generated certificates
-        certDirs = ['/Library/Application Support/HaLo Bridge', '/usr/local/etc/halo-bridge'];
+        certDirs = ['/Library/Application Support/HaLo Bridge'];
     } else {
         certDirs = ['/usr/local/etc/halo-bridge'];
     }

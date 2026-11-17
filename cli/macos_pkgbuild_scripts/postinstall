@@ -2,15 +2,10 @@
 
 set -euo pipefail
 
-# The certificate is stored in a root-owned location. Previously it was stored under
-# /usr/local/etc/halo-bridge, which may be owned by the user (e.g. on Intel Macs with Homebrew).
-# Since this script runs as root, writing there would allow any process running as the user
-# to plant symlinks or swap the certificate before it gets marked as trusted.
 CERT_DIR="/Library/Application Support/HaLo Bridge"
-LEGACY_CERT_DIR="/usr/local/etc/halo-bridge"
 
 # check if user requested us not to override the certificate
-if [ -f "$CERT_DIR/DONT_OVERRIDE" ] || [ -f "$LEGACY_CERT_DIR/DONT_OVERRIDE" ]
+if [ -f "$CERT_DIR/DONT_OVERRIDE" ]
 then
     exit 0
 fi
