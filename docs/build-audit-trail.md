@@ -18,7 +18,7 @@ No signing keys are stored anywhere; this is called "keyless signing". The relea
 
 * The SHA-256 digest of the release file;
 * The repository that built it (`arx-research/libhalo`);
-* The workflow file that built it, together with the git ref (e.g. `.github/workflows/prod_build_cli.yml@refs/tags/halotools-v1.23.0`);
+* The workflow file that built it, together with the git ref (e.g. `.github/workflows/prod_build_cli.yml@refs/tags/halotools-v1.22.0`);
 * The exact git commit that was built;
 * That the build ran on a GitHub-hosted runner, with a link to the workflow run.
 
@@ -76,14 +76,14 @@ echo "Commit ID: $COMMIT_HASH"
 
 Replace the version with the release you have downloaded.
 
-Verify the Apple Silicon installer of version `halotools-v1.23.0`:
+Verify the Apple Silicon installer of version `halotools-v1.22.0`:
 ```bash
-./verify.sh prod_build_cli halo-tools-macos-arm64.pkg halotools-v1.23.0
+./verify.sh prod_build_cli halo-tools-macos-arm64.pkg halotools-v1.22.0
 ```
 
-Verify `libhalo.js` of version `libhalo-v1.23.0`:
+Verify `libhalo.js` of version `libhalo-v1.22.0`:
 ```bash
-./verify.sh prod_build_lib libhalo.js libhalo-v1.23.0
+./verify.sh prod_build_lib libhalo.js libhalo-v1.22.0
 ```
 
 ### Offline verification
@@ -108,7 +108,7 @@ npm audit signatures
 
 ## Older releases
 
-Releases published before build provenance attestations were introduced ship two additional files per asset, signed with [`cosign`](https://docs.sigstore.dev/cosign/installation/):
+Build provenance attestations are available starting with `halotools-v1.22.0` and `libhalo-v1.22.0`. Earlier releases (including `v1.22.0a`) ship two additional files per asset instead, signed with [`cosign`](https://docs.sigstore.dev/cosign/installation/):
 
 * `<asset name>-keyless.pem` - the ephemeral certificate;
 * `<asset name>-keyless.sig` - the signature made with that certificate.
