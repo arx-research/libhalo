@@ -216,22 +216,26 @@ function wsEventReaderDisconnected(reader: Reader) {
 }
 
 function readTLSData() {
-    let privateKeyPath;
-    let certificatePath;
+    let certDirs: string[];
 
     if (process.platform === "win32") {
-        privateKeyPath = path.join(os.homedir(), ".halo-bridge\\private_key.pem");
-        certificatePath = path.join(os.homedir(), ".halo-bridge\\server.crt");
+        certDirs = [path.join(os.homedir(), ".halo-bridge")];
+    } else if (process.platform === "darwin") {
+        certDirs = ['/Library/Application Support/HaLo Bridge'];
     } else {
-        privateKeyPath = '/usr/local/etc/halo-bridge/private_key.pem';
-        certificatePath = '/usr/local/etc/halo-bridge/server.crt';
+        certDirs = ['/usr/local/etc/halo-bridge'];
     }
 
-    if (fs.existsSync(privateKeyPath) && fs.existsSync(certificatePath)) {
-        const privateKey = fs.readFileSync(privateKeyPath);
-        const certificate = fs.readFileSync(certificatePath);
+    for (const certDir of certDirs) {
+        const privateKeyPath = path.join(certDir, "private_key.pem");
+        const certificatePath = path.join(certDir, "server.crt");
 
-        return {privateKey, certificate};
+        if (fs.existsSync(privateKeyPath) && fs.existsSync(certificatePath)) {
+            const privateKey = fs.readFileSync(privateKeyPath);
+            const certificate = fs.readFileSync(certificatePath);
+
+            return {privateKey, certificate};
+        }
     }
 
     return null;
