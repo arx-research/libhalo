@@ -4,6 +4,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import {RawData, WebSocket} from "ws";
 
 function randomBuffer() {
     return Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
@@ -80,6 +81,39 @@ if (process.pkg && process.pkg.entrypoint) {
     dirname = path_join(path_dirname(filename), '..');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type WsPacket = Record<string, any>;
+
+/**
+ * Wrap a WebSocket "message" listener so that malformed packets or exceptions thrown by the handler
+ * only close the offending connection. An exception escaping a "message" listener would otherwise
+ * become an uncaught exception and terminate the whole process.
+ */
+function safeWsMessageHandler(ws: WebSocket, logPrefix: string, handler: (packet: WsPacket) => unknown) {
+    return async (data: RawData) => {
+        let packet: unknown;
+
+        try {
+            packet = JSON.parse(data.toString('utf-8'));
+        } catch (e) {
+            packet = null;
+        }
+
+        if (typeof packet !== "object" || packet === null || Array.isArray(packet)) {
+            console.log(logPrefix + ' Received malformed packet, closing the connection.');
+            ws.close(4060, "Malformed packet.");
+            return;
+        }
+
+        try {
+            await handler(packet as WsPacket);
+        } catch (e) {
+            console.error(logPrefix + ' Unhandled exception when processing packet.', e);
+            ws.close(4061, "Unhandled exception.");
+        }
+    };
+}
+
 export {
     dirname,
     randomBuffer,
@@ -88,5 +122,6 @@ export {
     simConfigExists,
     getSimConfig,
     saveSimConfig,
-    redactLogObject
+    redactLogObject,
+    safeWsMessageHandler
 };
