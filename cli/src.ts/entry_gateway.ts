@@ -43,10 +43,6 @@ const sessionIds: Record<string, SocketState> = {};
 let cachedStatsObj: unknown | null = null;
 let cachedStatsTimestamp: number = +new Date();
 
-// The Origin header is client-controlled and gets logged, so its length is limited.
-// A browser can't produce an origin longer than ~268 characters: "https://" + DNS name
-// (max. 253 characters, 254 with the trailing dot) + ":65535". Non-DNS origins (IP literals,
-// "null", browser extension origins) are much shorter. A small margin is added on top of that.
 const MAX_ORIGIN_LENGTH = 300;
 
 function isOriginTooLong(req: IncomingMessage): boolean {
