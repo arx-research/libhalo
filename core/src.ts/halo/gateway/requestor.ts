@@ -14,6 +14,9 @@ import {webDebug} from "../util.js";
 import {GatewayWelcomeMsg, HaloCommandObject} from "../../types.js";
 import {SignalDispatcher} from "strongly-typed-events";
 
+// Starting from this date, reply packets from the executor must carry `direction: "response"`.
+// Until then, replies from older executors that don't set the field at all are still accepted.
+const GATEWAY_STRICT_DIRECTION_FROM = Date.parse("2027-02-17T00:00:00Z");
 
 function makeQR(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -268,9 +271,11 @@ class HaloGateway {
                 throw new NFCBadTransportError("Mismatched nonce in reply.");
             }
 
-            // older executors don't set the direction field, so it's only checked if present;
-            // a reflected request packet would also have no "response" object
-            if ((out.direction !== undefined && out.direction !== "response")
+            // older executors don't set the direction field, so until the cut-off date it's only checked if present;
+            // afterwards it's mandatory; a reflected request packet would also have no "response" object
+            const directionRequired = Date.now() >= GATEWAY_STRICT_DIRECTION_FROM;
+
+            if ((out.direction !== "response" && (directionRequired || out.direction !== undefined))
                     || !out.response || typeof out.response !== "object") {
                 webDebug('[halo-requestor] reply JWE is not a response packet');
                 throw new NFCBadTransportError("Unexpected reply packet.");
