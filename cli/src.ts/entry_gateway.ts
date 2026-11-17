@@ -43,6 +43,23 @@ const sessionIds: Record<string, SocketState> = {};
 let cachedStatsObj: unknown | null = null;
 let cachedStatsTimestamp: number = +new Date();
 
+// the Origin header is fully client-controlled, so only a limited part of it is logged
+const MAX_LOGGED_ORIGIN_LENGTH = 256;
+
+function getLoggedOrigin(req: IncomingMessage): string {
+    const origin = req.headers['origin'];
+
+    if (typeof origin !== "string" || origin.length === 0) {
+        return "Unknown";
+    }
+
+    if (origin.length > MAX_LOGGED_ORIGIN_LENGTH) {
+        return origin.slice(0, MAX_LOGGED_ORIGIN_LENGTH) + "...";
+    }
+
+    return origin;
+}
+
 function loadCachedFile(path: string) {
     if (Object.prototype.hasOwnProperty.call(cachedFiles, path)) {
         return cachedFiles[path];
@@ -70,7 +87,7 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
 
     const log_to_save = {
         event_name: "Requestor connected",
-        origin: req.headers['origin'] || "Unknown",
+        origin: getLoggedOrigin(req),
         forwarded_for: req.headers['x-forwarded-for'] || "Unknown",
         ip: req.socket.remoteAddress || "Unknown",
     };
@@ -132,7 +149,7 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
                 console.log('[' + sessionId + '] Command request sent to executor.');
                 const log_to_save = {
                     event_name: "Command request sent to executor",
-                    origin: req.headers['origin'] || "Unknown",
+                    origin: getLoggedOrigin(req),
                     forwarded_for: req.headers['x-forwarded-for'] || "Unknown",
                     ip: req.socket.remoteAddress || "Unknown",
                 };
@@ -217,7 +234,8 @@ function processExecutor(ws: WebSocket, req: IncomingMessage, sessionId: string)
 
 function generateStatsData() {
     const logDir = "./logs/";
-    const logs: Record<string, Array<Record<string, string>>> = {};
+    // Maps are used on purpose, the keys (e.g. origin) are client-controlled and could be "__proto__" etc.
+    const logs = new Map<string, Array<Record<string, unknown>>>();
 
     if (fs.existsSync(logDir)) {
         const logFilenames = fs.readdirSync(logDir);
@@ -225,12 +243,26 @@ function generateStatsData() {
         // Extract raw log data from all log files
         for (const filename of logFilenames) {
             const rawLogs = fs.readFileSync(path_join(logDir, filename), "utf-8");
-            // Parse each line of the log file into a JSON object, ignore empty lines
-            const parsedLogs = rawLogs
-                .split("\n")
-                .filter((line) => line.length > 0)
-                .map((line) => JSON.parse(line));
-            logs[filename.replaceAll(".ndjson", "")] = parsedLogs;
+            // Parse each line of the log file into a JSON object, ignore empty or malformed lines
+            const parsedLogs: Array<Record<string, unknown>> = [];
+
+            for (const line of rawLogs.split("\n")) {
+                if (line.length === 0) {
+                    continue;
+                }
+
+                try {
+                    const parsed = JSON.parse(line);
+
+                    if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+                        parsedLogs.push(parsed);
+                    }
+                } catch (e) {
+                    // skip malformed line (e.g. partially written)
+                }
+            }
+
+            logs.set(filename.replaceAll(".ndjson", ""), parsedLogs);
         }
     }
 
@@ -245,9 +277,9 @@ function generateStatsData() {
     //      },
     //      ...
     // }
-    const data: Record<
+    const data = new Map<
         string,
-        Record<
+        Map<
             string,
             {
                 total_connections: number;
@@ -255,40 +287,47 @@ function generateStatsData() {
                 total_unique_ips: number;
             }
         >
-    > = {};
-    for (const [yyyy_mm, logData] of Object.entries(logs)) {
-        const uniqueIps: Record<string, Set<string>> = {}
-        const length = Object.entries(logData).length;
-        for (const [index, log] of logData.entries()) {
-            const origin = log.origin;
+    >();
+    for (const [yyyy_mm, logData] of logs) {
+        const uniqueIps = new Map<string, Set<string>>();
 
-            // Add initial records if they don't exist already
-            if (!data[yyyy_mm]) {
-                data[yyyy_mm] = {};
-            }
-            if (!data[yyyy_mm][origin]) {
-                data[yyyy_mm][origin] = {
+        // Add initial records if they don't exist already
+        if (!data.has(yyyy_mm)) {
+            data.set(yyyy_mm, new Map());
+        }
+
+        const monthData = data.get(yyyy_mm)!;
+
+        for (const log of logData) {
+            const origin = String(log.origin);
+
+            if (!monthData.has(origin)) {
+                monthData.set(origin, {
                     total_connections: 0,
                     total_processed_commands: 0,
                     total_unique_ips: 0,
-                };
+                });
             }
 
+            const originStats = monthData.get(origin)!;
+
             // Add IP to the set
-            if (!uniqueIps[origin]) {
-                uniqueIps[origin] = new Set();
+            if (!uniqueIps.has(origin)) {
+                uniqueIps.set(origin, new Set());
             }
-            uniqueIps[origin].add(log.ip);
+
+            const originIps = uniqueIps.get(origin)!;
+            originIps.add(String(log.ip));
 
             // Handle different log events
             if (log.event_name === "Requestor connected") {
-                data[yyyy_mm][origin].total_connections++;
+                originStats.total_connections++;
             } else if (log.event_name === "Command request sent to executor") {
-                data[yyyy_mm][origin].total_processed_commands++;
+                originStats.total_processed_commands++;
             }
 
             // Update the total unique IPs
-            data[yyyy_mm][origin].total_unique_ips = uniqueIps[origin].size;
+            originStats.total_unique_ips = originIps.size;
         }
     }
 
@@ -301,8 +340,8 @@ function generateStatsData() {
         total_processed_commands: number;
         total_unique_ips: number;
     }> = [];
-    for (const [yyyy_mm, origins] of Object.entries(data)) {
-        for (const [origin, stats] of Object.entries(origins)) {
+    for (const [yyyy_mm, origins] of data) {
+        for (const [origin, stats] of origins) {
             const [yyyy, mm] = yyyy_mm.split("_");
             flatData.push({
                 year: parseInt(yyyy),
