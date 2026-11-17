@@ -33,7 +33,8 @@ jobs:
             Release contents:
             * `halo-tools-linux-x64.tgz` - Linux x64 build (elf files; tar-gzip compressed)
             * `halo-tools-win-x64.exe` - Windows 64 build (exe files; signed; zipped)
-            * `halo-tools-macos-x64.pkg` - Mac OS x64 build (installer; signed)
+            * `halo-tools-macos-arm64.pkg` - Mac OS Apple Silicon build (installer; signed)
+            * `halo-tools-macos-x64.pkg` - Mac OS Intel x64 build (installer; signed)
             
             **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
 
@@ -45,11 +46,19 @@ jobs:
         include:
           - os: ubuntu-26.04
             platform: ubuntu
+            arch: x64
           - os: windows-2025
             platform: windows
+            arch: x64
+          # Intel runner, produces the x64 build
           - os: macos-26-large
             platform: macos
-    name: Build halo-tools (${{ matrix.platform }})
+            arch: x64
+          # Apple Silicon runner, produces the arm64 build (native modules are compiled for arm64)
+          - os: macos-26
+            platform: macos
+            arch: arm64
+    name: Build halo-tools (${{ matrix.platform }}-${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     needs: create_release
     steps:
@@ -134,13 +143,27 @@ jobs:
           cd cli
           node ./build_scripts/ci_scripts.js --platform macos --product cli
           npx json-merger orig-package.json bin-cli.json -p -o package.json
-          yarn pkg --compress GZip -t node24-macos-x64 -o dist/halocli .
+          yarn pkg --compress GZip -t node24-macos-${{ matrix.arch }} -o dist/halocli .
           node ./build_scripts/ci_scripts.js --platform macos --product bridge
           npx json-merger orig-package.json bin-bridge.json -p -o package.json
-          yarn pkg --compress GZip -t node24-macos-x64 -o dist/halo-bridge .
+          yarn pkg --compress GZip -t node24-macos-${{ matrix.arch }} -o dist/halo-bridge .
           mv "macos_bridge_app" "dist/HaLo CLI Bridge Server.app"
           mv "macos_pkgbuild_scripts" "dist/macos_pkgbuild_scripts"
           mv "Entitlements.plist" "dist/Entitlements.plist"
+      - name: Verify binary architecture (MacOS)
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          cd cli
+          if [ "${{ matrix.arch }}" = "arm64" ]; then EXPECTED_ARCH=arm64; else EXPECTED_ARCH=x86_64; fi
+          for f in dist/halocli dist/halo-bridge build/pcsclite.node; do
+            ACTUAL_ARCH="$(lipo -archs "$f")"
+            echo "$f: $ACTUAL_ARCH"
+            if [ "$ACTUAL_ARCH" != "$EXPECTED_ARCH" ]; then
+              echo "Unexpected architecture of $f: $ACTUAL_ARCH (expected $EXPECTED_ARCH)" >&2
+              exit 1
+            fi
+          done
       - name: Compress dist files
         shell: bash
         run: |
@@ -154,7 +177,7 @@ jobs:
       - name: Store binary as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binary-${{ matrix.os }}
+          name: binary-${{ matrix.platform }}-${{ matrix.arch }}
           path: |
             ./cli/dist.tgz
             ./cli/dist.tgz-keyless.pem
@@ -171,20 +194,27 @@ jobs:
           - os: ubuntu-26.04
             out_name: halo-tools-linux-x64.tgz
             platform: ubuntu
+            arch: x64
           - os: windows-2025
             out_name: halo-tools-win-x64.zip
             platform: windows
+            arch: x64
           - os: macos-26-large
             out_name: halo-tools-macos-x64.pkg
             platform: macos
-    name: Sign halo-tools and release (${{ matrix.platform }})
+            arch: x64
+          - os: macos-26
+            out_name: halo-tools-macos-arm64.pkg
+            platform: macos
+            arch: arm64
+    name: Sign halo-tools and release (${{ matrix.platform }}-${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     needs: build_cli_tool
     steps:
       - name: Download binary from artifact
         uses: actions/download-artifact@v4
         with:
-          name: binary-${{ matrix.os }}
+          name: binary-${{ matrix.platform }}-${{ matrix.arch }}
       - name: Install cosign
         uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
       - name: Validate signatures from previous stage
@@ -259,15 +289,15 @@ jobs:
           chmod +x ./root/usr/local/bin/halocli
           chmod +x ./root/usr/local/bin/halo-bridge
           chmod +x "./root/Applications/HaLo CLI Bridge Server.app/Contents/MacOS/halocli_bridge_launcher"
-          pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --scripts "macos_pkgbuild_scripts/" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" ./halo-tools-macos-x64.pkg
+          pkgbuild --root ./root --identifier "org.arx.halo.halocli" --version "1.0.$(date +%s)" --scripts "macos_pkgbuild_scripts/" --install-location "/" --sign "${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}" "./${{ matrix.out_name }}"
       - name: Notarize application for Mac OS
         if: matrix.platform == 'macos'
         run: |
-          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_NOTARIZE_APPLE_ID }}" "--password=${{ secrets.MACOS_NOTARIZE_PASSWORD }}" "--team-id=${{ secrets.MACOS_NOTARIZE_TEAM_ID }}" --progress --wait ./halo-tools-macos-x64.pkg
+          xcrun notarytool submit "--apple-id=${{ secrets.MACOS_NOTARIZE_APPLE_ID }}" "--password=${{ secrets.MACOS_NOTARIZE_PASSWORD }}" "--team-id=${{ secrets.MACOS_NOTARIZE_TEAM_ID }}" --progress --wait "./${{ matrix.out_name }}"
       - name: Staple notarized application (Mac OS)
         if: matrix.platform == 'macos'
         run: |
-          xcrun stapler staple ./halo-tools-macos-x64.pkg
+          xcrun stapler staple "./${{ matrix.out_name }}"
           rm -rf ./root/
       - name: Sign output binaries with cosign
         run: |
@@ -283,4 +313,4 @@ jobs:
         if: always()
         uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
         with:
-          name: binary-${{ matrix.os }}
+          name: binary-${{ matrix.platform }}-${{ matrix.arch }}
