@@ -34,9 +34,9 @@ jobs:
             
             Release contents:
             * `libhalo.js` - standalone JavaScript library for inclusion in classic HTML applications;
-            * `libhalo.js.LICENSE` - license information;
+            * `libhalo.js.LICENSE.txt` - license information;
             
-            **Note:** The files `*-keyless.sig` and `*-keyless.pem` constitute a part of [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md).
+            **Note:** Each file has a build provenance attestation, see [build audit trail](https://github.com/arx-research/libhalo/blob/master/docs/build-audit-trail.md). Verify with: `gh attestation verify <file> --repo arx-research/libhalo`
       - name: Store release upload URL
         run: |
           echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
@@ -51,6 +51,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      attestations: write
     needs: create_release
     steps:
       - name: Install native dependencies (Linux)
@@ -82,13 +83,12 @@ jobs:
         id: out_store
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.5.0
-      - name: Sign libhalo.js with cosign
-        run: |
-          cd ./core/dist
-          echo y | cosign sign-blob ./libhalo.js --output-certificate ./libhalo.js-keyless.pem --output-signature ./libhalo.js-keyless.sig
-          cosign verify-blob --cert ./libhalo.js-keyless.pem --signature ./libhalo.js-keyless.sig --certificate-identity "https://github.com/arx-research/libhalo/.github/workflows/prod_build_lib.yml@${GITHUB_REF}" --certificate-oidc-issuer https://token.actions.githubusercontent.com ./libhalo.js
+      - name: Generate build provenance attestation
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            ./core/dist/libhalo.js
+            ./core/dist/libhalo.js.LICENSE.txt
       - name: Upload release asset (JS bundle)
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -109,26 +109,6 @@ jobs:
           asset_path: ./core/dist/libhalo.js.LICENSE.txt
           asset_name: libhalo.js.LICENSE.txt
           asset_content_type: text/plain
-      - name: Upload release asset (cosign pem)
-        id: upload-release-asset-cosign-pem
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./core/dist/libhalo.js-keyless.pem
-          asset_name: libhalo.js-keyless.pem
-          asset_content_type: application/octet-stream
-      - name: Upload release asset (cosign sig)
-        id: upload-release-asset-cosign-sig
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.out_store.outputs.release_upload_url }}
-          asset_path: ./core/dist/libhalo.js-keyless.sig
-          asset_name: libhalo.js-keyless.sig
-          asset_content_type: application/octet-stream
 
   publish_npm:
     name: Publish libhalo package

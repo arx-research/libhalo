@@ -1,67 +1,123 @@
 # LibHaLo Build Audit Trail
 
-> **Note:** This article is solely about verifying additional build signatures. If you are not concerned that much about the build process security, please feel free to skip that read.
+> **Note:** This article is solely about verifying where our release builds come from. If you are not concerned that much about the build process security, please feel free to skip that read.
 
-Each workflow that gets executed on a GitHub-hosted runner has a short-lived [OpenID Connect (OIDC) token](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) assigned by GitHub.
-This token contains essential information about the exact job that was run (commit identifier, git tag, name of the workflow, and other).
+All release assets of [arx-research/libhalo](https://github.com/arx-research/libhalo) are built by GitHub Actions workflows running on GitHub-hosted runners. For every asset, the release workflow creates a [build provenance attestation](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds). It is a signed statement that binds the SHA-256 digest of the file to the exact repository, workflow, git tag and commit that produced it.
 
-During the build process, we are using the tool which validates that OIDC token against the [Fulcio CA](https://www.chainguard.dev/unchained/a-fulcio-deep-dive).
-In turn, the CA is issuing an ephemeral X.509 certificate. Practically, the CA is just rewriting the information from the original OIDC token into the newly issued certificate.
+## How it works
 
-Finally, we use that ephemeral certificates in order to additionally sign all release assets that are contained in the [arx-research/libhalo](https://github.com/arx-research/libhalo) repository. This technique is so-called as ["keyless signing"](https://www.chainguard.dev/unchained/zero-friction-keyless-signing-with-github-actions), and the exact tool that we are using is `cosign` (a part of "sigstore" project by The Linux Foundation).
+Each workflow run on a GitHub-hosted runner has a short-lived [OpenID Connect (OIDC) token](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) assigned by GitHub. The token describes the exact job that was run: repository, workflow file, git ref, commit and runner.
 
-## What does ephemeral certificate contain?
+1. The release workflow exchanges that OIDC token for a short-lived X.509 certificate issued by [Sigstore's](https://www.sigstore.dev/) Fulcio CA. The CA copies the information from the OIDC token into the certificate.
+2. The workflow ([`actions/attest-build-provenance`](https://github.com/actions/attest-build-provenance)) signs a [SLSA](https://slsa.dev/) provenance statement for each release file with that certificate.
+3. The signature is recorded in Sigstore's public [Rekor](https://docs.sigstore.dev/logging/overview/) transparency log, and the attestation is stored by GitHub for this repository. You can browse them on the [Attestations](https://github.com/arx-research/libhalo/attestations) page.
 
-The ephemeral X.509 certificate has the following information asserted by the Fulcio CA:
+No signing keys are stored anywhere; this is called "keyless signing". The release itself contains only the files you download, without any extra signature files.
 
-* The base URL of the OIDC token, so that you can verify that the original OIDC token really came from GitHub-hosted runner (OID: `1.3.6.1.4.1.57264.1.1`);
-* Name of the GitHub repository (OID: `1.3.6.1.4.1.57264.1.5`);
-* The URL of the exact GitHub Actions workflow file that produced the artifact, together with the target tag name (X509v3 Subject Alternative Name);
-* Exact git commit hash for which the build was triggered (OID: `1.3.6.1.4.1.57264.1.3`);
+## What does the attestation assert?
 
-Please note that the above list is not exhaustive, but we have listed the most essential components.
+* The SHA-256 digest of the release file;
+* The repository that built it (`arx-research/libhalo`);
+* The workflow file that built it, together with the git ref (e.g. `.github/workflows/prod_build_cli.yml@refs/tags/halotools-v1.23.0`);
+* The exact git commit that was built;
+* That the build ran on a GitHub-hosted runner, with a link to the workflow run.
 
 ## Why does it matter?
 
-Signatures made with ephemeral certificates consistute a proof of trust, which relies on GitHub and Fulcio CA (run by The Linux Foundation)
-that the build was produced by the automated process. Moreover, the real commit ID is cryptographically associated with 
-the produced release assets, so you are able to review the accurate code snapshot and all the pipeline scripts as they were
-at the moment when the build was created. Thus, the builds are more reliable.
+The attestation is a proof, relying on GitHub and Sigstore (a project of the Open Source Security Foundation), that the file was produced by our automated release process and not modified afterwards. Because the commit is cryptographically bound to the file, you can review the exact source code and pipeline scripts that produced the build.
 
-## File asset signatures
+## Release assets
 
-For each version, the build process will produce the following release assets, which could be downloaded
-using the "Releases" sub-page of this repository:
+For each version, the following assets can be downloaded from the "Releases" sub-page of this repository:
 
-* `halo-tools-win-x64.zip` - HaLo Tools: halocli and halo-bridge (Windows x64)
-* `halo-tools-linux-x64.tgz` - HaLo Tools: halocli and halo-bridge (Linux x64)
-* `halo-tools-macos-x64.pkg` - HaLo Tools installer: halocli and halo-bridge (Mac OS, Intel x64)
-* `halo-tools-macos-arm64.pkg` - HaLo Tools installer: halocli and halo-bridge (Mac OS, Apple Silicon)
-* `libhalo.js` - standalone JavaScript library for usage with classic HTML applications;
+| Release tag | Workflow | Asset |
+|---|---|---|
+| `halotools-v<version>` | `prod_build_cli.yml` | `halo-tools-win-x64.zip` - halocli and halo-bridge (Windows x64) |
+| `halotools-v<version>` | `prod_build_cli.yml` | `halo-tools-linux-x64.tgz` - halocli and halo-bridge (Linux x64) |
+| `halotools-v<version>` | `prod_build_cli.yml` | `halo-tools-macos-x64.pkg` - halocli and halo-bridge installer (Mac OS, Intel x64) |
+| `halotools-v<version>` | `prod_build_cli.yml` | `halo-tools-macos-arm64.pkg` - halocli and halo-bridge installer (Mac OS, Apple Silicon) |
+| `libhalo-v<version>` | `prod_build_lib.yml` | `libhalo.js` - standalone JavaScript library for classic HTML applications |
+| `libhalo-v<version>` | `prod_build_lib.yml` | `libhalo.js.LICENSE.txt` - license information |
 
-Each of these assets is accompanied by the signature and certificate files in the format:
+## Verifying a release asset
 
-* `<asset name>-keyless.pem` - the ephemeral certificate produced by `cosign` tool;
-* `<asset name>-keyless.sig` - the signature made with that ephemeral certificate;
+You will need the [GitHub CLI](https://cli.github.com/) (`gh`), logged in with `gh auth login`.
 
-## NPM package signatures
+The quickest check confirms that the file was built by a workflow of this repository:
 
-* `@arx-research/libhalo` package on npmjs.com
-* `@arx-research/libhalo` package on GitHub Packages
+```bash
+gh attestation verify halo-tools-macos-arm64.pkg --repo arx-research/libhalo
+```
 
-The published package semantic versions correspond to the releases marked `libhalo-v<semver>` on the "Releases" sub-page of this GitHub repository.
-Each corresponding release contains `libhalo-npm-hash.txt` file, which is an integrity hash (SHA512) of the published NPM package. This file also contains corresponding
-signature made with `cosign`:
-
-* `libhalo-npm-hash.txt-keyless.pem` - the ephemeral certificate for the hash file;
-* `libhalo-npm-hash.txt-keyless.sig` - the signature made with that ephemeral certificate;
-
-## Verification script
-In order to verify the keyless signatures, you will need to [install cosign tool](https://docs.sigstore.dev/cosign/installation/).
-
-Please store the following example bash script:
+For a strict check, also pin the workflow, the release tag and the commit, and reject self-hosted runners. Please store the following script:
 
 **verify.sh**
+```bash
+#!/usr/bin/env bash
+
+set -e
+
+WORKFLOW_NAME="$1"
+FILE_NAME="$2"
+TAG_NAME="$3"
+COMMIT_HASH=$(gh api "repos/arx-research/libhalo/commits/${TAG_NAME}" --jq .sha)
+
+gh attestation verify "${FILE_NAME}" \
+    --repo arx-research/libhalo \
+    --signer-workflow "arx-research/libhalo/.github/workflows/${WORKFLOW_NAME}.yml" \
+    --source-ref "refs/tags/${TAG_NAME}" \
+    --source-digest "${COMMIT_HASH}" \
+    --deny-self-hosted-runners
+
+echo "Commit ID: $COMMIT_HASH"
+```
+
+### Usage examples
+
+Replace the version with the release you have downloaded.
+
+Verify the Apple Silicon installer of version `halotools-v1.23.0`:
+```bash
+./verify.sh prod_build_cli halo-tools-macos-arm64.pkg halotools-v1.23.0
+```
+
+Verify `libhalo.js` of version `libhalo-v1.23.0`:
+```bash
+./verify.sh prod_build_lib libhalo.js libhalo-v1.23.0
+```
+
+### Offline verification
+
+The attestation can be downloaded once and verified later without access to the GitHub attestation API:
+
+```bash
+# writes sha256:<digest>.jsonl to the current directory
+gh attestation download halo-tools-macos-arm64.pkg --repo arx-research/libhalo
+gh attestation verify halo-tools-macos-arm64.pkg --repo arx-research/libhalo --bundle sha256:<digest>.jsonl
+```
+
+## NPM package
+
+The `@arx-research/libhalo` package is published to [npmjs.com](https://www.npmjs.com/package/@arx-research/libhalo) by the `prod_build_lib.yml` workflow with [npm provenance](https://docs.npmjs.com/generating-provenance-statements). The package versions correspond to the `libhalo-v<version>` releases of this repository.
+
+The provenance is shown on the package page on npmjs.com and links to the exact commit and workflow run. To verify the registry signatures and provenance of the packages installed in your project:
+
+```bash
+npm audit signatures
+```
+
+## Older releases
+
+Releases published before build provenance attestations were introduced ship two additional files per asset, signed with [`cosign`](https://docs.sigstore.dev/cosign/installation/):
+
+* `<asset name>-keyless.pem` - the ephemeral certificate;
+* `<asset name>-keyless.sig` - the signature made with that certificate.
+
+Older `libhalo-v*` releases also contain `libhalo-npm-hash.txt`, the SHA-512 integrity hash of the published NPM package, signed the same way.
+
+These files can be verified with the following script:
+
+**verify-legacy.sh**
 ```bash
 #!/usr/bin/env bash
 
@@ -83,23 +139,7 @@ cosign verify-blob \
 echo "Commit ID: $COMMIT_HASH"
 ```
 
-### Usage examples
-Verify `halocli-win-x64.zip` build against the automated build of version `halocli-v1.1.1`:
-```
-./verify.sh prod_build_cli halocli-win-x64.zip halocli-v1.1.1
-```
-
-Verify `libhalo.js` build against the automated build of version `libhalo-v1.1.1`:
-```
-./verify.sh prod_build_lib libhalo.js libhalo-v1.1.1
-```
-
-Verify the published NPM package hash against the automated build of version `libhalo-v1.1.1`:
-```
-# (1) get the integrity hash of your installed version
-npm view @arx-research/libhalo | grep integrity
-# (2) verify the hash file from "Releases" sub-page
-./verify.sh prod_build_lib libhalo-npm-hash.txt libhalo-v1.1.1
-# (3) compare if `libhalo-npm-hash.txt` is the same as (1)
-cat libhalo-npm-hash.txt
+Example:
+```bash
+./verify-legacy.sh prod_build_cli halo-tools-win-x64.zip halotools-v1.21.0
 ```
