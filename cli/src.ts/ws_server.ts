@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import util from "util";
+import {Duplex} from "stream";
 
 import {dirname, randomBuffer, redactLogObject, safeWsMessageHandler} from "./util.js";
 import {getBuildInfo} from "./version.js";
@@ -33,9 +34,29 @@ function generateHandle() {
     return randomBuffer().toString('base64');
 }
 
-async function makeCSRFToken() {
+// CSRF tokens are bound to the website origin that is being authorized and can only be used once
+const usedCSRFTokenIds = new Map<string, number>();
+
+function websiteToOrigin(website: unknown): string | null {
+    if (typeof website !== "string") {
+        return null;
+    }
+
+    try {
+        const url = new URL(website);
+        return url.protocol + '//' + url.host;
+    } catch (e) {
+        return null;
+    }
+}
+
+async function makeCSRFToken(websiteOrigin: string) {
     return new Promise((resolve, reject) => {
-        jwt.sign({purpose: 'csrf-consent'}, jwtSigningKey, {expiresIn: 120}, (err, token) => {
+        jwt.sign({
+            purpose: 'csrf-consent',
+            website: websiteOrigin,
+            jti: randomBuffer().toString('hex')
+        }, jwtSigningKey, {expiresIn: 120}, (err, token) => {
             if (err) {
                 reject(err);
             } else {
@@ -45,20 +66,73 @@ async function makeCSRFToken() {
     });
 }
 
-async function validateCSRFToken(token: string) {
-    return new Promise((resolve, reject) => {
+async function validateCSRFToken(token: unknown, websiteOrigin: string) {
+    if (typeof token !== "string") {
+        throw new Error('Missing CSRF token.');
+    }
+
+    const decoded = await new Promise<Record<string, unknown>>((resolve, reject) => {
         jwt.verify(token, jwtSigningKey, (err, decoded) => {
             if (err) {
                 reject(err);
             } else {
-                if ((<Record<string, string>> decoded).purpose !== 'csrf-consent') {
-                    reject(new Error('Incorrect token purpose.'));
-                } else {
-                    resolve(decoded);
-                }
+                resolve(<Record<string, unknown>> decoded);
             }
         });
     });
+
+    if (decoded.purpose !== 'csrf-consent') {
+        throw new Error('Incorrect token purpose.');
+    }
+
+    if (decoded.website !== websiteOrigin) {
+        throw new Error('Token was issued for a different website.');
+    }
+
+    if (typeof decoded.jti !== "string" || typeof decoded.exp !== "number") {
+        throw new Error('Malformed token.');
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+
+    for (const [jti, exp] of usedCSRFTokenIds) {
+        if (exp < now) {
+            usedCSRFTokenIds.delete(jti);
+        }
+    }
+
+    if (usedCSRFTokenIds.has(decoded.jti)) {
+        throw new Error('Token was already used.');
+    }
+
+    usedCSRFTokenIds.set(decoded.jti, decoded.exp);
+    return decoded;
+}
+
+function buildAllowedHosts(args: Namespace) {
+    // Only accept requests that are addressed to the bridge itself. This prevents DNS rebinding attacks,
+    // where an attacker-controlled domain is re-pointed to 127.0.0.1 in order to reach the bridge
+    // as a same-origin website.
+    const hostnames = new Set(['127.0.0.1', 'localhost', '[::1]', 'halo-bridge.local']);
+    const listenHost = String(args.listenHost ?? '').toLowerCase();
+
+    if (listenHost && listenHost !== '0.0.0.0' && listenHost !== '::' && listenHost !== '[::]') {
+        hostnames.add(listenHost.includes(':') && !listenHost.startsWith('[') ? '[' + listenHost + ']' : listenHost);
+    }
+
+    const allowedHosts = new Set<string>();
+
+    for (const hostname of hostnames) {
+        for (const port of [args.listenPort, args.listenPortTLS]) {
+            allowedHosts.add(hostname + ':' + port);
+
+            if (port === 80 || port === 443) {
+                allowedHosts.add(hostname);
+            }
+        }
+    }
+
+    return allowedHosts;
 }
 
 function sendToCurrentWs(ws: WebSocket | null, data: unknown) {
@@ -182,6 +256,20 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
     }
 
     wss = new WebSocketServer({noServer: true});
+    const allowedHosts = buildAllowedHosts(args);
+
+    const isHostAllowed = (host: string | undefined) => {
+        return typeof host === "string" && allowedHosts.has(host.toLowerCase());
+    };
+
+    app.use((req, res, next) => {
+        if (!isHostAllowed(req.headers.host)) {
+            res.status(403).type('text/plain').send('Invalid Host header.');
+            return;
+        }
+
+        next();
+    });
 
     // inflate: false rejects compressed request bodies (HTTP 415) so untrusted input never reaches
     // the embedded Node.js Brotli decoder (CVE-2026-111497). The halo-tools binaries currently embed
@@ -226,7 +314,7 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
             return;
         }
 
-        const csrfToken = await makeCSRFToken();
+        const csrfToken = await makeCSRFToken(url.protocol + '//' + url.host);
 
         res.render('consent.html', {
             csrfToken,
@@ -235,8 +323,15 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
     });
 
     app.post('/consent/post', async (req, res) => {
+        const websiteOrigin = websiteToOrigin(req.body.website);
+
+        if (!websiteOrigin) {
+            res.status(400).send('Bad request.');
+            return;
+        }
+
         try {
-            await validateCSRFToken(req.body.csrf_token);
+            await validateCSRFToken(req.body.csrf_token, websiteOrigin);
         } catch (e) {
             res.render('consent_error.html', {
                 errorMessage: 'Failed to check CSRF token. Please navigate back, refresh the page and try again.'
@@ -253,13 +348,22 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
             return;
         }
 
-        const url = new URL(req.body.website);
-        userConsentOrigins.add(url.protocol + '//' + url.host);
+        userConsentOrigins.add(websiteOrigin);
 
         res.render('consent_close.html');
     });
 
+    const rejectUpgrade = (socket: Duplex) => {
+        socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
+        socket.destroy();
+    };
+
     server.on('upgrade', (request, socket, head) => {
+        if (!isHostAllowed(request.headers.host)) {
+            rejectUpgrade(socket);
+            return;
+        }
+
         wss && wss.handleUpgrade(request, socket, head, socket => {
             wss && wss.emit('connection', socket, request);
         });
@@ -267,6 +371,11 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
 
     if (serverTLS) {
         serverTLS.on('upgrade', (request, socket, head) => {
+            if (!isHostAllowed(request.headers.host)) {
+                rejectUpgrade(socket);
+                return;
+            }
+
             wss && wss.handleUpgrade(request, socket, head, socket => {
                 wss && wss.emit('connection', socket, request);
             });
