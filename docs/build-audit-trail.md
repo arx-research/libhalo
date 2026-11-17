@@ -33,9 +33,10 @@ at the moment when the build was created. Thus, the builds are more reliable.
 For each version, the build process will produce the following release assets, which could be downloaded
 using the "Releases" sub-page of this repository:
 
-* `halocli-x64-win.zip` - HaLo Command Line Interface Tool (Windows x64)
-* `halocli-x64-linux.zip` - HaLo Command Line Interface Tool (Linux x64)
-* `halocli-x64-macos.pkg` - HaLo Command Line Interface Tool (Mac OS x64)
+* `halo-tools-win-x64.zip` - HaLo Tools: halocli and halo-bridge (Windows x64)
+* `halo-tools-linux-x64.tgz` - HaLo Tools: halocli and halo-bridge (Linux x64)
+* `halo-tools-macos-x64.pkg` - HaLo Tools installer: halocli and halo-bridge (Mac OS, Intel x64)
+* `halo-tools-macos-arm64.pkg` - HaLo Tools installer: halocli and halo-bridge (Mac OS, Apple Silicon)
 * `libhalo.js` - standalone JavaScript library for usage with classic HTML applications;
 
 Each of these assets is accompanied by the signature and certificate files in the format:
