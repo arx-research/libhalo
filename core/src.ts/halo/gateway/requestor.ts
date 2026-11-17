@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 import WebSocketAsPromised from "websocket-as-promised";
 import crypto from "crypto";
-import {JWEUtil} from "../jwe_util.js";
+import {JWEUtil, isGatewayDirectionRequired} from "../jwe_util.js";
 import {
     HaloLogicError,
     HaloTagError,
@@ -268,9 +268,11 @@ class HaloGateway {
                 throw new NFCBadTransportError("Mismatched nonce in reply.");
             }
 
-            // older executors don't set the direction field, so it's only checked if present;
-            // a reflected request packet would also have no "response" object
-            if ((out.direction !== undefined && out.direction !== "response")
+            // older executors don't set the direction field, so until the cut-off date it's only checked if present;
+            // afterwards it's mandatory; a reflected request packet would also have no "response" object
+            const directionRequired = isGatewayDirectionRequired();
+
+            if ((out.direction !== "response" && (directionRequired || out.direction !== undefined))
                     || !out.response || typeof out.response !== "object") {
                 webDebug('[halo-requestor] reply JWE is not a response packet');
                 throw new NFCBadTransportError("Unexpected reply packet.");
