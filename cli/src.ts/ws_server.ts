@@ -3,6 +3,7 @@ import nunjucks from "nunjucks";
 import {WebSocket, WebSocketServer} from 'ws';
 import jwt from 'jsonwebtoken';
 import https from "https";
+import {TLSSocket} from "tls";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -109,26 +110,39 @@ async function validateCSRFToken(token: unknown, websiteOrigin: string) {
     return decoded;
 }
 
-function buildAllowedHosts(args: Namespace) {
+// Names that always point to the local machine. Browsers resolve these to the loopback interface
+// on their own, so a remote party can't take them over.
+const LOOPBACK_HOSTNAMES = ['127.0.0.1', 'localhost', '[::1]'];
+
+// The "halo-bridge.local" name is resolved through /etc/hosts (if the installer has pinned it) or otherwise
+// through mDNS, which means that anyone on the local network could answer for it. It's only trustworthy
+// over TLS, since nobody else can present the locally trusted certificate for that name.
+const TLS_ONLY_HOSTNAMES = ['halo-bridge.local'];
+
+function buildAllowedHosts(args: Namespace, tls: boolean) {
     // Only accept requests that are addressed to the bridge itself. This prevents DNS rebinding attacks,
     // where an attacker-controlled domain is re-pointed to 127.0.0.1 in order to reach the bridge
     // as a same-origin website.
-    const hostnames = new Set(['127.0.0.1', 'localhost', '[::1]', 'halo-bridge.local']);
+    const hostnames = new Set(LOOPBACK_HOSTNAMES);
+
+    if (tls) {
+        TLS_ONLY_HOSTNAMES.forEach((hostname) => hostnames.add(hostname));
+    }
+
     const listenHost = String(args.listenHost ?? '').toLowerCase();
 
     if (listenHost && listenHost !== '0.0.0.0' && listenHost !== '::' && listenHost !== '[::]') {
         hostnames.add(listenHost.includes(':') && !listenHost.startsWith('[') ? '[' + listenHost + ']' : listenHost);
     }
 
+    const port = tls ? args.listenPortTLS : args.listenPort;
     const allowedHosts = new Set<string>();
 
     for (const hostname of hostnames) {
-        for (const port of [args.listenPort, args.listenPortTLS]) {
-            allowedHosts.add(hostname + ':' + port);
+        allowedHosts.add(hostname + ':' + port);
 
-            if (port === 80 || port === 443) {
-                allowedHosts.add(hostname);
-            }
+        if ((!tls && port === 80) || (tls && port === 443)) {
+            allowedHosts.add(hostname);
         }
     }
 
@@ -260,14 +274,16 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
     }
 
     wss = new WebSocketServer({noServer: true});
-    const allowedHosts = buildAllowedHosts(args);
+    const allowedHostsPlain = buildAllowedHosts(args, false);
+    const allowedHostsTLS = buildAllowedHosts(args, true);
 
-    const isHostAllowed = (host: string | undefined) => {
+    const isHostAllowed = (host: string | undefined, tls: boolean) => {
+        const allowedHosts = tls ? allowedHostsTLS : allowedHostsPlain;
         return typeof host === "string" && allowedHosts.has(host.toLowerCase());
     };
 
     app.use((req, res, next) => {
-        if (!isHostAllowed(req.headers.host)) {
+        if (!isHostAllowed(req.headers.host, req.socket instanceof TLSSocket)) {
             res.status(403).type('text/plain').send('Invalid Host header.');
             return;
         }
@@ -284,8 +300,14 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
         "https://os.burner.pro"
     ]);
 
-    for (const hostname of ["127.0.0.1", "localhost", "[::1]", "halo-bridge.local"]) {
+    for (const hostname of LOOPBACK_HOSTNAMES) {
         builtInAllowedOrigins.add(new URL("http://" + hostname + ":" + args.listenPort).origin);
+        builtInAllowedOrigins.add(new URL("https://" + hostname + ":" + args.listenPortTLS).origin);
+    }
+
+    // never trust plain-HTTP origins for these names, a website could be served under such origin
+    // by anyone on the local network who answers the mDNS query for that name
+    for (const hostname of TLS_ONLY_HOSTNAMES) {
         builtInAllowedOrigins.add(new URL("https://" + hostname + ":" + args.listenPortTLS).origin);
     }
 
@@ -384,7 +406,7 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
     };
 
     server.on('upgrade', (request, socket, head) => {
-        if (!isHostAllowed(request.headers.host)) {
+        if (!isHostAllowed(request.headers.host, false)) {
             rejectUpgrade(socket);
             return;
         }
@@ -396,7 +418,7 @@ function wsCreateServer(args: Namespace, getReaderNames: () => string[]) {
 
     if (serverTLS) {
         serverTLS.on('upgrade', (request, socket, head) => {
-            if (!isHostAllowed(request.headers.host)) {
+            if (!isHostAllowed(request.headers.host, true)) {
                 rejectUpgrade(socket);
                 return;
             }
