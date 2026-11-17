@@ -953,6 +953,12 @@ async function cmdGetDataStructV2(options: ExecHaloCmdOptions, args: HaloCmdGetD
             throw new HaloLogicError("Unsupported object type: " + item.type);
         }
 
+        // index is also used as a property key of the result object, so it must be an actual integer
+        // (e.g. "1abc", 1.5 or "__proto__" would otherwise pass the range check)
+        if (typeof item.index !== "number" || !Number.isInteger(item.index)) {
+            throw new HaloLogicError("Index must be an integer at: " + item.type + ":" + item.index);
+        }
+
         if (item.index < 0 || item.index > 255) {
             throw new HaloLogicError("Too high index value at: " + item.type + ":" + item.index);
         }
