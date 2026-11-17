@@ -59,6 +59,8 @@ The server will listen on port `32842`. Any extra arguments are passed to the se
 | Argument                   | Description                                                     |
 |----------------------------|-----------------------------------------------------------------|
 | `-p`, `--listen-port PORT` | Port where the server should bind (default: `32842`)            |
+| `--trusted-proxies LIST`   | Reverse proxies allowed to set `X-Forwarded-For` (default: none), see [Production deployment](#production-deployment) |
+| `--max-sessions-per-ip N`  | Maximum concurrent requestor sessions per client IP (default: `15`, `0` = unlimited) |
 | `-d`, `--disable-stats`    | Disable the `/stats` page                                       |
 | `--disable-cache`          | Disable template caching (useful when developing custom themes) |
 
@@ -87,7 +89,19 @@ The HaLo Gateway server doesn't terminate TLS by itself. For production use, put
 
 * serves it over HTTPS on a public domain (the smartphone opens the `https://<your domain>/e?...` page from the QR code);
 * forwards WebSocket upgrades on the `/ws` path;
-* sets the `X-Forwarded-For` header, which is recorded in the logs alongside the proxy's IP address.
+* appends the client's address to the `X-Forwarded-For` header (e.g. `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;` in nginx).
+
+Then pass the proxy's address with `--trusted-proxies`, so the server can resolve the real client IP address,
+which is used for the per-IP session limit and recorded in the logs. The option accepts a comma-separated list
+of IP addresses, CIDR ranges and presets (`loopback`, `linklocal`, `uniquelocal` or its alias `private`), e.g.:
+
+```
+docker run -d --name halo-gateway -p 32842:32842 halo-gateway --trusted-proxies 172.17.0.1
+```
+
+The `X-Forwarded-For` header is only honored when the connection comes from a trusted proxy, and only the addresses
+appended by trusted proxies are taken into account. If no proxies are configured, the header is ignored and all clients
+behind the proxy would appear under the proxy's IP address, sharing a single per-IP session limit.
 
 Then pass your server's address to the requestor, e.g. `new HaloGateway('wss://<your domain>')`.
 

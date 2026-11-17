@@ -17,6 +17,7 @@ import fs from "fs";
 import {parseArgs} from './args_gateway.js';
 import {printVersionInfo, getBuildInfo} from "./version.js";
 import {dirname, safeWsMessageHandler, saveLog} from "./util.js";
+import {resolveClientIP, TrustedProxies} from "./client_ip.js";
 import {Namespace} from "argparse";
 
 const buildInfo = getBuildInfo();
@@ -29,6 +30,23 @@ const args = parseArgs();
 if (!args) {
     process.exit(0);
 }
+
+let trustedProxies: TrustedProxies;
+
+try {
+    trustedProxies = new TrustedProxies(args.trustedProxies);
+} catch (e) {
+    console.error('Failed to parse --trusted-proxies: ' + (e as Error).message);
+    process.exit(1);
+}
+
+if (!Number.isInteger(args.maxSessionsPerIP) || args.maxSessionsPerIP < 0) {
+    console.error('The --max-sessions-per-ip must be a non-negative integer.');
+    process.exit(1);
+}
+
+// number of currently open requestor sessions per client IP address
+const sessionsPerIP = new Map<string, number>();
 
 interface SocketState {
     requestor: WebSocket,
@@ -82,20 +100,24 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
         return;
     }
 
-    const sessionId = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url');
-    let ipStr = 'IP: ' + req.socket.remoteAddress;
+    const clientIP = resolveClientIP(req, trustedProxies);
+    const clientSessions = sessionsPerIP.get(clientIP) ?? 0;
 
-    if (req.headers['x-forwarded-for']) {
-        ipStr += ', Fwd: ' + req.headers['x-forwarded-for'];
+    if (args.maxSessionsPerIP > 0 && clientSessions >= args.maxSessionsPerIP) {
+        console.log('Rejected requestor, too many concurrent sessions from IP: ' + clientIP);
+        ws.close(4058, "Too many connections from this IP address.");
+        return;
     }
 
-    console.log('[' + sessionId + '] Requestor connected. ' + ipStr);
+    sessionsPerIP.set(clientIP, clientSessions + 1);
+
+    const sessionId = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url');
+    console.log('[' + sessionId + '] Requestor connected. IP: ' + clientIP);
 
     const log_to_save = {
         event_name: "Requestor connected",
         origin: getLoggedOrigin(req),
-        forwarded_for: req.headers['x-forwarded-for'] || "Unknown",
-        ip: req.socket.remoteAddress || "Unknown",
+        ip: clientIP,
     };
     saveLog(log_to_save);
 
@@ -109,19 +131,29 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
 
     const sobj = sessionIds[sessionId];
 
-    setTimeout(() => {
+    const sessionTimeout = setTimeout(() => {
         ws.close(4080, "Session timed out.");
     }, REQUESTOR_SESS_LIMIT);
 
     ws.on('error', console.error);
 
     ws.on('close', function close() {
+        clearTimeout(sessionTimeout);
+
         if (sobj.executor) {
             sobj.executor.close(4051, "Requestor closed the connection.");
         }
 
         console.log('[' + sessionId + '] Disconnected both sides.');
         delete sessionIds[sessionId];
+
+        const remainingSessions = (sessionsPerIP.get(clientIP) ?? 1) - 1;
+
+        if (remainingSessions > 0) {
+            sessionsPerIP.set(clientIP, remainingSessions);
+        } else {
+            sessionsPerIP.delete(clientIP);
+        }
     });
 
     ws.on('message', safeWsMessageHandler(ws, '[' + sessionId + '] [requestor]', (obj) => {
@@ -156,8 +188,7 @@ function processRequestor(ws: WebSocket, req: IncomingMessage) {
                 const log_to_save = {
                     event_name: "Command request sent to executor",
                     origin: getLoggedOrigin(req),
-                    forwarded_for: req.headers['x-forwarded-for'] || "Unknown",
-                    ip: req.socket.remoteAddress || "Unknown",
+                    ip: clientIP,
                 };
                 saveLog(log_to_save);
             } else {
@@ -183,17 +214,13 @@ function processExecutor(ws: WebSocket, req: IncomingMessage, sessionId: string)
     }
 
     const sobj = sessionIds[sessionId];
-    let ipStr = 'IP: ' + req.socket.remoteAddress;
-
-    if (req.headers['x-forwarded-for']) {
-        ipStr += ', Fwd: ' + req.headers['x-forwarded-for'];
-    }
+    const ipStr = 'IP: ' + resolveClientIP(req, trustedProxies);
 
     if (sobj.executor) {
         sobj.executor.close(4054, "Connection replaced.");
         console.log('[' + sessionId + '] Executor reconnected. ' + ipStr);
     } else {
-        console.log('[' + sessionId + '] Executor connected.' + ipStr);
+        console.log('[' + sessionId + '] Executor connected. ' + ipStr);
     }
 
     if (sobj.reconnects > 5) {

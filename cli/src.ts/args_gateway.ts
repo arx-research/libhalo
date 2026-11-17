@@ -21,6 +21,20 @@ parser.add_argument("-p", "--listen-port", {
     default: 32842,
     dest: "listenPort"
 });
+parser.add_argument("--trusted-proxies", {
+    help: "Comma-separated list of reverse proxies whose X-Forwarded-For header should be trusted when " +
+        "resolving the client's IP address. Accepts IP addresses, CIDR ranges (e.g. 172.16.0.0/12) and presets: " +
+        "loopback, linklocal, uniquelocal (alias: private). By default, no proxies are trusted.",
+    type: "str",
+    default: "",
+    dest: "trustedProxies"
+});
+parser.add_argument("--max-sessions-per-ip", {
+    help: "Maximum number of concurrent requestor sessions per client IP address (0 = unlimited)",
+    type: "int",
+    default: 15,
+    dest: "maxSessionsPerIP"
+});
 parser.add_argument("-d", "--disable-stats", {
     help: "Whether to disable the /stats page",
     default: false,
