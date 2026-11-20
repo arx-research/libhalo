@@ -71,9 +71,9 @@ jobs:
         run: |
           brew install pcsc-lite
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Install Node.JS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
       - name: Enable corepack
@@ -84,6 +84,11 @@ jobs:
         run: |
           yarn workspaces focus --all
           yarn install --immutable
+      # Install scripts are off (.yarnrc.yml); compile the one native module.
+      - name: Build pcsclite
+        shell: bash
+        run: |
+          yarn build:native
       - name: Run tsc (core)
         run: |
           cd core
@@ -175,7 +180,7 @@ jobs:
         run: |
           echo y | cosign sign-blob ./cli/dist.tgz --output-certificate ./cli/dist.tgz-keyless.pem --output-signature ./cli/dist.tgz-keyless.sig
       - name: Store binary as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: binary-${{ matrix.platform }}-${{ matrix.arch }}
           path: |
@@ -213,7 +218,7 @@ jobs:
     needs: build_cli_tool
     steps:
       - name: Download binary from artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: binary-${{ matrix.platform }}-${{ matrix.arch }}
       - name: Install cosign

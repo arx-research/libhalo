@@ -3,5 +3,8 @@
     "core",
     "cli"
   ],
+  "scripts": {
+    "build:native": "node node_modules/node-gyp/bin/node-gyp.js rebuild --directory=node_modules/@pokusew/pcsclite"
+  },
   "packageManager": "yarn@4.12.0"
 }

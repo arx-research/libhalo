@@ -21,7 +21,7 @@ jobs:
           ( echo -n "version=" && ( echo "$GITHUB_REF" | cut -f2 -d- | tr -d '\n' ) ) >> "$GITHUB_OUTPUT"
       - name: Draft release
         id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -40,7 +40,7 @@ jobs:
       - name: Store release upload URL
         run: |
           echo -n "${{ steps.create_release.outputs.upload_url }}" > release-upload-url.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-upload-url
           path: release-upload-url.txt
@@ -58,9 +58,9 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y libpcsclite-dev
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Install Node.JS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
       - name: Enable corepack
@@ -76,7 +76,7 @@ jobs:
           cd core
           yarn webpack
       - name: Download release upload URL
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-upload-url
       - name: Store release upload URL output
@@ -91,7 +91,7 @@ jobs:
             ./core/dist/libhalo.js.LICENSE.txt
       - name: Upload release asset (JS bundle)
         id: upload-release-asset
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5 # v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -101,7 +101,7 @@ jobs:
           asset_content_type: text/javascript
       - name: Upload release asset (LICENSE file)
         id: upload-release-asset-license
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5 # v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -124,7 +124,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y libpcsclite-dev
       - name: Download release upload URL
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-upload-url
       - name: Store release upload URL output
@@ -132,9 +132,9 @@ jobs:
         run: |
           echo "release_upload_url=$(cat release-upload-url.txt)" >> "$GITHUB_OUTPUT"
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.JS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           registry-url: 'https://registry.npmjs.org'
