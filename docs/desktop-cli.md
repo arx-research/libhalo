@@ -57,24 +57,39 @@ please review the CLI help for the details about command invocation.
 
 ## Building from source
 
-If you wish to build the HaLo CLI from source, you can perform the following steps:
+If you wish to build the HaLo CLI from source, you can perform the following steps
+(requires Node.js 24, corepack, and a working [node-gyp](https://github.com/nodejs/node-gyp#installation) toolchain;
+on Linux also `libpcsclite-dev`, on macOS `pcsc-lite` from Homebrew):
 
 1. Clone the repository:
    ```
    git clone https://github.com/arx-research/libhalo.git
-   ```
-2. Install dependencies:
-   ```
-   # go to the project root directory
    cd libhalo
-   npm install
-   # go to the cli/ subdirectory
-   cd cli
-   npm install
-   npm install -g pkg
-   pkg package.json
    ```
-3. Done! The binaries will be produced in `cli/dist` subdirectory.
+2. Install dependencies and build the PC/SC native module:
+   ```
+   corepack enable
+   yarn install --immutable
+   yarn build:native
+   ```
+   **Note:** Dependency install scripts are disabled in this repository (`enableScripts: false` in `.yarnrc.yml`),
+   so `yarn install` alone does not compile `@pokusew/pcsclite`. Run `yarn build:native` after every fresh install,
+   otherwise the CLI fails at startup with a "Could not locate the bindings file" error.
+3. Build the library and the CLI:
+   ```
+   cd core && yarn tsc && yarn webpack && cd ..
+   cd cli && yarn tsc && yarn webpack && cd ..
+   # the webpack bundle loads the PC/SC native module from cli/build/
+   mkdir -p cli/build
+   cp node_modules/@pokusew/pcsclite/build/Release/pcsclite.node cli/build/pcsclite.node
+   ```
+4. Done! You can now run the CLI directly with Node.js:
+   ```
+   node cli/dist_webpack/entry_cli.bundle.cjs --help
+   ```
+
+Standalone binaries are produced with `pkg`; see the "Build halo-tools with webpack" and "Package HaLo CLI tool"
+steps in [`.github/workflows/prod_build_cli.yml`](../.github/workflows/prod_build_cli.yml) for the exact procedure.
 
 **Note:** Due to the fact that the CLI tool is using `nfc-pcsc` library, it has to include a native Node module
 for interacting with PC/SC. Thus, the `halocli` binary has to be built separately on each native platform.
