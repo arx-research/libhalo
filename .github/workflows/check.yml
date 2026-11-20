@@ -68,7 +68,6 @@ jobs:
         run: |
           cd cli
           node ./build_scripts/ci_scripts.js --platform linux --product cli
-          npx json-merger orig-package.json bin-cli.json -p -o package.json
           yarn pkg --compress GZip -t node24-linux-x64 -o dist/halocli .
       - name: Test produced binary
         shell: bash
